@@ -2,28 +2,36 @@
 
 **Spec base:** [2026-04-26-chero-mvp-design.md](../specs/2026-04-26-chero-mvp-design.md)
 **Estado dominio:** ✅ `elchero.app` comprado en Porkbun (cuenta `ELcheroapp`, expira 2027-04-26)
-**Pitch CBE:** Sábado 9 de mayo de 2026 (13 días)
-**Versión:** 1.0
+**Pitch CBE:** Sábado 9 de mayo de 2026
+**Versión:** 1.1 (actualizado 27 abr — Días 1-3 consolidados en un día)
 
 ---
 
-## 📅 Cronograma maestro
+## 📅 Cronograma — REAL vs PLAN
+
+> Milton consolidó los Días 1+2+3 en un solo día (lunes 27). Adelantamos 2 días.
 
 ```
-Día 0 — Domingo  26 abr  Setup cuentas + dominio + brief equipo
-Día 1 — Lunes    27 abr  Repo Next.js + Supabase + Vercel deploy inicial
-Día 2 — Martes   28 abr  KB pipeline (currículo MINED + AVANZO + parciales)
-Día 3 — Miércoles 29 abr Backend: audio→transcripción→detección
-Día 4 — Jueves   30 abr  Backend: generación de apuntes + TTS
-Día 5 — Viernes  1  may  Frontend: auth + onboarding + capture
-Día 6 — Sábado   2  may  Frontend: vista apunte + library + transcript edit
-Día 7 — Domingo  3  may  Landing pública + páginas legales + deploy producción
-Día 8 — Lunes    4  may  VALIDACIÓN con 10-15 estudiantes (2 sesiones de 1h)
-Día 9 — Martes   5  may  Bug fixes + filmación testimonios
-Día 10 — Miércoles 6 may Pitch deck v1 + integración métricas validación
-Día 11 — Jueves  7  may  Reels Instagram + ensayo pitch v1
-Día 12 — Viernes 8  may  Buffer / detalles finales / ensayo pitch v2
-Día 13 — Sábado  9 MAY   PITCH CBE 🎯
+Día 0 — Dom 26 abr  ✅ Setup cuentas + dominio + brief equipo
+Día 1 — Lun 27 abr  ✅ Bootstrap Next.js + Supabase + Vercel + deploy
+                    ✅ KB completo (~10K tokens, 5 archivos)
+                    ✅ Backend /api/process (auth + counter + transcribe + detect)
+                    ✅ Auditoría 3 rondas + 13 fixes críticos
+                    ✅ Landing branded + custom error pages + OG image
+                    ✅ Cron audio cleanup (1x/día Hobby compatible)
+                    ✅ Security headers (HSTS, X-Frame, Permissions-Policy)
+Día 2 — Mar 28 abr  🟢 BUFFER ganado / Día 4 anticipado opcional
+Día 3 — Mié 29 abr  🟢 BUFFER ganado / Día 4 anticipado opcional
+Día 4 — Jue 30 abr  🔜 /api/generate-notes + /api/tts + /api/profile
+Día 5 — Vie 1  may  🔜 Frontend: auth + onboarding + capture
+Día 6 — Sáb 2  may  🔜 Frontend: vista apunte + library
+Día 7 — Dom 3  may  🔜 Landing completa + legales + Pro upgrade
+Día 8 — Lun 4  may  🔜 VALIDACIÓN con 10-15 estudiantes (2 sesiones de 1h)
+Día 9 — Mar 5  may  🔜 Bug fixes + filmación testimonios
+Día 10 — Mié 6 may  🔜 Pitch deck v1 + integración métricas validación
+Día 11 — Jue 7 may  🔜 Reels Instagram + ensayo pitch v1
+Día 12 — Vie 8 may  🔜 Buffer / ensayo pitch v2
+Día 13 — Sáb 9 MAY  🎯 PITCH CBE
 ```
 
 ---

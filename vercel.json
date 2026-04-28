@@ -22,7 +22,7 @@
   "crons": [
     {
       "path": "/api/cron/cleanup-audios",
-      "schedule": "0 * * * *"
+      "schedule": "0 3 * * *"
     }
   ]
 }

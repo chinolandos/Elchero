@@ -1,7 +1,10 @@
 # Chero — Contexto del Proyecto (CBE 2026)
 
 > Documento maestro con todo el contexto del proyecto Chero para la Competencia Bachiller Emprendedor 2026 de la ESEN.
-> Última actualización: 2026-04-26 (sesión brainstorming completa con verificación de datos)
+> Última actualización: 2026-04-27 (Día 3 cerrado — backend en producción, 13 fixes aplicados)
+>
+> **Estado actual:** [https://elchero.app](https://elchero.app) está LIVE con landing branded.
+> Backend `/api/process` funcional. 13 días para el pitch del 9 de mayo.
 
 ---
 
@@ -115,23 +118,43 @@ Web app que recibe el audio de una clase y devuelve apuntes en español salvador
 - ✅ Manifiesto de 39 skills (19 locales + 20 externas verificadas)
 - ✅ Cronograma 13 días con distribución de equipo
 
-### Pendientes URGENTES (HOY, 26 abr)
-- ✅ `elchero.app` disponible (verificado por Milton)
-- ⏳ Milton compra `elchero.app` en Porkbun (~$15)
-- ✅ CBE sin restricciones especiales (verificado)
-- ⏳ Milton confirma cuentas con saldo: OpenAI ($30+), Anthropic ($30+), Vercel, GitHub, Supabase
-- ⏳ Hermano de Milton aporta SUS parciales viejos de ESEN (mínimo 5-10 exámenes — los tiene en correo/drive)
+### Día 0 (26 abr) — ✅ COMPLETADO
+- ✅ `elchero.app` comprado en Porkbun (válido hasta 2027-04-26)
+- ✅ Cuentas con saldo: OpenAI ($10), Anthropic ($12), Supabase, Vercel, GitHub
+- ✅ Bases CBE recibidas de Isa (analizadas en `docs/bases-cbe-2026/`)
+- ✅ Brief enviado al equipo
+
+### Día 1 (27 abr) — ✅ COMPLETADO (en 1 día consolidados Días 1+2+3)
+- ✅ Repo `Elchero` en GitHub
+- ✅ Next.js 16 + Tailwind v4 + TypeScript bootstrapped
+- ✅ Supabase: 4 tablas + RLS + Auth Google + 2 Storage buckets
+- ✅ Vercel deploy + dominio `elchero.app` apuntando con SSL automático
+- ✅ Knowledge Base ~10K tokens (5 archivos) consolidado en system prompt
+- ✅ Backend `/api/process` (auth + counter atómico + transcribe + auto-detect)
+- ✅ Cron `/api/cron/cleanup-audios` (1x/día Hobby compatible)
+- ✅ `/auth/callback` Google OAuth handler
+- ✅ Middleware Supabase session refresh
+- ✅ Custom error/loading/not-found pages
+- ✅ OG image dinámica (1200x630)
+- ✅ next.config.ts con security headers (HSTS, X-Frame-Options, Permissions-Policy)
+- ✅ 4 RPCs SQL atómicos (try_increment_usage, refund_usage, increment_global, increment_user)
+- ✅ Audit deep 3 rondas + 13 fixes críticos aplicados
+- ✅ Landing branded "El Chero" en producción
 
 ### Pendientes próximos días
-- ⏳ Mariana contacta UCA/UES por temarios + recluta bachilleres validadores
+- ⏳ Hermano de Milton aporta sus parciales viejos ESEN (esperando)
+- ⏳ Mariana contacta UCA/UES por temarios + recluta bachilleres validadores día 8
 - ⏳ Xime empieza pitch deck visual + identidad
-- ⏳ Confirmar lugar/formato del pitch del 9 de mayo
 
 ### Lo que falta construir
-- ❌ App real (Nivel 1) — días 1-8 según cronograma
-- ❌ KB completo en pgvector — días 1-3
-- ❌ Validación con 15-20 usuarios reales — días 9-10
-- ❌ Pitch deck final + ensayos — días 11-12
+- ❌ `/api/generate-notes` con Claude Sonnet 4.6 + KB cacheado (Día 4)
+- ❌ `/api/tts` con OpenAI Nova (Día 4)
+- ❌ `/api/profile` CRUD (Día 4)
+- ❌ Frontend: login + onboarding + capture (Día 5)
+- ❌ Frontend: vista apunte + library + transcript edit (Día 6)
+- ❌ Landing completa + páginas legales (Día 7)
+- ❌ Validación con 10-15 usuarios reales (Día 8)
+- ❌ Pitch deck final + ensayos (Días 9-12)
 
 ---
 

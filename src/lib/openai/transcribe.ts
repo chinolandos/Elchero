@@ -12,14 +12,13 @@ export interface TranscribeResult {
 
 /**
  * Transcribe un audio usando GPT-4o Mini Transcribe ($0.003/min).
- * Si el audio es >25MB, hace chunking automático.
  *
- * Para MVP simple: si el audio es ≤25MB, transcribe directo.
- * Si es mayor, lo cortamos en pedazos y concatenamos.
+ * IMPORTANTE: este código NO hace chunking automático. Asumimos que:
+ *   - El audio ya viene comprimido a MP3 64kbps por el cliente
+ *     (50 min de audio ≈ 24MB → cabe en el límite de 25MB de Whisper)
  *
- * NOTE: el chunking real requiere una librería de audio (ej: ffmpeg).
- * Para MVP, asumimos que el cliente comprime a MP3 64kbps antes (50 min ≈ 24MB).
- * Si llega un archivo >25MB, devolvemos error para forzar al cliente a chunkear.
+ * Si recibimos un archivo >25MB, devolvemos error y le pedimos al cliente
+ * que lo comprima. El chunking real con ffmpeg/lamejs viene post-pitch.
  */
 export async function transcribeAudio(
   audioFile: File | Blob,
@@ -51,6 +50,20 @@ export async function transcribeAudio(
   const durationSeconds: number = (response as { duration?: number }).duration ?? 0;
   const durationMinutes = durationSeconds / 60;
   const costUsd = durationMinutes * 0.003;
+
+  // Validar audio mínimo viable (<2 segundos = audio probablemente inútil)
+  if (durationSeconds < 2) {
+    throw new Error(
+      `Audio muy corto (${durationSeconds.toFixed(1)}s). Mínimo 2 segundos para procesar.`,
+    );
+  }
+
+  // Validar que tengamos texto (audio en silencio absoluto = text vacío)
+  if (!text.trim()) {
+    throw new Error(
+      'No se detectó voz en el audio. Asegurate que el audio no esté en silencio.',
+    );
+  }
 
   return {
     text,

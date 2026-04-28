@@ -1,5 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('auth/callback');
 
 /**
  * Callback OAuth de Google.
@@ -9,35 +12,44 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
  * URL configurada en Google Cloud Console:
  *   https://elchero.app/auth/callback
  *   http://localhost:3000/auth/callback
+ *
+ * Nota: el destino default es `/` (landing) hasta que `/onboarding` exista (día 5).
  */
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/onboarding';
+  // Default a `/` mientras /onboarding no exista (día 5)
+  const next = searchParams.get('next') ?? '/';
   const error = searchParams.get('error');
 
-  // Si Google devolvió error, redirigir a /login con mensaje
   if (error) {
+    log.warn('OAuth provider returned error', { error });
     return NextResponse.redirect(
-      `${origin}/login?error=${encodeURIComponent(error)}`,
+      `${origin}/?error=${encodeURIComponent(error)}`,
     );
   }
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/login?error=missing_code`);
+    log.warn('Missing code in callback');
+    return NextResponse.redirect(`${origin}/?error=missing_code`);
   }
 
   const supabase = await createSupabaseServerClient();
   const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
   if (exchangeError) {
-    console.error('[auth/callback] exchange failed:', exchangeError);
+    log.error('Code exchange failed', {
+      err: exchangeError.message,
+      status: exchangeError.status,
+    });
     return NextResponse.redirect(
-      `${origin}/login?error=${encodeURIComponent(exchangeError.message)}`,
+      `${origin}/?error=${encodeURIComponent(exchangeError.message)}`,
     );
   }
 
-  // Forwarded host check (Vercel)
+  log.info('Auth callback success', { next });
+
+  // Forwarded host check (Vercel detrás de proxy)
   const forwardedHost = request.headers.get('x-forwarded-host');
   const isLocal = process.env.NODE_ENV === 'development';
 

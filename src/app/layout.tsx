@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://elchero.app"),
   title: "El Chero — apuntes con IA, hechos a tu medida",
   description:
     "Subí o grabá el audio de tu clase y recibí apuntes en español salvadoreño con preguntas tipo examen, flashcards y audio para repasar. Hecho para AVANZO, parciales universitarios y pruebas de período del bachillerato.",

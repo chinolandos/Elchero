@@ -4,12 +4,13 @@ import { createLogger } from '@/lib/logger';
 
 const log = createLogger('cron/cleanup-audios');
 
-// El cron corre cada hora (configurado en vercel.json)
+// El cron corre 1x por día a las 3:00 AM UTC (configurado en vercel.json: "0 3 * * *")
+// Vercel Hobby plan limita a daily crons; en Pro podríamos cambiar a hourly.
 // Borra audios del bucket `audios` que tengan >1h de antigüedad.
 //
 // Esta es la red de seguridad: el flow normal en /api/process borra el audio
 // inmediatamente después de transcribir. Pero si algo falla a media operación,
-// este cron limpia los huérfanos.
+// este cron limpia los huérfanos al día siguiente.
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
