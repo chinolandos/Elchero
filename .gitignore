@@ -47,3 +47,7 @@ next-env.d.ts
 
 # skills lock (regenerable con `npx skills experimental_install`)
 /skills-lock.json
+
+# scripts: audios personales y outputs de tests locales (no van al repo)
+/scripts/test-audio.*
+/scripts/test-output/
