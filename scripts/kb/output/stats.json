@@ -1,0 +1,17 @@
+{
+  "built_at": "2026-04-28T03:02:39.928Z",
+  "files_loaded": [
+    "00-system-prompt.md",
+    "01-core-mined.md",
+    "02-universidades-sv.md",
+    "03-espanol-salvadoreno.md",
+    "04-prompts-por-modo.md"
+  ],
+  "parciales_hermano_count": 0,
+  "characters": 34970,
+  "words": 5305,
+  "tokens_estimated": 9992,
+  "tokens_target": 120000,
+  "tokens_hard_limit": 180000,
+  "within_target": true
+}
