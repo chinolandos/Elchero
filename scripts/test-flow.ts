@@ -20,6 +20,10 @@
  *   - Total: ~$0.26 por test completo
  */
 
+// Cargar .env.local ANTES de importar los clients (que requieren las keys)
+import { config as dotenvConfig } from 'dotenv';
+dotenvConfig({ path: '.env.local' });
+
 import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { transcribeAudio } from '../src/lib/openai/transcribe';
@@ -28,8 +32,16 @@ import { generateNotes } from '../src/lib/anthropic/generate';
 import { generateTts, buildTtsText } from '../src/lib/openai/tts';
 import type { UserProfile } from '../src/lib/types/chero';
 
-// Config: cambiá estos valores si querés probar con otro audio o perfil
-const AUDIO_PATH = join(process.cwd(), 'scripts', 'test-audio.mp3');
+// Config: el script busca el primero que exista de estos archivos.
+// Soporta los formatos que acepta OpenAI Whisper: mp3, mp4, m4a, wav, webm, ogg.
+const AUDIO_CANDIDATES = [
+  'test-audio.mp3',
+  'test-audio.m4a',
+  'test-audio.mp4',
+  'test-audio.wav',
+  'test-audio.webm',
+  'test-audio.ogg',
+];
 const OUTPUT_DIR = join(process.cwd(), 'scripts', 'test-output');
 
 const FAKE_PROFILE: Partial<UserProfile> = {
@@ -41,29 +53,47 @@ const FAKE_PROFILE: Partial<UserProfile> = {
   preferred_voice: 'nova',
 };
 
+const MIME_BY_EXT: Record<string, string> = {
+  '.mp3': 'audio/mpeg',
+  '.m4a': 'audio/mp4',
+  '.mp4': 'audio/mp4',
+  '.wav': 'audio/wav',
+  '.webm': 'audio/webm',
+  '.ogg': 'audio/ogg',
+};
+
 async function main() {
   console.log('🐎 Test end-to-end del backend de Chero\n');
-  console.log(`Audio: ${AUDIO_PATH}`);
 
-  // 1. Verificar que el audio exista
-  if (!existsSync(AUDIO_PATH)) {
-    console.error(`\n❌ ERROR: no existe el archivo ${AUDIO_PATH}`);
+  // 1. Buscar el primer archivo que exista
+  const scriptsDir = join(process.cwd(), 'scripts');
+  const found = AUDIO_CANDIDATES.find((name) =>
+    existsSync(join(scriptsDir, name)),
+  );
+
+  if (!found) {
+    console.error('\n❌ ERROR: no se encontró ningún archivo de audio.');
+    console.error('   Buscamos en scripts/:');
+    AUDIO_CANDIDATES.forEach((c) => console.error(`     - ${c}`));
     console.error(
-      '   Grabá un audio (30s-2min, español, tema académico) y guardalo ahí.\n',
+      '\n   Grabá un audio (30s-2min, español, tema académico) y guardalo ahí.',
     );
-    console.error('   Sugerencia para grabar:');
-    console.error('   - Voice Memos en celular → exportar como mp3');
-    console.error('   - Audacity en compu → File → Export → MP3');
-    console.error('   - Online: https://online-voice-recorder.com\n');
+    console.error('   Whisper acepta: mp3, m4a, mp4, wav, webm, ogg.\n');
+    console.error('   Sugerencia: iPhone Notas de Voz → exportar (queda como .m4a, perfecto).\n');
     process.exit(1);
   }
 
-  const audioBuffer = readFileSync(AUDIO_PATH);
-  const audioFile = new File([audioBuffer], 'test-audio.mp3', {
-    type: 'audio/mpeg',
-  });
+  const audioPath = join(scriptsDir, found);
+  console.log(`Audio: ${audioPath}`);
+
+  const ext = found.slice(found.lastIndexOf('.')).toLowerCase();
+  const mime = MIME_BY_EXT[ext] ?? 'audio/mpeg';
+
+  const audioBuffer = readFileSync(audioPath);
+  const audioFile = new File([audioBuffer], found, { type: mime });
 
   console.log(`Tamaño: ${(audioFile.size / 1024).toFixed(1)} KB`);
+  console.log(`Formato: ${ext} (MIME: ${mime})`);
 
   // 2. Transcribir
   console.log('\n📝 1/4 Transcribiendo con GPT-4o Mini Transcribe...');
