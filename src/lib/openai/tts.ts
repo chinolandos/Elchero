@@ -1,7 +1,7 @@
 import { openai } from './client';
 
-const TTS_MODEL = 'tts-1' as const;
-type TtsVoice = 'nova' | 'echo' | 'alloy' | 'onyx' | 'shimmer' | 'fable';
+const TTS_MODEL = 'gpt-4o-mini-tts' as const;
+type TtsVoice = 'nova' | 'echo' | 'alloy' | 'onyx' | 'shimmer' | 'fable' | 'coral' | 'sage';
 
 const VALID_VOICES: TtsVoice[] = [
   'nova',
@@ -10,9 +10,17 @@ const VALID_VOICES: TtsVoice[] = [
   'onyx',
   'shimmer',
   'fable',
+  'coral',
+  'sage',
 ];
 
 const MAX_TTS_CHARS = 4096;
+
+const DEFAULT_INSTRUCTIONS =
+  'Tono: profe joven salvadoreña explicando con calma y entusiasmo a un estudiante. ' +
+  'Ritmo natural, no apurado. Pronunciación clara del español latinoamericano neutro. ' +
+  'Cuando aparezca un concepto clave o número importante, marcalo con énfasis sutil. ' +
+  'Pausá brevemente entre secciones del apunte. Cero monotonía, cero acento robótico.';
 
 export interface TtsResult {
   audio: ArrayBuffer;
@@ -26,23 +34,33 @@ export interface TtsInput {
   text: string;
   voice?: TtsVoice;
   speed?: number;
+  instructions?: string;
 }
 
 /**
- * Genera audio MP3 a partir de texto usando OpenAI TTS modelo `tts-1`.
+ * Genera audio MP3 a partir de texto usando OpenAI `gpt-4o-mini-tts`.
  *
- * Pricing: $15 por 1M chars = $0.015 por 1K chars.
+ * Pricing: $0.015 por 1K chars (mismo que tts-1, pero mucho más natural).
  * Para 50 audios × ~3K chars = $2.25 total.
  *
  * Voz default: 'nova' (femenina cálida, acento Latinoamericano).
- * Alternativas naturales para SV: 'echo' (masculina profesional).
+ * Alternativas: 'coral' (femenina expresiva), 'sage' (femenina profesional),
+ *               'echo' (masculina), 'onyx' (masculina grave).
  *
  * Velocidad: 0.25 a 4.0. Default 1.0.
+ *
+ * `instructions`: prompt opcional para controlar tono, ritmo, énfasis.
+ * Si no se pasa, usa DEFAULT_INSTRUCTIONS (profe salvadoreña explicando con calma).
  *
  * Límite OpenAI: 4096 caracteres por llamada.
  */
 export async function generateTts(input: TtsInput): Promise<TtsResult> {
-  const { text, voice = 'nova', speed = 1.0 } = input;
+  const {
+    text,
+    voice = 'nova',
+    speed = 1.0,
+    instructions = DEFAULT_INSTRUCTIONS,
+  } = input;
 
   if (!VALID_VOICES.includes(voice)) {
     throw new Error(`Voz inválida: ${voice}. Usá: ${VALID_VOICES.join(', ')}`);
@@ -60,6 +78,7 @@ export async function generateTts(input: TtsInput): Promise<TtsResult> {
     model: TTS_MODEL,
     voice,
     input: truncated,
+    instructions,
     speed: Math.max(0.25, Math.min(4.0, speed)),
     response_format: 'mp3',
   });
