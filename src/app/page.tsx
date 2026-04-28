@@ -1,13 +1,15 @@
-import { ambientGlow, brandGradient, shadows } from '@/lib/design-tokens';
+import { ambientGlow, brandGradient, orbGradient, shadows } from '@/lib/design-tokens';
 
 /**
  * Landing pública de Chero — placeholder durante el build (días 1-6).
  * Día 7 esto se reemplaza por la landing completa con hero, features, pricing, etc.
+ *
+ * Aesthetic v2: dark con orb central morado + glow ambient sutil.
  */
 export default function HomePage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-black text-white">
-      {/* Ambient glow background — naranja + magenta + morado */}
+    <div className="relative min-h-screen overflow-hidden bg-[#0a0a14] text-white">
+      {/* Ambient glow background — violeta + indigo profundo */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{ background: ambientGlow }}
@@ -15,29 +17,42 @@ export default function HomePage() {
 
       <main className="relative z-10 mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-6 py-24 text-center">
         {/* Badge */}
-        <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm text-white/80 backdrop-blur">
+        <div className="mb-12 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm text-white/80 backdrop-blur">
           <span className="relative flex h-2 w-2">
             <span
               className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
-              style={{ background: '#FF6B1A' }}
+              style={{ background: '#c084fc' }}
             />
             <span
               className="relative inline-flex h-2 w-2 rounded-full"
-              style={{ background: '#FF6B1A' }}
+              style={{ background: '#c084fc' }}
             />
           </span>
           Beta · Lanzamiento próximo
         </div>
 
-        {/* Logo + Brand */}
-        <div className="mb-6 flex items-center gap-3">
+        {/* ORB central — el hero visual */}
+        <div className="relative mb-12 flex items-center justify-center">
           <div
-            className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl"
-            style={{ background: brandGradient, boxShadow: shadows.glowMagenta }}
-          >
-            🐎
-          </div>
-          <span className="text-2xl font-extrabold tracking-tight">El Chero</span>
+            className="orb-pulse h-48 w-48 rounded-full md:h-56 md:w-56"
+            style={{
+              background: orbGradient,
+              boxShadow: shadows.glowOrb,
+            }}
+          />
+          {/* Halo difuso alrededor */}
+          <div
+            className="pointer-events-none absolute h-72 w-72 rounded-full md:h-96 md:w-96"
+            style={{
+              background:
+                'radial-gradient(circle, rgba(147, 51, 234, 0.25) 0%, transparent 60%)',
+            }}
+          />
+        </div>
+
+        {/* Brand */}
+        <div className="mb-4 text-2xl font-bold tracking-tight text-white/90">
+          El Chero
         </div>
 
         {/* Tagline gigante */}

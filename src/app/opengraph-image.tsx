@@ -13,79 +13,68 @@ export default async function OpengraphImage() {
           width: '100%',
           height: '100%',
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#000000',
+          background: '#0a0a14',
           backgroundImage:
-            'radial-gradient(circle at 20% 50%, rgba(255, 107, 26, 0.35), transparent 45%), radial-gradient(circle at 80% 30%, rgba(255, 0, 128, 0.4), transparent 45%), radial-gradient(circle at 50% 80%, rgba(107, 15, 173, 0.5), transparent 50%)',
+            'radial-gradient(circle at 20% 20%, rgba(147, 51, 234, 0.4), transparent 50%), radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.30), transparent 55%), radial-gradient(circle at 50% 100%, rgba(76, 29, 149, 0.5), transparent 60%)',
           color: 'white',
           padding: 80,
+          gap: 60,
         }}
       >
-        {/* Logo + brand */}
+        {/* Orb central */}
+        <div
+          style={{
+            width: 280,
+            height: 280,
+            borderRadius: '50%',
+            background:
+              'radial-gradient(circle at 30% 30%, #c084fc 0%, transparent 50%), radial-gradient(circle at 70% 60%, #ec4899 0%, transparent 50%), radial-gradient(circle at 50% 80%, #22d3ee 0%, transparent 40%), linear-gradient(135deg, #6b21a8 0%, #1e1b4b 100%)',
+            boxShadow:
+              '0 0 100px rgba(192, 132, 252, 0.5), 0 0 60px rgba(236, 72, 153, 0.4)',
+            flexShrink: 0,
+          }}
+        />
+
+        {/* Texto */}
         <div
           style={{
             display: 'flex',
-            alignItems: 'center',
-            gap: 24,
-            marginBottom: 40,
+            flexDirection: 'column',
+            gap: 16,
+            flex: 1,
           }}
         >
-          <div
-            style={{
-              width: 100,
-              height: 100,
-              borderRadius: 24,
-              background:
-                'linear-gradient(135deg, #6B0FAD 0%, #FF0080 50%, #FF6B1A 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 60,
-              boxShadow: '0 0 80px rgba(255, 0, 128, 0.6)',
-            }}
-          >
-            🐎
-          </div>
-          <span style={{ fontSize: 64, fontWeight: 800 }}>El Chero</span>
-        </div>
-
-        {/* Tagline */}
-        <h1
-          style={{
-            fontSize: 80,
-            fontWeight: 900,
-            lineHeight: 1.05,
-            textAlign: 'center',
-            marginBottom: 32,
-            letterSpacing: '-0.04em',
-          }}
-        >
-          Apuntes con IA,
-          <br />
-          <span
-            style={{
-              backgroundImage:
-                'linear-gradient(135deg, #6B0FAD 0%, #FF0080 50%, #FF6B1A 100%)',
-              backgroundClip: 'text',
-              color: 'transparent',
-            }}
-          >
-            hechos a tu medida
+          <span style={{ fontSize: 42, fontWeight: 700, opacity: 0.9 }}>
+            El Chero
           </span>
-        </h1>
-
-        <p
-          style={{
-            fontSize: 28,
-            color: 'rgba(255, 255, 255, 0.6)',
-            textAlign: 'center',
-            maxWidth: 900,
-          }}
-        >
-          Para AVANZO, parciales y períodos · Hecho en El Salvador 🇸🇻
-        </p>
+          <h1
+            style={{
+              fontSize: 78,
+              fontWeight: 900,
+              lineHeight: 1.05,
+              margin: 0,
+              letterSpacing: '-0.04em',
+            }}
+          >
+            Apuntes con IA,
+            <br />
+            <span
+              style={{
+                backgroundImage:
+                  'linear-gradient(135deg, #6b21a8 0%, #9333ea 50%, #c084fc 100%)',
+                backgroundClip: 'text',
+                color: 'transparent',
+              }}
+            >
+              hechos a tu medida
+            </span>
+          </h1>
+          <p style={{ fontSize: 24, color: 'rgba(255, 255, 255, 0.6)', margin: 0 }}>
+            AVANZO · Parciales · Períodos · 🇸🇻
+          </p>
+        </div>
       </div>
     ),
     { ...size },

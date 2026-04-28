@@ -1,22 +1,28 @@
 @import "tailwindcss";
 
-/* Chero — global styles
- * Paleta oficial: negro profundo + gradient naranja → magenta → morado
+/* Chero — global styles v2
+ * Paleta oficial: Aura-style morado profundo con orb gradient
  */
 
 :root {
-  --background: #000000;
+  --background: #0a0a14;
   --foreground: #ffffff;
 
-  /* Brand gradient stops */
-  --brand-orange: #FF6B1A;
-  --brand-magenta: #FF0080;
-  --brand-purple: #6B0FAD;
-  --brand-purple-dark: #2D0959;
+  /* Brand violeta */
+  --brand-primary: #9333ea;
+  --brand-primary-hover: #a855f7;
+  --brand-deep: #6b21a8;
+  --brand-soft: #c084fc;
+
+  /* Orb gradient stops */
+  --orb-magenta: #ec4899;
+  --orb-cyan: #22d3ee;
+  --orb-indigo: #4f46e5;
 
   /* Surfaces */
-  --surface: #0a0a0a;
-  --surface-high: #161616;
+  --surface: #14141f;
+  --surface-high: #1e1e2e;
+  --surface-elev: #27273a;
 }
 
 @theme inline {
@@ -38,24 +44,40 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Selección de texto con tono naranja brand */
+/* Selección de texto con tono violeta brand */
 ::selection {
-  background: rgba(255, 107, 26, 0.4);
+  background: rgba(147, 51, 234, 0.4);
   color: #ffffff;
 }
 
-/* Scrollbar discreto en dark theme */
+/* Scrollbar discreto en dark + violet theme */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: #0a0a14;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 0, 128, 0.25);
+  background: rgba(147, 51, 234, 0.25);
   border-radius: 5px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 0, 128, 0.5);
+  background: rgba(147, 51, 234, 0.5);
+}
+
+/* Animación sutil para el orb central — pulse leve continuo */
+@keyframes orb-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 0.92;
+  }
+}
+
+.orb-pulse {
+  animation: orb-pulse 4s ease-in-out infinite;
 }
