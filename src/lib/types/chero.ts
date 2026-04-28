@@ -2,7 +2,7 @@
  * Tipos compartidos del dominio Chero.
  */
 
-export type ChroMode = 'avanzo' | 'periodo' | 'parciales' | 'repaso';
+export type CheroMode = 'avanzo' | 'periodo' | 'parciales' | 'repaso';
 
 export type UserType = 'bachiller' | 'universitario';
 
@@ -23,7 +23,7 @@ export interface UserProfile {
 }
 
 export interface DetectedContext {
-  mode: ChroMode;
+  mode: CheroMode;
   subject: string;
   institution: string | null;
   year: number | null;

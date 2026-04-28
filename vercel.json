@@ -1,0 +1,28 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": ["iad1"],
+  "functions": {
+    "src/app/api/process/route.ts": {
+      "maxDuration": 300,
+      "memory": 1024
+    },
+    "src/app/api/generate-notes/route.ts": {
+      "maxDuration": 300,
+      "memory": 1024
+    },
+    "src/app/api/tts/route.ts": {
+      "maxDuration": 60,
+      "memory": 512
+    },
+    "src/app/api/cron/cleanup-audios/route.ts": {
+      "maxDuration": 60,
+      "memory": 512
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/cleanup-audios",
+      "schedule": "0 * * * *"
+    }
+  ]
+}

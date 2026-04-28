@@ -5,10 +5,10 @@ const MAX_TOTAL_USES = Number(process.env.MAX_TOTAL_USES ?? 50);
 const MAX_USES_PER_USER = Number(process.env.MAX_USES_PER_USER ?? 5);
 
 /**
- * Verifica si el usuario puede procesar un audio.
- * Chequea el counter global (50) y por usuario (5).
+ * Lee el estado de uso actual SIN incrementar.
+ * Útil para mostrar al usuario antes de subir un audio.
  */
-export async function checkUsage(userId: string): Promise<UsageStatus> {
+export async function readUsage(userId: string): Promise<UsageStatus> {
   const supabase = createSupabaseAdminClient();
 
   const [globalRes, userRes] = await Promise.all([
@@ -18,9 +18,6 @@ export async function checkUsage(userId: string): Promise<UsageStatus> {
 
   const totalUses = globalRes.data?.total_uses ?? 0;
   const userUses = userRes.data?.uses ?? 0;
-
-  const remainingGlobal = Math.max(0, MAX_TOTAL_USES - totalUses);
-  const remainingUser = Math.max(0, MAX_USES_PER_USER - userUses);
 
   let canProcess = true;
   let reason: UsageStatus['reason'];
@@ -36,25 +33,63 @@ export async function checkUsage(userId: string): Promise<UsageStatus> {
   return {
     total_uses: totalUses,
     user_uses: userUses,
-    remaining_global: remainingGlobal,
-    remaining_user: remainingUser,
+    remaining_global: Math.max(0, MAX_TOTAL_USES - totalUses),
+    remaining_user: Math.max(0, MAX_USES_PER_USER - userUses),
     can_process: canProcess,
     reason,
   };
 }
 
+interface TryIncrementResult {
+  success: boolean;
+  total_uses: number;
+  user_uses: number;
+  reason?: 'global_exhausted' | 'user_exhausted';
+}
+
 /**
- * Incrementa el counter global y del usuario atómicamente.
- * Llamar DESPUÉS de procesar el audio exitosamente.
+ * Verifica límites Y incrementa atómicamente en una sola transacción SQL.
+ *
+ * Usa el RPC `try_increment_usage` (ver scripts/sql/02-counter-rpcs.sql)
+ * que hace `SELECT ... FOR UPDATE` para evitar race conditions cuando varios
+ * usuarios procesan al mismo tiempo.
+ *
+ * Retorna { success, total_uses, user_uses, reason? }.
+ *
+ * Si success === false:
+ *   - reason === 'global_exhausted' → llegamos a 50 totales
+ *   - reason === 'user_exhausted'   → este user llegó a 5
+ *
+ * Si success === true: counters ya fueron incrementados en BD.
  */
-export async function incrementUsage(userId: string): Promise<void> {
+export async function tryIncrementUsage(userId: string): Promise<TryIncrementResult> {
   const supabase = createSupabaseAdminClient();
 
-  await Promise.all([
-    supabase.rpc('increment_global_counter'),
-    supabase.from('user_usage').upsert(
-      { user_id: userId, uses: 1, last_use: new Date().toISOString() },
-      { onConflict: 'user_id', ignoreDuplicates: false },
-    ),
-  ]);
+  const { data, error } = await supabase.rpc('try_increment_usage', {
+    p_user_id: userId,
+    p_max_global: MAX_TOTAL_USES,
+    p_max_user: MAX_USES_PER_USER,
+  });
+
+  if (error) {
+    throw new Error(`try_increment_usage RPC failed: ${error.message}`);
+  }
+
+  // El RPC devuelve JSONB con la forma { success, total_uses, user_uses, reason? }
+  return data as TryIncrementResult;
+}
+
+/**
+ * Decrementa los contadores en caso de error post-incremento.
+ * Si transcribimos pero algo falla después, refundimos el uso para no penalizar al user.
+ *
+ * Usa el RPC `refund_usage` que hace ambos decrementos atómicos y no baja de 0.
+ */
+export async function refundUsage(userId: string): Promise<void> {
+  const supabase = createSupabaseAdminClient();
+
+  const { error } = await supabase.rpc('refund_usage', { p_user_id: userId });
+  if (error) {
+    console.error('[refundUsage] RPC failed:', error);
+  }
 }
