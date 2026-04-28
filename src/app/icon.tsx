@@ -20,7 +20,8 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
+          background:
+            'linear-gradient(135deg, #6B0FAD 0%, #FF0080 50%, #FF6B1A 100%)',
           fontSize: 320,
           borderRadius: 96,
         }}

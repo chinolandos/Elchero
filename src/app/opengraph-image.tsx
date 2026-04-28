@@ -16,9 +16,9 @@ export default async function OpengraphImage() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#05060f',
+          background: '#000000',
           backgroundImage:
-            'radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.4), transparent 50%), radial-gradient(circle at 75% 75%, rgba(236, 72, 153, 0.3), transparent 50%)',
+            'radial-gradient(circle at 20% 50%, rgba(255, 107, 26, 0.35), transparent 45%), radial-gradient(circle at 80% 30%, rgba(255, 0, 128, 0.4), transparent 45%), radial-gradient(circle at 50% 80%, rgba(107, 15, 173, 0.5), transparent 50%)',
           color: 'white',
           padding: 80,
         }}
@@ -37,12 +37,13 @@ export default async function OpengraphImage() {
               width: 100,
               height: 100,
               borderRadius: 24,
-              background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
+              background:
+                'linear-gradient(135deg, #6B0FAD 0%, #FF0080 50%, #FF6B1A 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: 60,
-              boxShadow: '0 0 60px rgba(99, 102, 241, 0.5)',
+              boxShadow: '0 0 80px rgba(255, 0, 128, 0.6)',
             }}
           >
             🐎
@@ -66,7 +67,7 @@ export default async function OpengraphImage() {
           <span
             style={{
               backgroundImage:
-                'linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #f59e0b 100%)',
+                'linear-gradient(135deg, #6B0FAD 0%, #FF0080 50%, #FF6B1A 100%)',
               backgroundClip: 'text',
               color: 'transparent',
             }}
@@ -75,7 +76,6 @@ export default async function OpengraphImage() {
           </span>
         </h1>
 
-        {/* Subtitle */}
         <p
           style={{
             fontSize: 28,
