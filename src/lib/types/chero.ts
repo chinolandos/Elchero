@@ -50,7 +50,7 @@ export interface NoteConcept {
   example: string;
 }
 
-export interface ChroNote {
+export interface CheroNote {
   summary: string;
   concepts: NoteConcept[];
   questions: NoteQuestion[];
@@ -58,6 +58,11 @@ export interface ChroNote {
   quick_review: string;
   mermaid_chart: string | null;
 }
+
+/**
+ * @deprecated usar CheroNote — alias por compatibilidad
+ */
+export type ChroNote = CheroNote;
 
 export interface UsageStatus {
   total_uses: number;

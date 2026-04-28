@@ -128,8 +128,27 @@ writeFileSync(join(OUTPUT_DIR, 'system-prompt.md'), fullKB);
 writeFileSync(join(OUTPUT_DIR, 'system-prompt.txt'), fullKB.replace(/\r\n/g, '\n'));
 writeFileSync(join(OUTPUT_DIR, 'stats.json'), JSON.stringify(stats, null, 2));
 
+// También escribimos el KB como JSON importable para que las API routes
+// puedan hacer `import systemPrompt from '@/lib/kb/system-prompt.json'`
+// sin depender de fs.readFileSync en runtime.
+const KB_LIB_DIR = join(process.cwd(), 'src', 'lib', 'kb');
+const kbJsonPath = join(KB_LIB_DIR, 'system-prompt.json');
+writeFileSync(
+  kbJsonPath,
+  JSON.stringify(
+    {
+      built_at: stats.built_at,
+      tokens_estimated: stats.tokens_estimated,
+      content: fullKB.replace(/\r\n/g, '\n'),
+    },
+    null,
+    0,
+  ),
+);
+
 console.log('\n✅ KB consolidado guardado en:');
 console.log(`   - scripts/kb/output/system-prompt.md (${fullKB.length} chars)`);
 console.log(`   - scripts/kb/output/system-prompt.txt`);
 console.log(`   - scripts/kb/output/stats.json`);
+console.log(`   - src/lib/kb/system-prompt.json (importable desde routes)`);
 console.log('\n🎉 Build completo.');
