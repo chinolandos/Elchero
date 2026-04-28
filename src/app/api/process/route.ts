@@ -26,7 +26,16 @@ const ALLOWED_MIME_TYPES = new Set([
   'audio/opus',
 ]);
 
-const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // 25 MB (límite Whisper)
+const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // 25 MB (límite Whisper API)
+
+// ⚠️ NOTA sobre el body size limit en Vercel:
+// - Vercel Hobby: limite de body request es ~4.5 MB
+// - Vercel Pro: limite es ~10 MB (configurable hasta 100 MB con soporte)
+// - Whisper acepta hasta 25 MB
+//
+// El día 7 al upgradear a Pro, audios hasta 10 MB pasan directo al endpoint.
+// Para audios mayores: el frontend debe subir directo a Supabase Storage
+// con signed upload URL (sin pasar por nuestro API) — implementación post-pitch.
 
 /**
  * POST /api/process
