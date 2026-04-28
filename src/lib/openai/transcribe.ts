@@ -38,30 +38,35 @@ export async function transcribeAudio(
       ? audioFile
       : new File([audioFile], filename, { type: audioFile.type || 'audio/mpeg' });
 
+  // gpt-4o-mini-transcribe NO soporta verbose_json — solo json o text.
+  // Por eso no tenemos `duration` exacta del API.
   const response = await openai.audio.transcriptions.create({
     model: TRANSCRIBE_MODEL,
     file,
     language: 'es',
-    response_format: 'verbose_json',
+    response_format: 'json',
   });
 
-  // verbose_json nos da duración exacta para calcular costo
   const text = response.text ?? '';
-  const durationSeconds: number = (response as { duration?: number }).duration ?? 0;
+
+  // Estimación de duración por tamaño del archivo.
+  // Asumimos bitrate típico ~64-128 kbps (8-16 KB/seg).
+  // Promedio conservador: ~12 KB/seg → bytes / 12000 = segundos.
+  const durationSeconds = Math.max(1, sizeBytes / 12_000);
   const durationMinutes = durationSeconds / 60;
   const costUsd = durationMinutes * 0.003;
-
-  // Validar audio mínimo viable (<2 segundos = audio probablemente inútil)
-  if (durationSeconds < 2) {
-    throw new Error(
-      `Audio muy corto (${durationSeconds.toFixed(1)}s). Mínimo 2 segundos para procesar.`,
-    );
-  }
 
   // Validar que tengamos texto (audio en silencio absoluto = text vacío)
   if (!text.trim()) {
     throw new Error(
       'No se detectó voz en el audio. Asegurate que el audio no esté en silencio.',
+    );
+  }
+
+  // Validar que el audio no sea trivial (basado en duración estimada)
+  if (durationSeconds < 2) {
+    throw new Error(
+      `Audio muy corto (estimado ${durationSeconds.toFixed(1)}s). Mínimo 2 segundos para procesar.`,
     );
   }
 
