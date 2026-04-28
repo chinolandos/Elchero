@@ -100,7 +100,7 @@ export async function generateNotes(
   try {
     response = await anthropic.messages.create({
       model: CLAUDE_SONNET,
-      max_tokens: 8000,
+      max_tokens: 16000,
       system: [
         {
           type: 'text',
@@ -123,20 +123,48 @@ export async function generateNotes(
   }
 
   const rawText = textBlock.text.trim();
-  // Claude puede responder con markdown wrapper ```json ... ```
-  const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
+  const stopReason = response.stop_reason;
+
+  // Si Claude se quedó sin tokens, el JSON está truncado
+  if (stopReason === 'max_tokens') {
+    log.error('Claude hit max_tokens limit (output truncated)', {
+      output_tokens: response.usage.output_tokens,
+      raw_preview: rawText.slice(rawText.length - 300),
+    });
+    throw new Error(
+      'El apunte salió demasiado largo y se truncó. Intentá con un audio más corto.',
+    );
+  }
+
+  // Claude puede responder con markdown wrapper ```json ... ``` o texto extra
+  // Buscamos desde el primer { hasta el último } para capturar todo el JSON
+  const firstBrace = rawText.indexOf('{');
+  const lastBrace = rawText.lastIndexOf('}');
+
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
     log.error('No JSON found in Claude response', {
-      preview: rawText.slice(0, 200),
+      preview: rawText.slice(0, 500),
+      stop_reason: stopReason,
     });
     throw new Error('Claude no devolvió JSON válido');
   }
 
+  const jsonText = rawText.slice(firstBrace, lastBrace + 1);
+
   let parsed: unknown;
   try {
-    parsed = JSON.parse(jsonMatch[0]);
-  } catch {
-    throw new Error('JSON malformado en respuesta de Claude');
+    parsed = JSON.parse(jsonText);
+  } catch (parseErr) {
+    log.error('JSON parse failed', {
+      err: parseErr instanceof Error ? parseErr.message : String(parseErr),
+      json_preview_start: jsonText.slice(0, 200),
+      json_preview_end: jsonText.slice(jsonText.length - 200),
+      total_chars: jsonText.length,
+      stop_reason: stopReason,
+    });
+    throw new Error(
+      'JSON malformado en respuesta de Claude. Probá de nuevo o reportalo.',
+    );
   }
 
   const validated = NoteSchema.safeParse(parsed);
