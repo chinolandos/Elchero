@@ -23,14 +23,27 @@ CONTEXTO DEL SISTEMA EDUCATIVO SV:
 - AVANZO: prueba nacional MINED para 2° año bachillerato. Se aplica el 28-29 de octubre cada año.
 - Universidades: ESEN, UCA, UES, UDB, UEES, UFG, UTEC, UNICAES, UJMD. Sistema de parciales por semestre.
 
-REGLAS DE DETECCIÓN:
+REGLAS DE DETECCIÓN (en orden de prioridad):
+
+REGLA 0 — MENCIONES EXPLÍCITAS DEL HABLANTE (sobreescriben TODO lo demás):
+- Si el audio menciona literalmente "AVANZO", "para AVANZO", "entra en AVANZO" → modo "avanzo" con confianza ≥85.
+- Si menciona "primer/segundo/tercer/cuarto período", "examen de período" → modo "periodo" con confianza ≥85.
+- Si menciona "parcial", "parciales", "examen parcial" → modo "parciales" con confianza ≥85.
+- Si menciona "repaso", "tutoría", "estoy estudiando por mi cuenta" → modo "repaso" con confianza ≥80.
+- Las menciones explícitas SIEMPRE ganan, aunque el perfil diga otra cosa. El hablante sabe para qué está estudiando.
+
+REGLA 1 — INFERENCIA POR PERFIL (solo si NO hay mención explícita):
 - Universitario → modo "parciales".
-- Bachiller 2° año + materia AVANZO (Precálculo, Ciudadanía y Valores, Ciencia y Tecnología, Lenguaje y Literatura, Inglés):
+- Bachiller 2° año + materia AVANZO (Precálculo, Ciudadanía y Valores, Ciencia y Tecnología, Lenguaje y Literatura, Inglés, Estudios Sociales, Matemática, Ciencias Naturales):
   - Si faltan ≤90 días para AVANZO de octubre → modo "avanzo"
-  - Si faltan >90 días → modo "periodo" (preparándose en períodos normales)
+  - Si faltan >90 días → modo "periodo"
 - Bachiller 1° año o tercer ciclo → modo "periodo".
-- Si la transcripción es claramente una sesión de tutoría o repaso libre → modo "repaso".
-- Si la materia detectada NO está en las materias actuales del perfil → bajar confianza significativamente.
+- Sin perfil claro y materia clásica de bachillerato → modo "repaso".
+
+REGLA 2 — CONFIANZA:
+- Subject debe coincidir con tema real del audio (no inventes).
+- Si la materia detectada NO está en las materias actuales del perfil → bajar confianza ~20 puntos.
+- Confianza alta (≥85) solo si: hay mención explícita del modo, O el audio + perfil coinciden claramente.
 
 DEVOLVÉ SOLAMENTE JSON con esta estructura exacta, sin texto antes ni después, sin markdown:
 {
@@ -123,6 +136,19 @@ ${transcriptSnippet.slice(0, 1500)}`;
     );
   }
 
+  // Override determinístico por menciones explícitas (más confiable que el LLM)
+  const lower = transcriptSnippet.toLowerCase();
+  const explicit = detectExplicitMode(lower);
+  if (explicit && explicit !== validated.data.mode) {
+    log.info('Mode override by explicit mention', {
+      llm_said: validated.data.mode,
+      explicit,
+      llm_confidence: validated.data.confidence,
+    });
+    validated.data.mode = explicit;
+    validated.data.confidence = Math.max(validated.data.confidence, 90);
+  }
+
   log.info('Detected context', {
     mode: validated.data.mode,
     subject: validated.data.subject,
@@ -131,4 +157,21 @@ ${transcriptSnippet.slice(0, 1500)}`;
   });
 
   return validated.data;
+}
+
+/**
+ * Busca menciones literales del modo en la transcripción.
+ * Si el hablante dice "para AVANZO", "entra en AVANZO", etc., debería ser detectivo.
+ */
+function detectExplicitMode(
+  text: string,
+): 'avanzo' | 'periodo' | 'parciales' | null {
+  // AVANZO: variantes "avanzo", "para avanzo", "entra en avanzo"
+  if (/\bavanzo\b/.test(text)) return 'avanzo';
+  // Período: "examen de período", "primer/segundo/tercer/cuarto período"
+  if (/\b(primer|segundo|tercer|cuarto)\s+per[ií]odo\b/.test(text)) return 'periodo';
+  if (/\bexamen\s+de\s+per[ií]odo\b/.test(text)) return 'periodo';
+  // Parciales: "parcial", "parciales", "examen parcial"
+  if (/\bparcial(es)?\b/.test(text)) return 'parciales';
+  return null;
 }
