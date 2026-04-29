@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
+import {
+  createSupabaseServerClient,
+  createSupabaseAdminClient,
+} from '@/lib/supabase/server';
 import { refundUsage } from '@/lib/usage/check';
 import { verifyProcessToken } from '@/lib/auth/process-token';
 import { createLogger } from '@/lib/logger';
@@ -59,7 +62,7 @@ export async function POST(req: NextRequest) {
 
   // Verificar token — sin esto, cualquiera podría llamar a refund desde el cliente
   const tokenCheck = verifyProcessToken(process_token, user.id, transcript);
-  if (!tokenCheck.ok) {
+  if (!tokenCheck.ok || !tokenCheck.tokenHash) {
     log.warn('Cancel called with invalid token', {
       userId: user.id,
       reason: tokenCheck.reason,
@@ -70,6 +73,51 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // CLAIM single-use del token. Si ya fue consumido por otro caller (genera
+  // o cancel), no hacemos refund duplicado. Esto cierra el bug C2 donde un
+  // user podía llamar /cancel N veces y restar del counter global N veces.
+  const admin = createSupabaseAdminClient();
+  const { data: claimOk, error: claimError } = await admin.rpc(
+    'consume_token_atomic',
+    {
+      p_token_hash: tokenCheck.tokenHash,
+      p_user_id: user.id,
+      p_consumed_for: 'cancel',
+    },
+  );
+
+  if (claimError) {
+    log.error('consume_token_atomic RPC failed in cancel', {
+      err: claimError.message,
+    });
+    return NextResponse.json(
+      {
+        error: 'token_claim_failed',
+        message: 'Error temporal. Intentá de nuevo.',
+      },
+      { status: 500 },
+    );
+  }
+
+  if (claimOk === false) {
+    // El token ya fue consumido (por generate-notes exitoso o por un cancel previo).
+    // No refund — sería duplicado. Devolvemos 409 informativo.
+    log.info('Cancel called on already-consumed token', {
+      userId: user.id,
+      reason,
+    });
+    return NextResponse.json(
+      {
+        success: false,
+        already_consumed: true,
+        message:
+          'Este audio ya fue procesado o cancelado antes. No corresponde refund.',
+      },
+      { status: 409 },
+    );
+  }
+
+  // Token claim OK — primer cancel. Hacemos refund y registramos.
   const refund = await refundUsage(user.id);
 
   log.info('Process cancelled and refunded', {

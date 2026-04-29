@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
+import {
+  createSupabaseServerClient,
+  createSupabaseAdminClient,
+} from '@/lib/supabase/server';
 import { generateNotes } from '@/lib/anthropic/generate';
 import { verifyProcessToken } from '@/lib/auth/process-token';
+import { refundUsage } from '@/lib/usage/check';
 import { createLogger } from '@/lib/logger';
 import type { UserProfile } from '@/lib/types/chero';
 
@@ -96,7 +100,7 @@ export async function POST(req: NextRequest) {
     // abuso directo del endpoint con transcripts inventados (que costaría
     // tokens de Sonnet sin tocar el counter de usos).
     const tokenCheck = verifyProcessToken(process_token, user.id, transcript);
-    if (!tokenCheck.ok) {
+    if (!tokenCheck.ok || !tokenCheck.tokenHash) {
       log.warn('process_token verification failed', {
         userId: user.id,
         reason: tokenCheck.reason,
@@ -111,14 +115,71 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Cargar perfil del usuario
+    const tokenHash = tokenCheck.tokenHash;
+
+    // 3. CLAIM ATÓMICO del token (single-use). Lo hacemos ANTES de gastar
+    //    Sonnet para prevenir replay attacks que cuesten plata.
+    //    Si claim falla (token ya consumido), bail out inmediato — no se
+    //    gastó nada de Sonnet.
+    //    Si Sonnet/insert fallan DESPUÉS → liberamos el token (rollback)
+    //    para que el user pueda reintentar.
+    const admin = createSupabaseAdminClient();
+    const { data: claimOk, error: claimError } = await admin.rpc(
+      'consume_token_atomic',
+      {
+        p_token_hash: tokenHash,
+        p_user_id: user.id,
+        p_consumed_for: 'generate_notes',
+      },
+    );
+
+    if (claimError) {
+      log.error('consume_token_atomic RPC failed', { err: claimError.message });
+      return NextResponse.json(
+        {
+          error: 'token_claim_failed',
+          message: 'Error de seguridad. Intentá de nuevo en un momento.',
+        },
+        { status: 500 },
+      );
+    }
+
+    if (claimOk === false) {
+      log.warn('Token replay attempt blocked', {
+        userId: user.id,
+        tokenHash: tokenHash.slice(0, 16),
+      });
+      return NextResponse.json(
+        {
+          error: 'token_already_consumed',
+          message:
+            'Este audio ya generó un apunte. Si querés otro, procesá un audio nuevo.',
+        },
+        { status: 409 },
+      );
+    }
+
+    // Helper: si algo falla después del claim, liberamos el token para que
+    // el user pueda reintentar (no perder uso por error nuestro).
+    const releaseToken = async () => {
+      try {
+        await admin.from('consumed_process_tokens').delete().eq('token_hash', tokenHash);
+      } catch (err) {
+        log.warn('release token failed (non-blocking)', {
+          err: err instanceof Error ? err.message : String(err),
+        });
+      }
+    };
+
+    // 4. Cargar perfil del usuario
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .maybeSingle();
 
-    // 4. Generar apunte con Claude Sonnet 4.6 + KB cacheado
+    // 5. Generar apunte con Claude Sonnet 4.6 + KB cacheado.
+    //    Si falla → liberamos token + refund del counter.
     let result: Awaited<ReturnType<typeof generateNotes>>;
     try {
       result = await generateNotes({
@@ -130,6 +191,8 @@ export async function POST(req: NextRequest) {
       log.error('Generation failed', {
         err: err instanceof Error ? err.message : String(err),
       });
+      await releaseToken();
+      const refund = await refundUsage(user.id);
       return NextResponse.json(
         {
           error: 'generation_failed',
@@ -137,12 +200,13 @@ export async function POST(req: NextRequest) {
             err instanceof Error
               ? err.message
               : 'No se pudo generar el apunte. Probá de nuevo.',
+          refund_ok: refund.ok,
         },
         { status: 500 },
       );
     }
 
-    // 5. Guardar el apunte en Supabase
+    // 6. Guardar el apunte en Supabase. Si falla → liberamos token + refund.
     const { note } = result;
     const { data: insertedNote, error: insertError } = await supabase
       .from('notes')
@@ -166,15 +230,21 @@ export async function POST(req: NextRequest) {
 
     if (insertError) {
       log.error('Insert failed', { err: insertError.message });
+      await releaseToken();
+      const refund = await refundUsage(user.id);
       return NextResponse.json(
         {
           error: 'persist_failed',
           message:
             'El apunte se generó pero no pudimos guardarlo. Refrescá y probá de nuevo.',
+          refund_ok: refund.ok,
         },
         { status: 500 },
       );
     }
+
+    // Token ya está consumido (claim al inicio del flow). No hace falta
+    // marcarlo de nuevo. Si llegamos acá, todo OK end-to-end.
 
     const elapsedMs = Date.now() - startedAt;
     log.info('Note generated and persisted', {

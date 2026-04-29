@@ -82,6 +82,17 @@ export interface VerifyResult {
   ok: boolean;
   reason?: 'malformed' | 'invalid_signature' | 'expired' | 'wrong_user' | 'wrong_transcript';
   payload?: TokenPayload;
+  /** SHA-256 del token completo. Usar con consume_token_atomic RPC para single-use. */
+  tokenHash?: string;
+}
+
+/**
+ * Hashea el token completo (payload.signature) para guardarlo en
+ * `consumed_process_tokens`. Usamos SHA-256 para que el hash sea de longitud
+ * fija y no expongamos el secret indirectamente.
+ */
+export function hashToken(token: string): string {
+  return createHash('sha256').update(token, 'utf8').digest('hex');
 }
 
 /**
@@ -91,6 +102,9 @@ export interface VerifyResult {
  *   - expiración
  *   - user_id coincide
  *   - transcript_hash coincide con el transcript actual
+ *
+ * Retorna además el `tokenHash` para que el caller pueda hacer el mark-as-consumed
+ * atómico (single-use enforcement) sin volver a hashear.
  */
 export function verifyProcessToken(
   token: string,
@@ -128,5 +142,5 @@ export function verifyProcessToken(
     return { ok: false, reason: 'wrong_transcript' };
   }
 
-  return { ok: true, payload };
+  return { ok: true, payload, tokenHash: hashToken(token) };
 }
