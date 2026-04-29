@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
 import { useRecorder } from '@/lib/audio/use-recorder';
+import type { QualityReport } from '@/lib/audio/quality-check';
 import { orbGradient, shadows } from '@/lib/design-tokens';
 import { cn } from '@/lib/utils';
 import type { CheroNote, DetectedContext } from '@/lib/types/chero';
@@ -18,6 +19,7 @@ type Phase =
   | 'recording'
   | 'reviewing'
   | 'transcribing'
+  | 'quality_warning'
   | 'generating'
   | 'tts'
   | 'done'
@@ -51,6 +53,14 @@ export function CaptureClient({
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Latch para prevenir doble submit por doble-click rápido en "Sí, generar apunte"
   const submittingRef = useRef(false);
+  // Datos del /api/process que persisten mientras el user decide en quality_warning
+  interface PendingProcessData {
+    transcript: { text: string; duration_minutes: number };
+    detected: DetectedContext;
+    process_token: string;
+    quality: QualityReport;
+  }
+  const [pendingProcess, setPendingProcess] = useState<PendingProcessData | null>(null);
 
   const usesLeft = remainingUser;
   const exhausted = usesLeft <= 0;
@@ -133,7 +143,7 @@ export function CaptureClient({
     setErrorMsg(null);
 
     try {
-      // 1. Transcribir + detectar contexto
+      // 1. Transcribir + detectar contexto + análisis de calidad
       const formData = new FormData();
       const file = new File([audioToUse.blob], audioToUse.filename, {
         type: audioToUse.mime,
@@ -150,17 +160,54 @@ export function CaptureClient({
         throw new Error(processData.message ?? 'Falló la transcripción');
       }
 
-      // 2. Generar apunte (mandando process_token para que /api/generate-notes
-      // valide que el transcript viene de un /api/process legítimo)
-      setPhase('generating');
+      const pending: PendingProcessData = {
+        transcript: processData.transcript,
+        detected: processData.detected,
+        process_token: processData.process_token,
+        quality: processData.quality,
+      };
+      setPendingProcess(pending);
+
+      // 2. Si la calidad es mala, pausamos en quality_warning para que el user decida
+      if (
+        processData.quality.verdict === 'noisy' ||
+        processData.quality.verdict === 'very_noisy'
+      ) {
+        setPhase('quality_warning');
+        submittingRef.current = false;
+        return; // el user decide manualmente — el flow continúa en continueGeneration()
+      }
+
+      // 3. Calidad OK → continuamos directo
+      await continueGeneration(pending);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error inesperado';
+      setErrorMsg(msg);
+      setPhase('error');
+      toast.error(msg);
+    } finally {
+      submittingRef.current = false;
+    }
+  };
+
+  /**
+   * Segunda mitad del flow — generate + tts. Se llama:
+   *   - automáticamente si quality === 'clean'
+   *   - manualmente desde QualityWarningScreen si el user decide "Generar igual"
+   */
+  const continueGeneration = async (pending: PendingProcessData) => {
+    setPhase('generating');
+    setErrorMsg(null);
+
+    try {
       const generateRes = await fetch('/api/generate-notes', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          transcript: processData.transcript.text,
-          detected: processData.detected,
-          audio_duration_minutes: processData.transcript.duration_minutes,
-          process_token: processData.process_token,
+          transcript: pending.transcript.text,
+          detected: pending.detected,
+          audio_duration_minutes: pending.transcript.duration_minutes,
+          process_token: pending.process_token,
         }),
       });
       const generateData = await generateRes.json();
@@ -169,7 +216,7 @@ export function CaptureClient({
         throw new Error(generateData.message ?? 'Falló la generación del apunte');
       }
 
-      // 3. TTS (no bloqueante — si falla, igual tenemos el apunte)
+      // TTS (no bloqueante — si falla, igual tenemos el apunte)
       setPhase('tts');
       let ttsAudioUrl: string | undefined;
       try {
@@ -192,18 +239,17 @@ export function CaptureClient({
       setResult({
         noteId: generateData.note_id,
         note: generateData.note,
-        detected: processData.detected,
+        detected: pending.detected,
         ttsAudioUrl,
       });
       setPhase('done');
+      setPendingProcess(null);
       toast.success('¡Tu apunte está listo!');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error inesperado';
       setErrorMsg(msg);
       setPhase('error');
       toast.error(msg);
-    } finally {
-      submittingRef.current = false;
     }
   };
 
@@ -213,6 +259,7 @@ export function CaptureClient({
     setResult(null);
     setErrorMsg(null);
     setPendingFile(null);
+    setPendingProcess(null);
     recorder.cancel();
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -252,6 +299,32 @@ export function CaptureClient({
           recorderResult={recorder.result}
           onConfirm={submitForProcessing}
           onCancel={reset}
+        />
+      )}
+
+      {phase === 'quality_warning' && pendingProcess && (
+        <QualityWarningScreen
+          quality={pendingProcess.quality}
+          transcriptPreview={pendingProcess.transcript.text}
+          onContinue={() => continueGeneration(pendingProcess)}
+          onCancel={async () => {
+            // Refund del counter — el user no llegó a generar apunte
+            try {
+              await fetch('/api/process/cancel', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                  process_token: pendingProcess.process_token,
+                  transcript: pendingProcess.transcript.text,
+                  reason: 'quality_rejected',
+                }),
+              });
+              toast.success('Te devolvimos el uso. Probá grabar de nuevo.');
+            } catch {
+              // No bloqueante — el reset igual procede
+            }
+            reset();
+          }}
         />
       )}
 
@@ -305,6 +378,12 @@ function Header({
           className="text-xs text-white/60 transition-colors hover:text-white"
         >
           Mis apuntes
+        </Link>
+        <Link
+          href="/perfil"
+          className="text-xs text-white/60 transition-colors hover:text-white"
+        >
+          Perfil
         </Link>
         <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs">
           <span className="text-white/60">Usos:</span>{' '}
@@ -560,6 +639,108 @@ function ReviewScreen({
       <p className="max-w-md text-xs text-white/40">
         Esto va a tardar 1-3 minutos. No cierres la pestaña — te avisamos cuando
         esté listo.
+      </p>
+    </div>
+  );
+}
+
+function QualityWarningScreen({
+  quality,
+  transcriptPreview,
+  onContinue,
+  onCancel,
+}: {
+  quality: QualityReport;
+  transcriptPreview: string;
+  onContinue: () => void;
+  onCancel: () => void;
+}) {
+  const isVeryNoisy = quality.verdict === 'very_noisy';
+  const accentColor = isVeryNoisy ? 'red' : 'amber';
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-6 py-8 text-center">
+      <div
+        className={cn(
+          'flex h-20 w-20 items-center justify-center rounded-full text-3xl',
+          isVeryNoisy
+            ? 'bg-red-500/20 text-red-300'
+            : 'bg-amber-500/20 text-amber-300',
+        )}
+      >
+        {isVeryNoisy ? '⚠️' : '👂'}
+      </div>
+
+      <div>
+        <h2 className="mb-2 text-2xl font-bold">
+          {isVeryNoisy ? 'El audio tiene mucho ruido' : 'El audio tiene algo de ruido'}
+        </h2>
+        <p className="max-w-md text-white/70">{quality.message}</p>
+      </div>
+
+      {/* Indicadores detectados */}
+      <div className="flex flex-wrap justify-center gap-2">
+        {quality.signals.map((signal) => (
+          <span
+            key={signal}
+            className={cn(
+              'rounded-full border px-3 py-1 text-xs',
+              isVeryNoisy
+                ? 'border-red-500/40 bg-red-500/10 text-red-200'
+                : 'border-amber-500/40 bg-amber-500/10 text-amber-200',
+            )}
+          >
+            {signal}
+          </span>
+        ))}
+      </div>
+
+      {/* Score visual */}
+      <div className="w-full max-w-md">
+        <div className="mb-1 flex items-center justify-between text-xs text-white/40">
+          <span>Calidad de audio</span>
+          <span className="font-mono">{quality.score}/100</span>
+        </div>
+        <div className="h-2 w-full overflow-hidden rounded-full bg-white/5">
+          <div
+            className={cn(
+              'h-full rounded-full transition-all',
+              quality.score >= 70 && 'bg-green-500',
+              quality.score >= 40 && quality.score < 70 && 'bg-amber-500',
+              quality.score < 40 && 'bg-red-500',
+            )}
+            style={{ width: `${quality.score}%` }}
+          />
+        </div>
+      </div>
+
+      <details className="w-full max-w-md text-left">
+        <summary className="cursor-pointer text-sm text-white/50 transition-colors hover:text-white/80">
+          Ver primeras palabras de la transcripción
+        </summary>
+        <p className="mt-3 max-h-32 overflow-y-auto rounded-lg border border-white/10 bg-white/[0.03] p-3 text-xs leading-relaxed text-white/60">
+          {transcriptPreview.slice(0, 500)}
+          {transcriptPreview.length > 500 ? '…' : ''}
+        </p>
+      </details>
+
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Button size="lg" onClick={onContinue} className="px-8">
+          Generar igual
+        </Button>
+        <Button
+          size="lg"
+          variant="ghost"
+          onClick={onCancel}
+          className="text-white/70 hover:bg-white/5 hover:text-white"
+        >
+          Empezar de nuevo
+        </Button>
+      </div>
+
+      <p className="max-w-md text-xs text-white/40">
+        💡 Si empezás de nuevo te devolvemos el uso — la transcripción ya está
+        hecha pero no gastamos el apunte completo.
       </p>
     </div>
   );

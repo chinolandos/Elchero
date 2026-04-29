@@ -4,6 +4,7 @@ import { transcribeAudio } from '@/lib/openai/transcribe';
 import { detectContext } from '@/lib/anthropic/detect';
 import { tryIncrementUsage, refundUsage } from '@/lib/usage/check';
 import { issueProcessToken } from '@/lib/auth/process-token';
+import { analyzeTranscriptQuality } from '@/lib/audio/quality-check';
 import { createLogger } from '@/lib/logger';
 import type { UserProfile } from '@/lib/types/chero';
 
@@ -239,7 +240,16 @@ export async function POST(req: NextRequest) {
       confidence: detected.confidence,
     });
 
-    // 7. Emitir token firmado para que /api/generate-notes valide que el
+    // 7. Análisis de calidad de la transcripción (regex-based, costo $0)
+    const quality = analyzeTranscriptQuality(transcript.text);
+    log.info('Quality analyzed', {
+      userId: user.id,
+      verdict: quality.verdict,
+      score: quality.score,
+      signals: quality.signals,
+    });
+
+    // 8. Emitir token firmado para que /api/generate-notes valide que el
     // transcript viene de un /api/process legítimo (no inventado por el cliente).
     const processToken = issueProcessToken(user.id, transcript.text);
 
@@ -251,6 +261,7 @@ export async function POST(req: NextRequest) {
         cost_usd: transcript.costUsd,
       },
       detected,
+      quality,
       usage: {
         total_uses: usage.total_uses,
         user_uses: usage.user_uses,
