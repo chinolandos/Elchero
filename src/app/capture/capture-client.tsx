@@ -62,6 +62,33 @@ export function CaptureClient({
   }
   const [pendingProcess, setPendingProcess] = useState<PendingProcessData | null>(null);
 
+  // Si el user intenta salir / refrescar / cerrar pestaña durante quality_warning,
+  // hacemos best-effort cancel + refund. sendBeacon garantiza el envío incluso
+  // durante unload (XHR/fetch suelen morir antes de mandar).
+  useEffect(() => {
+    if (phase !== 'quality_warning' || !pendingProcess) return;
+
+    const handler = (e: BeforeUnloadEvent) => {
+      const payload = JSON.stringify({
+        process_token: pendingProcess.process_token,
+        transcript: pendingProcess.transcript.text,
+        reason: 'user_cancelled',
+      });
+      try {
+        const blob = new Blob([payload], { type: 'application/json' });
+        navigator.sendBeacon('/api/process/cancel', blob);
+      } catch {
+        // best-effort, no podemos retry
+      }
+      // Aviso al user para que confirme que quiere salir
+      e.preventDefault();
+      e.returnValue = 'Si salís ahora, te devolvemos el uso pero perdés la transcripción.';
+    };
+
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [phase, pendingProcess]);
+
   const usesLeft = remainingUser;
   const exhausted = usesLeft <= 0;
 
@@ -725,22 +752,47 @@ function QualityWarningScreen({
       </details>
 
       <div className="flex flex-col gap-3 sm:flex-row">
-        <Button size="lg" onClick={onContinue} className="px-8">
-          Generar igual
-        </Button>
-        <Button
-          size="lg"
-          variant="ghost"
-          onClick={onCancel}
-          className="text-white/70 hover:bg-white/5 hover:text-white"
-        >
-          Empezar de nuevo
-        </Button>
+        {/* Cuando very_noisy, el botón dominante es "Empezar de nuevo".
+            Cuando solo noisy, el dominante es "Generar igual" (es bastante
+            probable que el LLM saque buen apunte). */}
+        {isVeryNoisy ? (
+          <>
+            <Button
+              size="lg"
+              onClick={onCancel}
+              className="px-8"
+            >
+              Empezar de nuevo (te devolvemos el uso)
+            </Button>
+            <Button
+              size="lg"
+              variant="ghost"
+              onClick={onContinue}
+              className="text-white/60 hover:bg-white/5 hover:text-white"
+            >
+              Generar igual (gasta 1 uso)
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button size="lg" onClick={onContinue} className="px-8">
+              Generar igual
+            </Button>
+            <Button
+              size="lg"
+              variant="ghost"
+              onClick={onCancel}
+              className="text-white/70 hover:bg-white/5 hover:text-white"
+            >
+              Empezar de nuevo
+            </Button>
+          </>
+        )}
       </div>
 
       <p className="max-w-md text-xs text-white/40">
-        💡 Si empezás de nuevo te devolvemos el uso — la transcripción ya está
-        hecha pero no gastamos el apunte completo.
+        💡 Si empezás de nuevo te devolvemos el uso. Si generás igual, se
+        confirma el uso aunque el apunte salga con huecos.
       </p>
     </div>
   );

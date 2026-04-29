@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Spinner } from '@/components/ui/spinner';
 
 interface MermaidChartProps {
@@ -19,7 +19,6 @@ interface MermaidChartProps {
  */
 export function MermaidChart({ source }: MermaidChartProps) {
   const reactId = useId();
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const [svg, setSvg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -117,7 +116,6 @@ export function MermaidChart({ source }: MermaidChartProps) {
       {/* dangerouslySetInnerHTML es seguro acá: mermaid corre con securityLevel='strict'
           que sanitiza el output. Además el source viene de Claude (nuestro LLM, no del user). */}
       <div
-        ref={containerRef}
         className="mermaid-container w-full overflow-x-auto [&_svg]:mx-auto [&_svg]:max-w-full"
         dangerouslySetInnerHTML={{ __html: svg ?? '' }}
       />

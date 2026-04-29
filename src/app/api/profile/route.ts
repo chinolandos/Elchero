@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
+import {
+  createSupabaseServerClient,
+  createSupabaseAdminClient,
+} from '@/lib/supabase/server';
 import { createLogger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
@@ -179,11 +182,19 @@ export async function PUT(req: NextRequest) {
 /**
  * DELETE /api/profile
  *
- * Elimina la cuenta del usuario y TODOS sus datos (apuntes, perfil, audio).
- * Cumplimiento Ley Datos SV: derecho al olvido.
+ * Elimina la cuenta del usuario y TODOS sus datos.
+ * Cumplimiento Ley Datos SV (Nov 2024): derecho al olvido REAL.
  *
- * Cascade: el FK ON DELETE CASCADE en profiles + notes + user_usage borra todo.
- * El user de auth.users se mantiene (Supabase Auth no borra automáticamente).
+ * Cómo funciona:
+ *   1. Listar y borrar TTS audios del bucket público tts-output
+ *   2. Llamar admin.auth.admin.deleteUser(user.id) — esto borra
+ *      auth.users → ON DELETE CASCADE → profiles + notes + user_usage
+ *      todo se elimina en una transacción atómica
+ *   3. La sesión del user queda invalidada automáticamente
+ *
+ * Esto reemplaza el flow anterior que solo borraba public.profiles
+ * (lo cual NO eliminaba auth.users, ni notes, ni user_usage — un user
+ * podía re-loguear y ver sus apuntes intactos).
  */
 export async function DELETE() {
   try {
@@ -200,27 +211,55 @@ export async function DELETE() {
       );
     }
 
-    // Borramos profile — el CASCADE elimina notes y user_usage también
-    const { error: deleteError } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('id', user.id);
+    const admin = createSupabaseAdminClient();
 
-    if (deleteError) {
-      log.error('Profile delete failed', { err: deleteError.message });
+    // 1. Limpiar audios TTS del bucket público (no se cascade-deletean
+    //    automáticamente — Supabase Storage es independiente de la DB).
+    try {
+      const { data: files } = await admin.storage
+        .from('tts-output')
+        .list(user.id, { limit: 100 });
+      if (files && files.length > 0) {
+        const paths = files.map((f) => `${user.id}/${f.name}`);
+        const { error: removeError } = await admin.storage
+          .from('tts-output')
+          .remove(paths);
+        if (removeError) {
+          log.warn('TTS bucket cleanup failed (non-blocking)', {
+            err: removeError.message,
+          });
+        }
+      }
+    } catch (err) {
+      log.warn('TTS bucket cleanup threw (non-blocking)', {
+        err: err instanceof Error ? err.message : String(err),
+      });
+    }
+
+    // 2. Borrar auth.users — el CASCADE limpia profiles, notes, user_usage
+    //    en una sola transacción atómica. Esto es lo que faltaba.
+    const { error: deleteAuthError } = await admin.auth.admin.deleteUser(user.id);
+
+    if (deleteAuthError) {
+      log.error('Auth user delete failed', {
+        err: deleteAuthError.message,
+        userId: user.id,
+      });
       return NextResponse.json(
         {
           error: 'delete_failed',
-          message: 'No se pudo eliminar la cuenta.',
+          message: 'No se pudo eliminar la cuenta. Intentá de nuevo.',
         },
         { status: 500 },
       );
     }
 
-    // Sign out el user actual
+    // 3. Sign out (limpia las cookies del client)
     await supabase.auth.signOut();
 
-    log.info('Account deleted', { userId: user.id });
+    log.info('Account fully deleted (auth + cascade + tts)', {
+      userId: user.id,
+    });
 
     return NextResponse.json({
       success: true,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,8 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isEditingTranscript, setIsEditingTranscript] = useState(false);
   const [editedTranscript, setEditedTranscript] = useState(transcript ?? '');
+  // Latch contra doble-click rápido (header + modal pueden ambos disparar regenerate)
+  const regeneratingRef = useRef(false);
 
   const hasTranscript = !!transcript;
 
@@ -57,6 +59,9 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
       toast.error('Este apunte no tiene transcripción guardada.');
       return;
     }
+    // Latch: si ya hay un regenerate en curso (desde header o modal), ignorar
+    if (regeneratingRef.current) return;
+    regeneratingRef.current = true;
     setIsRegenerating(true);
     try {
       const body =
@@ -77,6 +82,7 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Error al regenerar');
     } finally {
+      regeneratingRef.current = false;
       setIsRegenerating(false);
     }
   };
@@ -134,6 +140,11 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
           onChange={setEditedTranscript}
           isSaving={isRegenerating}
           onCancel={() => {
+            // Si el user editó algo, confirmar antes de cerrar
+            const dirty = editedTranscript !== (transcript ?? '');
+            if (dirty && !confirm('Tenés cambios sin guardar. ¿Salir igual?')) {
+              return;
+            }
             setIsEditingTranscript(false);
             setEditedTranscript(transcript ?? '');
           }}
