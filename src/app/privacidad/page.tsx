@@ -55,9 +55,20 @@ export default function PrivacidadPage() {
             </a>.
           </p>
           <p>
-            Esta política cumple con la <strong>Ley de Protección de Datos
-            Personales de El Salvador</strong> (Decreto Legislativo No. 91,
-            vigente desde noviembre de 2024).
+            Esta política cumple con la{' '}
+            <strong>Ley para la Protección de Datos Personales</strong> de El
+            Salvador (
+            <a
+              href="https://www.asamblea.gob.sv/sites/default/files/documents/decretos/7A4FBD85-7E1B-46BE-9408-6FC549E53E00.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              Decreto Legislativo N.° 144
+            </a>
+            , aprobado el 12 de noviembre de 2024 y vigente desde el 28 de
+            noviembre de 2024). El órgano supervisor es la{' '}
+            <strong>Agencia Estatal de Ciberseguridad (ACE)</strong>.
           </p>
         </Section>
 
@@ -65,9 +76,10 @@ export default function PrivacidadPage() {
           <p>Cuando usás Chero, procesamos los siguientes datos:</p>
           <ul className="ml-5 list-disc space-y-2">
             <li>
-              <strong>Cuenta:</strong> tu email (vía Google OAuth) y un
-              identificador único asignado por Supabase Auth. NO guardamos tu
-              contraseña — Google maneja la autenticación.
+              <strong>Cuenta:</strong> tu email, un identificador único de
+              Supabase Auth, y los metadatos básicos que Google provee al
+              autenticarte (nombre y avatar URL si los tenés públicos). NO
+              guardamos tu contraseña — Google maneja la autenticación.
             </li>
             <li>
               <strong>Perfil:</strong> tu edad (para validar mayoría de edad y
@@ -173,6 +185,14 @@ export default function PrivacidadPage() {
             <strong>Vercel</strong> (Estados Unidos) aloja la aplicación pero NO
             tiene acceso a tu contenido — solo procesa los requests cifrados.
           </p>
+          <p className="mt-3 text-xs text-white/50">
+            <strong>Sobre transferencia internacional:</strong> los 3
+            proveedores procesan datos en Estados Unidos. Operan bajo cláusulas
+            estándar de protección de datos y políticas de privacidad
+            equivalentes a las exigencias de la Ley salvadoreña. Al usar Chero,
+            consentís expresamente esta transferencia internacional según el
+            artículo 38 del Decreto Legislativo N.° 144.
+          </p>
         </Section>
 
         <Section title="5. Cuánto tiempo guardamos tus datos">
@@ -191,55 +211,83 @@ export default function PrivacidadPage() {
               borra cuando borrás el apunte o regenerás el contenido.
             </li>
             <li>
-              <strong>Logs operacionales:</strong> 90 días en Vercel y Supabase
-              (estándar industry). Después se purgan.
+              <strong>Logs operacionales:</strong> son temporales según la
+              política de retención de nuestros proveedores de hosting (Vercel
+              y Supabase) — entre 1 y 7 días según el plan contratado. Se
+              purgan automáticamente después de ese período.
             </li>
           </ul>
         </Section>
 
-        <Section title="6. Tus derechos">
-          <p>Como titular de tus datos personales, tenés derecho a:</p>
+        <Section title="6. Tus derechos (ARCO-POL)">
+          <p>
+            La Ley salvadoreña te reconoce 7 derechos sobre tus datos personales,
+            conocidos como <strong>ARCO-POL</strong>:
+          </p>
           <ul className="ml-5 list-disc space-y-2">
             <li>
-              <strong>Acceder</strong> a los datos que tenemos sobre vos. En tu
-              perfil podés ver toda la información asociada a tu cuenta.
-            </li>
-            <li>
-              <strong>Rectificar</strong> tus datos (cambiar edad, materias,
-              voz preferida, etc.) desde la página{' '}
+              <strong>A — Acceso:</strong> ver qué datos tenemos sobre vos.
+              Toda tu info está en{' '}
               <Link href="/perfil" className="text-primary hover:underline">
                 /perfil
-              </Link>.
+              </Link>
+              ; cualquier dato adicional lo solicitás por email.
             </li>
             <li>
-              <strong>Eliminar</strong> tu cuenta y todos los datos asociados
-              ("derecho al olvido"). Andá a{' '}
+              <strong>R — Rectificación:</strong> corregir datos incorrectos
+              (edad, materias, voz preferida, carrera) desde{' '}
               <Link href="/perfil" className="text-primary hover:underline">
                 /perfil
-              </Link>{' '}
-              → Eliminar mi cuenta. Esto borra de forma permanente: cuenta de
-              Supabase Auth, perfil, todos los apuntes, transcripciones, audios
-              TTS y registros de uso.
+              </Link>
+              .
             </li>
             <li>
-              <strong>Portar</strong> tus apuntes — en cada apunte podés copiar
-              el texto y los conceptos. Soporte de exportación a JSON viene
-              próximamente.
-            </li>
-            <li>
-              <strong>Oponerte</strong> al tratamiento. Si no querés que
-              procesemos un dato específico, escribinos a{' '}
+              <strong>C — Cancelación:</strong> retirar el consentimiento al
+              tratamiento de un dato específico. Si querés que dejemos de usar
+              algún dato sin eliminar la cuenta entera, escribinos a{' '}
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
                 className="text-primary hover:underline"
               >
                 {CONTACT_EMAIL}
-              </a>.
+              </a>
+              .
+            </li>
+            <li>
+              <strong>O — Oposición:</strong> oponerte al tratamiento de tus
+              datos para finalidades específicas. Como NO usamos tus datos para
+              marketing/perfilamiento/IA training, normalmente no aplica, pero
+              tu derecho está garantizado.
+            </li>
+            <li>
+              <strong>P — Portabilidad:</strong> recibir tus datos en formato
+              estructurado para llevarlos a otro servicio. Cada apunte podés
+              copiarlo desde{' '}
+              <Link href="/library" className="text-primary hover:underline">
+                /library
+              </Link>
+              ; exportación masiva a JSON disponible bajo solicitud por email.
+            </li>
+            <li>
+              <strong>O — Olvido digital:</strong> eliminar de forma permanente
+              tu cuenta y todos los datos asociados. Andá a{' '}
+              <Link href="/perfil" className="text-primary hover:underline">
+                /perfil
+              </Link>{' '}
+              → "Eliminar mi cuenta". Esto borra atómicamente: cuenta auth,
+              perfil, apuntes, transcripciones, audios TTS y registros de uso
+              (sin posibilidad de recuperación).
+            </li>
+            <li>
+              <strong>L — Limitación temporal:</strong> pedir que limitemos el
+              uso de tus datos por un plazo determinado (ej: mientras se
+              resuelve una disputa). Solicitar por email.
             </li>
           </ul>
           <p className="mt-4">
-            Respondemos solicitudes en un plazo máximo de{' '}
-            <strong>15 días hábiles</strong>.
+            Respondemos a solicitudes ARCO-POL en un plazo máximo de{' '}
+            <strong>15 días hábiles</strong>, según lo establece el Decreto
+            Legislativo N.° 144.
           </p>
         </Section>
 
@@ -324,9 +372,10 @@ export default function PrivacidadPage() {
           </p>
           <p>
             Si considerás que tus derechos no fueron atendidos correctamente,
-            podés presentar una denuncia ante la <strong>Defensoría del
-            Consumidor</strong> de El Salvador, autoridad competente para
-            protección de datos personales.
+            podés presentar una denuncia ante la{' '}
+            <strong>Agencia Estatal de Ciberseguridad (ACE)</strong>, autoridad
+            competente para protección de datos personales en El Salvador
+            (Decreto Legislativo N.° 144, art. 50 y ss.).
           </p>
         </Section>
 

@@ -235,6 +235,12 @@ export default function TerminosPage() {
             </a>{' '}
             para intentar resolver el problema directamente.
           </p>
+          <p>
+            Para reclamos específicamente sobre tratamiento de datos personales,
+            la autoridad competente es la <strong>Agencia Estatal de
+            Ciberseguridad (ACE)</strong> según la Ley para la Protección de
+            Datos Personales (Decreto Legislativo N.° 144).
+          </p>
         </Section>
 
         <Section title="10. Cambios a estos términos">
