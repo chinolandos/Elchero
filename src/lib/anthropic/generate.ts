@@ -6,6 +6,7 @@ import type {
   UserProfile,
 } from '@/lib/types/chero';
 import { createLogger } from '@/lib/logger';
+import { parseLLMJson } from '@/lib/utils/parse-llm-json';
 import kbData from '@/lib/kb/system-prompt.json';
 
 const log = createLogger('anthropic/generate');
@@ -16,23 +17,48 @@ const SYSTEM_PROMPT = kbData.content as string;
 const KB_BUILT_AT = kbData.built_at as string;
 
 // ─── Schemas de validación del output de Claude ───
-const QuestionSchema = z.object({
-  type: z.enum([
-    'multiple_choice',
-    'open',
-    'completion',
-    'problem',
-    'essay',
-    'case',
-  ]),
-  prompt: z.string(),
-  options: z.array(z.string()).nullable(),
-  correct: z.string().nullable(),
-  justification: z.string(),
-});
+const QuestionSchema = z
+  .object({
+    type: z.enum([
+      'multiple_choice',
+      'open',
+      'completion',
+      'problem',
+      'essay',
+      'case',
+    ]),
+    prompt: z.string(),
+    options: z.array(z.string()).nullable(),
+    correct: z.string().nullable(),
+    justification: z.string(),
+  })
+  .superRefine((q, ctx) => {
+    // Audit fix M-C: para multiple_choice, EXIGIR options con 4 elementos y
+    // correct definido. Si Claude generaba 3 options o sin correct, el cliente
+    // mostraba la pregunta sin respuesta válida.
+    if (q.type === 'multiple_choice') {
+      if (!q.options || q.options.length !== 4) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['options'],
+          message: `multiple_choice requiere exactamente 4 opciones (recibió ${q.options?.length ?? 0})`,
+        });
+      }
+      if (!q.correct) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['correct'],
+          message: 'multiple_choice requiere "correct" indicando la opción correcta (A/B/C/D)',
+        });
+      }
+    }
+  });
 
 const NoteSchema = z.object({
-  summary: z.string().min(50),
+  // min 100 chars — captura summaries patológicos sin ser tan estricto que
+  // rompa para audios cortos legítimos (~30s). El prompt pide 3-5 párrafos
+  // (~500-800 chars) pero la red de seguridad del schema es 100.
+  summary: z.string().min(100),
   concepts: z
     .array(
       z.object({
@@ -46,7 +72,7 @@ const NoteSchema = z.object({
   flashcards: z
     .array(z.object({ front: z.string(), back: z.string() }))
     .min(5),
-  quick_review: z.string().min(20),
+  quick_review: z.string().min(50),
   mermaid_chart: z.string().nullable(),
 });
 
@@ -136,38 +162,24 @@ export async function generateNotes(
     );
   }
 
-  // Claude puede responder con markdown wrapper ```json ... ``` o texto extra
-  // Buscamos desde el primer { hasta el último } para capturar todo el JSON
-  const firstBrace = rawText.indexOf('{');
-  const lastBrace = rawText.lastIndexOf('}');
-
-  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
-    log.error('No JSON found in Claude response', {
-      preview: rawText.slice(0, 500),
-      stop_reason: stopReason,
-    });
-    throw new Error('Claude no devolvió JSON válido');
-  }
-
-  const jsonText = rawText.slice(firstBrace, lastBrace + 1);
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(jsonText);
-  } catch (parseErr) {
-    log.error('JSON parse failed', {
-      err: parseErr instanceof Error ? parseErr.message : String(parseErr),
-      json_preview_start: jsonText.slice(0, 200),
-      json_preview_end: jsonText.slice(jsonText.length - 200),
-      total_chars: jsonText.length,
+  // Audit fix M-D: usar parser robusto compartido (lib/utils/parse-llm-json).
+  const parseResult = parseLLMJson(rawText);
+  if (!parseResult.ok) {
+    log.error('LLM JSON parse failed', {
+      reason: parseResult.error?.reason,
+      message: parseResult.error?.message,
+      previewStart: parseResult.error?.previewStart,
+      previewEnd: parseResult.error?.previewEnd,
       stop_reason: stopReason,
     });
     throw new Error(
-      'JSON malformado en respuesta de Claude. Probá de nuevo o reportalo.',
+      parseResult.error?.reason === 'no_json_found'
+        ? 'Claude no devolvió JSON válido'
+        : 'JSON malformado en respuesta de Claude. Probá de nuevo o reportalo.',
     );
   }
 
-  const validated = NoteSchema.safeParse(parsed);
+  const validated = NoteSchema.safeParse(parseResult.parsed);
   if (!validated.success) {
     // Mensajes amigables al user para los mismatches más comunes.
     const issues = validated.error.issues;
@@ -205,16 +217,21 @@ export async function generateNotes(
   const cacheReadTokens = usage.cache_read_input_tokens ?? 0;
   const cacheWriteTokens = usage.cache_creation_input_tokens ?? 0;
 
-  // Pricing Claude Sonnet 4.6 (USD por 1M tokens):
-  //   input fresh:     $3.00
-  //   input cached:    $0.30 (90% off)
-  //   cache write:     $3.75 (1.25x)
-  //   output:          $15.00
+  // Pricing Claude Sonnet 4.6 (USD por 1M tokens) — actualizado 2026.
+  // Si Anthropic cambia precios, solo actualizar estas constantes.
+  // Source: https://docs.anthropic.com/en/docs/about-claude/pricing
+  const SONNET_PRICING = {
+    INPUT_PER_M: 3.0,        // input fresh
+    CACHED_INPUT_PER_M: 0.3, // input cached (90% off)
+    CACHE_WRITE_PER_M: 3.75, // cache creation (1.25x input)
+    OUTPUT_PER_M: 15.0,      // output
+  } as const;
+
   const costUsd =
-    (inputTokens * 3.0) / 1_000_000 +
-    (cacheReadTokens * 0.3) / 1_000_000 +
-    (cacheWriteTokens * 3.75) / 1_000_000 +
-    (outputTokens * 15.0) / 1_000_000;
+    (inputTokens * SONNET_PRICING.INPUT_PER_M) / 1_000_000 +
+    (cacheReadTokens * SONNET_PRICING.CACHED_INPUT_PER_M) / 1_000_000 +
+    (cacheWriteTokens * SONNET_PRICING.CACHE_WRITE_PER_M) / 1_000_000 +
+    (outputTokens * SONNET_PRICING.OUTPUT_PER_M) / 1_000_000;
 
   const cacheHit = cacheReadTokens > 0;
   const elapsedMs = Date.now() - startedAt;
@@ -277,7 +294,7 @@ Devolvé SOLAMENTE JSON válido, sin texto antes ni después, sin markdown wrapp
 Estructura requerida:
 \`\`\`json
 {
-  "summary": "string (3-5 párrafos en español salvadoreño con voseo)",
+  "summary": "string (3-5 párrafos en español salvadoreño con voseo, mínimo 200 caracteres)",
   "concepts": [
     { "name": "string", "definition": "string", "example": "string" }
   ],

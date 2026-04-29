@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { anthropic, CLAUDE_HAIKU } from './client';
 import type { DetectedContext, UserProfile } from '@/lib/types/chero';
 import { createLogger } from '@/lib/logger';
+import { parseLLMJson } from '@/lib/utils/parse-llm-json';
 
 const log = createLogger('anthropic/detect');
 
@@ -75,6 +76,11 @@ export async function detectContext(
     (nextAvanzo.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
   );
 
+  // Audit fix A-C: pasamos hasta 4000 chars (~10 min de habla) en vez de 1500.
+  // Antes Haiku solo veía el inicio del audio — si la clase comenzaba con
+  // saludo/avisos y el contenido real arrancaba después del minuto 2, el LLM
+  // subestimaba el subject. 4000 chars cubren la mayoría de los casos
+  // manteniendo Haiku rápido (latencia ~1-2s).
   const userPrompt = `FECHA ACTUAL: ${today.toISOString().slice(0, 10)}
 DÍAS HASTA PRÓXIMO AVANZO (28 oct): ${daysUntilAvanzo}
 
@@ -85,8 +91,8 @@ PERFIL DEL USUARIO:
 - Carrera: ${profile.career ?? 'N/A'}
 - Materias actuales: ${profile.subjects?.join(', ') ?? 'desconocidas'}
 
-PRIMERAS PALABRAS DEL AUDIO (transcripción):
-${transcriptSnippet.slice(0, 1500)}`;
+TRANSCRIPCIÓN DEL AUDIO (primeros ~10 min):
+${transcriptSnippet.slice(0, 4000)}`;
 
   let response;
   try {
@@ -110,26 +116,28 @@ ${transcriptSnippet.slice(0, 1500)}`;
 
   const rawText = textBlock.text.trim();
 
-  // Extraer JSON: Claude puede responder con markdown ```json ... ```, texto antes, etc.
-  const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    log.error('No JSON found in Claude response', { rawText });
-    throw new Error(`Claude devolvió respuesta sin JSON: ${rawText.slice(0, 200)}`);
+  // Audit fix M-D: usar parser robusto compartido (firstBrace/lastBrace).
+  // Antes: regex /\{[\s\S]*\}/ que falla si hay `}` dentro de strings del JSON.
+  const parseResult = parseLLMJson(rawText);
+  if (!parseResult.ok) {
+    log.error('LLM JSON parse failed', {
+      reason: parseResult.error?.reason,
+      message: parseResult.error?.message,
+      previewStart: parseResult.error?.previewStart,
+      previewEnd: parseResult.error?.previewEnd,
+    });
+    throw new Error(
+      parseResult.error?.reason === 'no_json_found'
+        ? `Claude devolvió respuesta sin JSON: ${rawText.slice(0, 200)}`
+        : 'JSON inválido en respuesta de Claude',
+    );
   }
 
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(jsonMatch[0]);
-  } catch (err) {
-    log.error('JSON parse failed', { match: jsonMatch[0], err });
-    throw new Error('JSON inválido en respuesta de Claude');
-  }
-
-  const validated = DetectSchema.safeParse(parsed);
+  const validated = DetectSchema.safeParse(parseResult.parsed);
   if (!validated.success) {
     log.error('Schema validation failed', {
       issues: validated.error.issues,
-      parsed,
+      parsed: parseResult.parsed,
     });
     throw new Error(
       `Estructura de respuesta inválida: ${validated.error.issues.map((i) => i.message).join(', ')}`,
