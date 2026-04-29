@@ -14,7 +14,9 @@ const log = createLogger('api/tts');
 
 const RequestBodySchema = z.object({
   note_id: z.string().uuid(),
-  voice: z.enum(['nova', 'echo', 'alloy', 'onyx', 'shimmer', 'fable']).optional(),
+  voice: z
+    .enum(['nova', 'echo', 'alloy', 'onyx', 'shimmer', 'fable', 'coral', 'sage'])
+    .optional(),
   include_concepts: z.boolean().optional(),
   include_examples: z.boolean().optional(),
 });

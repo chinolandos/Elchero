@@ -26,6 +26,20 @@ const ALLOWED_MIME_TYPES = new Set([
   'audio/opus',
 ]);
 
+/**
+ * Supabase Storage rechaza algunos MIME types "raros" que sí son válidos para Whisper
+ * (audio/x-m4a, audio/x-wav, audio/mpga). Normalizamos al canónico para que Storage
+ * los acepte. La transcripción usa el File original, no este normalizado.
+ */
+function normalizeStorageMime(mime: string): string {
+  const m = mime.toLowerCase();
+  if (m === 'audio/x-m4a' || m === 'audio/m4a') return 'audio/mp4';
+  if (m === 'audio/x-wav') return 'audio/wav';
+  if (m === 'audio/mpga' || m === 'audio/mp3') return 'audio/mpeg';
+  if (m === 'audio/opus') return 'audio/ogg';
+  return m || 'audio/mpeg';
+}
+
 const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // 25 MB (límite Whisper API)
 
 // ⚠️ NOTA sobre el body size limit en Vercel:
@@ -149,10 +163,11 @@ export async function POST(req: NextRequest) {
     const audioPath = `${user.id}/${Date.now()}-${safeFilename}`;
 
     const buffer = Buffer.from(await audioFile.arrayBuffer());
+    const storageMime = normalizeStorageMime(audioFile.type);
     const { error: uploadError } = await admin.storage
       .from('audios')
       .upload(audioPath, buffer, {
-        contentType: audioFile.type || 'audio/mpeg',
+        contentType: storageMime,
         upsert: false,
       });
 
