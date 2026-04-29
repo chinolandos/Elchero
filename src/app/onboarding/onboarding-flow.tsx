@@ -24,6 +24,10 @@ interface OnboardingState {
   age: number | null;
   has_guardian_consent: boolean;
   institution: string | null;
+  /** Flag interno: el user eligió "Otro/Otra" y va a escribir su institución a mano. */
+  institutionIsOther: boolean;
+  /** Texto custom cuando institutionIsOther === true. */
+  institutionOther: string;
   career: string | null;
   year: number | null;
   subjects: string[];
@@ -35,6 +39,8 @@ const INITIAL: OnboardingState = {
   age: null,
   has_guardian_consent: false,
   institution: null,
+  institutionIsOther: false,
+  institutionOther: '',
   career: null,
   year: null,
   subjects: [],
@@ -62,11 +68,18 @@ export function OnboardingFlow({ initialEmail }: OnboardingFlowProps) {
     state.age <= 99 &&
     (state.age >= 18 || state.has_guardian_consent);
 
-  const canAdvanceStep2 = state.institution !== null;
+  // Para avanzar de step 2: si eligió "Otro", el campo custom no puede estar vacío.
+  const canAdvanceStep2 = state.institutionIsOther
+    ? state.institutionOther.trim().length > 1
+    : state.institution !== null;
 
   const handleFinish = async () => {
     setIsSaving(true);
     try {
+      const finalInstitution = state.institutionIsOther
+        ? state.institutionOther.trim()
+        : state.institution;
+
       const res = await fetch('/api/profile', {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
@@ -74,7 +87,7 @@ export function OnboardingFlow({ initialEmail }: OnboardingFlowProps) {
           user_type: state.user_type,
           age: state.age,
           has_guardian_consent: state.has_guardian_consent,
-          institution: state.institution,
+          institution: finalInstitution,
           career: state.career,
           year: state.year,
           subjects: state.subjects,
@@ -219,9 +232,22 @@ function Step1({
           }}
           className="mt-2 max-w-[160px]"
         />
-        <p className="mt-2 text-xs text-white/40">
-          Edad mínima: 12 años (Ley de Protección de Datos SV).
-        </p>
+        {typeof state.age === 'number' && state.age < 12 && (
+          <p className="mt-2 text-xs text-red-400">
+            Edad mínima: 12 años (Ley de Protección de Datos SV).
+          </p>
+        )}
+        {typeof state.age === 'number' && state.age > 99 && (
+          <p className="mt-2 text-xs text-red-400">
+            La edad máxima permitida es 99.
+          </p>
+        )}
+        {(state.age === null ||
+          (state.age >= 12 && state.age <= 99)) && (
+          <p className="mt-2 text-xs text-white/40">
+            Edad mínima: 12 años (Ley de Protección de Datos SV).
+          </p>
+        )}
       </div>
 
       {isMinor && (
@@ -306,30 +332,49 @@ function Step2({
           {isUniversitario ? 'Universidad' : 'Colegio'}
         </Label>
         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {filteredInstitutions.map((inst) => (
-            <button
-              key={inst.value}
-              type="button"
-              onClick={() => update({ institution: inst.value })}
-              className={cn(
-                'rounded-lg border px-4 py-3 text-left text-sm transition-all',
-                state.institution === inst.value
-                  ? 'border-primary bg-primary/10 text-white'
-                  : 'border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10',
-              )}
-            >
-              {inst.label}
-            </button>
-          ))}
+          {filteredInstitutions.map((inst) => {
+            const isOtherOption = inst.value === 'Otro' || inst.value === 'Otra';
+            const isSelected = isOtherOption
+              ? state.institutionIsOther
+              : state.institution === inst.value && !state.institutionIsOther;
+            return (
+              <button
+                key={inst.value}
+                type="button"
+                onClick={() => {
+                  if (isOtherOption) {
+                    update({ institutionIsOther: true, institution: null });
+                  } else {
+                    update({
+                      institutionIsOther: false,
+                      institution: inst.value,
+                      institutionOther: '',
+                    });
+                  }
+                }}
+                className={cn(
+                  'rounded-lg border px-4 py-3 text-left text-sm transition-all',
+                  isSelected
+                    ? 'border-primary bg-primary/10 text-white'
+                    : 'border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10',
+                )}
+              >
+                {inst.label}
+              </button>
+            );
+          })}
         </div>
-        {state.institution === 'Otro' || state.institution === 'Otra' ? (
+        {state.institutionIsOther && (
           <Input
-            placeholder={isUniversitario ? 'Ej: Universidad Tecnológica' : 'Ej: Liceo Salvadoreño'}
-            value={state.institution === 'Otro' || state.institution === 'Otra' ? '' : state.institution ?? ''}
-            onChange={(e) => update({ institution: e.target.value })}
+            placeholder={
+              isUniversitario ? 'Ej: Universidad Tecnológica' : 'Ej: Liceo Salvadoreño'
+            }
+            value={state.institutionOther}
+            onChange={(e) => update({ institutionOther: e.target.value })}
             className="mt-3"
+            autoFocus
           />
-        ) : null}
+        )}
       </div>
 
       <div className="mb-6">

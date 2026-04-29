@@ -30,9 +30,12 @@ interface UseRecorderOptions {
  *   - 1 min ≈ 240 KB
  *   - 10 min ≈ 2.4 MB
  *   - 18 min ≈ 4.3 MB (cabe en Vercel Hobby 4.5MB)
+ *
+ * maxDurationSec defaultea a 1080 (18 min) — calculado para que el archivo
+ * resultante NO supere el límite de body de Vercel Hobby (4.5 MB).
  */
 export function useRecorder(options: UseRecorderOptions = {}) {
-  const { bitsPerSecond = 32000, maxDurationSec = 1200 } = options; // 20 min max
+  const { bitsPerSecond = 32000, maxDurationSec = 1080 } = options; // 18 min max
 
   const [state, setState] = useState<RecorderState>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -124,6 +127,21 @@ export function useRecorder(options: UseRecorderOptions = {}) {
 
     streamRef.current = stream;
     chunksRef.current = [];
+
+    // Si el user revoca el permiso mientras grabamos, los tracks emiten 'ended'.
+    // Detectamos eso y paramos la grabación con un mensaje claro.
+    stream.getAudioTracks().forEach((track) => {
+      track.onended = () => {
+        if (mediaRecorderRef.current?.state === 'recording') {
+          setErrorMessage(
+            'Se cortó el acceso al micrófono. Volvé a darle permiso y grabá de nuevo.',
+          );
+          setState('error');
+          mediaRecorderRef.current.stop();
+          cleanup();
+        }
+      };
+    });
 
     let recorder: MediaRecorder;
     try {

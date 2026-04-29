@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import Link from 'next/link';
 import { Spinner } from '@/components/ui/spinner';
@@ -43,12 +43,14 @@ export function CaptureClient({
   totalUserLimit,
   preferredVoice,
 }: CaptureClientProps) {
-  const recorder = useRecorder({ bitsPerSecond: 32000, maxDurationSec: 1200 });
+  const recorder = useRecorder({ bitsPerSecond: 32000, maxDurationSec: 1080 });
   const [phase, setPhase] = useState<Phase>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [result, setResult] = useState<FinalResult | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Latch para prevenir doble submit por doble-click rápido en "Sí, generar apunte"
+  const submittingRef = useRef(false);
 
   const usesLeft = remainingUser;
   const exhausted = usesLeft <= 0;
@@ -96,6 +98,10 @@ export function CaptureClient({
   };
 
   const submitForProcessing = async () => {
+    // Latch contra doble-click. Si ya estamos enviando, ignorar.
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+
     const audioToUse: { blob: Blob; filename: string; mime: string } | null = pendingFile
       ? {
           blob: pendingFile,
@@ -110,12 +116,16 @@ export function CaptureClient({
           }
         : null;
 
-    if (!audioToUse) return;
+    if (!audioToUse) {
+      submittingRef.current = false;
+      return;
+    }
 
     if (audioToUse.blob.size > VERCEL_HOBBY_BODY_LIMIT_BYTES) {
       toast.error(
         `El audio quedó en ${(audioToUse.blob.size / 1024 / 1024).toFixed(1)} MB — supera 4.5 MB. Hacé una grabación más corta o bajá el bitrate.`,
       );
+      submittingRef.current = false;
       return;
     }
 
@@ -140,7 +150,8 @@ export function CaptureClient({
         throw new Error(processData.message ?? 'Falló la transcripción');
       }
 
-      // 2. Generar apunte
+      // 2. Generar apunte (mandando process_token para que /api/generate-notes
+      // valide que el transcript viene de un /api/process legítimo)
       setPhase('generating');
       const generateRes = await fetch('/api/generate-notes', {
         method: 'POST',
@@ -148,6 +159,8 @@ export function CaptureClient({
         body: JSON.stringify({
           transcript: processData.transcript.text,
           detected: processData.detected,
+          audio_duration_minutes: processData.transcript.duration_minutes,
+          process_token: processData.process_token,
         }),
       });
       const generateData = await generateRes.json();
@@ -189,10 +202,13 @@ export function CaptureClient({
       setErrorMsg(msg);
       setPhase('error');
       toast.error(msg);
+    } finally {
+      submittingRef.current = false;
     }
   };
 
   const reset = () => {
+    submittingRef.current = false;
     setPhase('idle');
     setResult(null);
     setErrorMsg(null);
@@ -465,6 +481,27 @@ function ReviewScreen({
   const sizeMb = (sizeBytes / 1024 / 1024).toFixed(2);
   const filename = file?.name ?? 'grabación nueva';
   const durationSec = recorderResult?.durationSeconds;
+  const [hasClicked, setHasClicked] = useState(false);
+
+  // Genera URL temporal para reproducir el audio antes de procesarlo.
+  // Se libera al desmontar para no tener leaks.
+  const previewUrl = useMemo(() => {
+    const blob = file ?? recorderResult?.blob;
+    if (!blob) return null;
+    return URL.createObjectURL(blob);
+  }, [file, recorderResult]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const handleClick = () => {
+    if (hasClicked) return;
+    setHasClicked(true);
+    onConfirm();
+  };
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 py-8 text-center">
@@ -480,22 +517,40 @@ function ReviewScreen({
           <div>
             <div className="text-white/40">Duración</div>
             <div className="font-semibold">
-              {durationSec
-                ? `${Math.round(durationSec)} s`
-                : '—'}
+              {durationSec ? `${Math.round(durationSec)} s` : '—'}
             </div>
           </div>
         </div>
+
+        {previewUrl && (
+          <div className="mt-5">
+            <div className="mb-2 text-xs uppercase tracking-wider text-white/40">
+              Escuchá antes de procesar
+            </div>
+            <audio
+              controls
+              src={previewUrl}
+              className="w-full"
+              preload="metadata"
+            />
+          </div>
+        )}
       </div>
 
       <div className="flex gap-3">
-        <Button size="lg" onClick={onConfirm} className="px-8">
-          Sí, generar apunte
+        <Button
+          size="lg"
+          onClick={handleClick}
+          disabled={hasClicked}
+          className="px-8"
+        >
+          {hasClicked ? <Spinner size="sm" /> : 'Sí, generar apunte'}
         </Button>
         <Button
           size="lg"
           variant="ghost"
           onClick={onCancel}
+          disabled={hasClicked}
           className="text-white/60 hover:bg-white/5 hover:text-white"
         >
           Cancelar
