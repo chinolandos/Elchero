@@ -14,6 +14,11 @@ export const runtime = 'nodejs';
 
 const log = createLogger('api/notes/[id]/regenerate');
 
+// Rate limit: max regenerates por nota lifetime. Cada regenerate cuesta
+// ~$0.10 en Sonnet. 5 cubre usos legítimos (corregir 2-3 veces) con buffer.
+// Después de 5 → 429 al user.
+const MAX_REGENERATES_PER_NOTE = 5;
+
 const RegenerateBodySchema = z.object({
   /** Si el user editó el transcript antes de regenerar, lo manda acá. */
   edited_transcript: z.string().min(20).optional(),
@@ -93,6 +98,56 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
       { status: 400 },
     );
   }
+
+  // Rate limit ATÓMICO: try_increment_regenerate solo incrementa si
+  // regenerate_count < MAX. Si ya alcanzó el límite, retorna NULL → 429.
+  // Esto previene abuso: cada regenerate cuesta ~$0.10 en Sonnet, sin
+  // límite un user puede gastar $100+ por nota.
+  const admin = createSupabaseAdminClient();
+  const { data: newCount, error: rateLimitError } = await admin.rpc(
+    'try_increment_regenerate',
+    {
+      p_note_id: id,
+      p_user_id: user.id,
+      p_max: MAX_REGENERATES_PER_NOTE,
+    },
+  );
+
+  if (rateLimitError) {
+    log.error('try_increment_regenerate RPC failed', {
+      err: rateLimitError.message,
+      noteId: id,
+    });
+    return NextResponse.json(
+      {
+        error: 'rate_limit_check_failed',
+        message: 'Error temporal. Intentá de nuevo en un momento.',
+      },
+      { status: 500 },
+    );
+  }
+
+  if (newCount === null) {
+    log.warn('Regenerate rate limit hit', {
+      userId: user.id,
+      noteId: id,
+      max: MAX_REGENERATES_PER_NOTE,
+    });
+    return NextResponse.json(
+      {
+        error: 'regenerate_limit_exceeded',
+        message: `Llegaste al límite de ${MAX_REGENERATES_PER_NOTE} regeneraciones para este apunte. Si querés un apunte distinto, generá uno nuevo desde el audio.`,
+      },
+      { status: 429 },
+    );
+  }
+
+  log.info('Regenerate count incremented', {
+    userId: user.id,
+    noteId: id,
+    newCount,
+    max: MAX_REGENERATES_PER_NOTE,
+  });
 
   const transcriptToUse = edited_transcript ?? note.transcript;
 
@@ -205,7 +260,6 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 
   // Cleanup del audio TTS viejo (no bloqueante)
   if (note.audio_tts_url) {
-    const admin = createSupabaseAdminClient();
     const audioPath = `${user.id}/${id}.mp3`;
     const { error: removeError } = await admin.storage
       .from('tts-output')
