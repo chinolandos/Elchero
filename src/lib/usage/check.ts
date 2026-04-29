@@ -1,11 +1,13 @@
 import { createSupabaseAdminClient } from '@/lib/supabase/server';
 import { createLogger } from '@/lib/logger';
+import { env } from '@/lib/env';
 import type { UsageStatus } from '@/lib/types/chero';
 
 const log = createLogger('usage/check');
 
-const MAX_TOTAL_USES = Number(process.env.MAX_TOTAL_USES ?? 50);
-const MAX_USES_PER_USER = Number(process.env.MAX_USES_PER_USER ?? 5);
+// Defaults beta: 50 totales, 5 por user. Overridable via env vars.
+const MAX_TOTAL_USES = env.MAX_TOTAL_USES ?? 50;
+const MAX_USES_PER_USER = env.MAX_USES_PER_USER ?? 5;
 
 /**
  * Lee el estado de uso actual SIN incrementar.

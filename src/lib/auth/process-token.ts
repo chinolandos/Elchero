@@ -22,6 +22,7 @@
  */
 
 import { createHmac, createHash, timingSafeEqual } from 'node:crypto';
+import { env } from '@/lib/env';
 
 const TOKEN_TTL_SEC = 15 * 60; // 15 minutos
 
@@ -31,15 +32,13 @@ interface TokenPayload {
   exp: number;
 }
 
+/**
+ * Secret HMAC para firmar tokens. Preferir PROCESS_TOKEN_SECRET dedicado.
+ * Fallback a SUPABASE_SECRET_KEY si el user no setó el dedicado todavía
+ * (el env zod schema lo deja como opcional, así que ambos paths son válidos).
+ */
 function getSecret(): string {
-  const s =
-    process.env.PROCESS_TOKEN_SECRET ?? process.env.SUPABASE_SECRET_KEY;
-  if (!s) {
-    throw new Error(
-      'No se encontró PROCESS_TOKEN_SECRET ni SUPABASE_SECRET_KEY para firmar tokens.',
-    );
-  }
-  return s;
+  return env.PROCESS_TOKEN_SECRET ?? env.SUPABASE_SECRET_KEY;
 }
 
 function hashTranscript(transcript: string): string {

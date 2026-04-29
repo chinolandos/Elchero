@@ -1,11 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { env } from '@/lib/env';
 
-if (!process.env.ANTHROPIC_API_KEY) {
-  throw new Error('ANTHROPIC_API_KEY no está configurada en environment');
-}
-
+// La validación de ANTHROPIC_API_KEY (formato sk-ant-*) ocurre en lib/env.ts
+// al primer import. Si falla, fail-fast con mensaje descriptivo.
 export const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+  apiKey: env.ANTHROPIC_API_KEY,
 });
 
 /**

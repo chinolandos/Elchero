@@ -1,5 +1,9 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { env } from '@/lib/env';
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('supabase/server');
 
 /**
  * Supabase client para Server Components y API Routes.
@@ -9,8 +13,8 @@ export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
@@ -21,8 +25,12 @@ export async function createSupabaseServerClient() {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options),
             );
-          } catch {
-            // Server Components no pueden setear cookies — ignorar
+          } catch (err) {
+            // Server Components no pueden setear cookies — esto es esperable.
+            // Pero si pasa en otro contexto, queremos saber por qué.
+            log.warn('cookie setAll failed', {
+              err: err instanceof Error ? err.message : String(err),
+            });
           }
         },
       },
@@ -38,8 +46,8 @@ export async function createSupabaseServerClient() {
  */
 export function createSupabaseAdminClient() {
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SECRET_KEY!,
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.SUPABASE_SECRET_KEY,
     {
       cookies: {
         getAll() {

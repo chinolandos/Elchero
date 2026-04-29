@@ -1,9 +1,8 @@
 import OpenAI from 'openai';
+import { env } from '@/lib/env';
 
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error('OPENAI_API_KEY no está configurada en environment');
-}
-
+// La validación de OPENAI_API_KEY (formato sk-*) ocurre en lib/env.ts
+// al primer import. Si falla, fail-fast con mensaje descriptivo.
 export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: env.OPENAI_API_KEY,
 });
