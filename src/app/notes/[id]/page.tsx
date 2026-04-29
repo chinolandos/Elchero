@@ -5,6 +5,8 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { buttonVariants } from '@/components/ui/button';
 import { ambientGlow, orbGradient, shadows } from '@/lib/design-tokens';
 import type { CheroNote, CheroMode } from '@/lib/types/chero';
+import { MermaidChart } from './mermaid-chart';
+import { NoteActions } from './note-actions';
 
 interface NotePageProps {
   params: Promise<{ id: string }>;
@@ -32,6 +34,7 @@ interface DbNote extends CheroNote {
   detected_confidence: number | null;
   audio_tts_url: string | null;
   audio_duration_minutes: number | null;
+  transcript: string | null;
   created_at: string;
 }
 
@@ -80,12 +83,7 @@ export default async function NotePage({ params }: NotePageProps) {
           >
             ← Mis apuntes
           </Link>
-          <Link
-            href="/capture"
-            className={buttonVariants({ size: 'sm', variant: 'ghost', className: 'text-white/70 hover:bg-white/5 hover:text-white' })}
-          >
-            + Nuevo apunte
-          </Link>
+          <NoteActions noteId={note.id} transcript={note.transcript} />
         </header>
 
         {/* Title block */}
@@ -248,17 +246,10 @@ export default async function NotePage({ params }: NotePageProps) {
           </div>
         </Section>
 
-        {/* Mermaid chart (como bloque por ahora, render visual en Día 6 con mermaid.js) */}
+        {/* Mermaid chart — render visual con mermaid.js (Client Component) */}
         {note.mermaid_chart && (
           <Section title="🗺️ Mapa mental">
-            <div className="rounded-xl border border-white/10 bg-[#070710] p-5">
-              <pre className="overflow-x-auto whitespace-pre-wrap text-xs font-mono text-white/70">
-                {note.mermaid_chart}
-              </pre>
-              <p className="mt-3 text-xs text-white/40">
-                💡 El render visual del mapa mental llega en la próxima versión.
-              </p>
-            </div>
+            <MermaidChart source={note.mermaid_chart} />
           </Section>
         )}
 
