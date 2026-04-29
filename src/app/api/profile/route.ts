@@ -17,7 +17,7 @@ const ProfileUpdateSchema = z.object({
   year: z.number().int().min(1).max(5).nullable().optional(),
   subjects: z.array(z.string().max(100)).max(15).optional(),
   preferred_voice: z
-    .enum(['nova', 'echo', 'alloy', 'onyx', 'shimmer', 'fable'])
+    .enum(['nova', 'echo', 'alloy', 'onyx', 'shimmer', 'fable', 'coral', 'sage'])
     .optional(),
 });
 

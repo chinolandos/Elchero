@@ -85,9 +85,17 @@ export default async function LibraryPage() {
               <div className="text-xs text-white/40">{list.length} apunte{list.length === 1 ? '' : 's'}</div>
             </div>
           </div>
-          <Link href="/capture" className={buttonVariants({ size: 'sm' })}>
-            + Nuevo apunte
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/perfil"
+              className="text-xs text-white/60 transition-colors hover:text-white"
+            >
+              Perfil
+            </Link>
+            <Link href="/capture" className={buttonVariants({ size: 'sm' })}>
+              + Nuevo apunte
+            </Link>
+          </div>
         </header>
 
         <h1 className="mb-2 text-4xl font-black tracking-tight md:text-5xl">
