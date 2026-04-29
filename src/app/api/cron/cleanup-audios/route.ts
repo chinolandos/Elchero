@@ -18,12 +18,28 @@ export const maxDuration = 60;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 export async function GET(req: NextRequest) {
-  // Verificación: solo Vercel Cron puede llamar esto
+  // Verificación de auth — fail-closed: si CRON_SECRET no está seteado en env,
+  // el endpoint queda DESACTIVADO (503), no abierto.
+  // Si CRON_SECRET existe pero el header no coincide → 401.
+  // Solo si CRON_SECRET existe Y coincide → continuar.
+  const cronSecret = process.env.CRON_SECRET;
   const authHeader = req.headers.get('authorization');
-  const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
 
-  if (process.env.CRON_SECRET && authHeader !== expectedAuth) {
-    log.warn('Unauthorized cron request');
+  if (!cronSecret) {
+    log.error('CRON_SECRET not configured — cron endpoint disabled');
+    return NextResponse.json(
+      {
+        error: 'cron_disabled',
+        message: 'Cron secret no configurado en server.',
+      },
+      { status: 503 },
+    );
+  }
+
+  if (authHeader !== `Bearer ${cronSecret}`) {
+    log.warn('Unauthorized cron request', {
+      hasHeader: !!authHeader,
+    });
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
@@ -84,9 +100,30 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // También limpiamos tokens consumidos antiguos (>24h) para no acumular
+    // filas innecesarias en consumed_process_tokens.
+    let tokensDeleted = 0;
+    try {
+      const { data: tokensCount, error: tokensError } = await admin.rpc(
+        'cleanup_consumed_tokens',
+      );
+      if (tokensError) {
+        log.warn('cleanup_consumed_tokens failed (non-blocking)', {
+          err: tokensError.message,
+        });
+      } else if (typeof tokensCount === 'number') {
+        tokensDeleted = tokensCount;
+      }
+    } catch (err) {
+      log.warn('cleanup_consumed_tokens threw (non-blocking)', {
+        err: err instanceof Error ? err.message : String(err),
+      });
+    }
+
     log.info('Cleanup complete', {
-      totalScanned,
-      totalDeleted,
+      audios_scanned: totalScanned,
+      audios_deleted: totalDeleted,
+      tokens_deleted: tokensDeleted,
       errors: errors.length,
     });
 
@@ -94,6 +131,7 @@ export async function GET(req: NextRequest) {
       success: true,
       total_scanned: totalScanned,
       total_deleted: totalDeleted,
+      tokens_deleted: tokensDeleted,
       errors,
       cutoff: cutoff.toISOString(),
     });
