@@ -27,12 +27,21 @@ const ALLOWED_MIME_TYPES = new Set([
 ]);
 
 /**
+ * Devuelve el "tipo base" de un MIME type, sin parámetros como `;codecs=opus`.
+ * Ej: 'audio/webm;codecs=opus' → 'audio/webm'
+ */
+function baseMime(mime: string): string {
+  return mime.toLowerCase().split(';')[0].trim();
+}
+
+/**
  * Supabase Storage rechaza algunos MIME types "raros" que sí son válidos para Whisper
- * (audio/x-m4a, audio/x-wav, audio/mpga). Normalizamos al canónico para que Storage
- * los acepte. La transcripción usa el File original, no este normalizado.
+ * (audio/x-m4a, audio/x-wav, audio/mpga, audio/webm;codecs=opus). Normalizamos al
+ * canónico SIN parámetros de codec para que Storage los acepte. La transcripción
+ * usa el File original, no este normalizado.
  */
 function normalizeStorageMime(mime: string): string {
-  const m = mime.toLowerCase();
+  const m = baseMime(mime);
   if (m === 'audio/x-m4a' || m === 'audio/m4a') return 'audio/mp4';
   if (m === 'audio/x-wav') return 'audio/wav';
   if (m === 'audio/mpga' || m === 'audio/mp3') return 'audio/mpeg';
@@ -125,7 +134,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (audioFile.type && !ALLOWED_MIME_TYPES.has(audioFile.type.toLowerCase())) {
+    if (audioFile.type && !ALLOWED_MIME_TYPES.has(baseMime(audioFile.type))) {
       log.warn('Unsupported MIME type', { type: audioFile.type, name: audioFile.name });
       return NextResponse.json(
         {
