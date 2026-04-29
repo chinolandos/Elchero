@@ -8,7 +8,7 @@
     },
     "src/app/api/generate-notes/route.ts": {
       "maxDuration": 300,
-      "memory": 1024
+      "memory": 512
     },
     "src/app/api/tts/route.ts": {
       "maxDuration": 60,

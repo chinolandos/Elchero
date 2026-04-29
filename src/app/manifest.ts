@@ -12,8 +12,11 @@ export default function manifest(): MetadataRoute.Manifest {
       'Apuntes con IA en español salvadoreño para AVANZO, parciales y períodos.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#05060f',
-    theme_color: '#6366f1',
+    // Paleta Aura sincronizada con design-tokens.ts y globals.css.
+    // background_color: lo que se ve en la splash screen al instalar PWA.
+    // theme_color: el tint del status bar / address bar (Android Chrome).
+    background_color: '#0a0a14',
+    theme_color: '#9333ea',
     orientation: 'portrait',
     lang: 'es-SV',
     icons: [
