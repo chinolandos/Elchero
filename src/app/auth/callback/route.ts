@@ -18,8 +18,9 @@ const log = createLogger('auth/callback');
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get('code');
-  // Default a `/` mientras /onboarding no exista (día 5)
-  const next = searchParams.get('next') ?? '/';
+  // Default: si vienen de /login con `next`, respetamos. Si no, mandamos a
+  // /capture y que esa ruta decida si necesita onboarding antes.
+  const next = searchParams.get('next') ?? '/capture';
   const error = searchParams.get('error');
 
   if (error) {
