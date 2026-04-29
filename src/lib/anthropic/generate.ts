@@ -169,15 +169,34 @@ export async function generateNotes(
 
   const validated = NoteSchema.safeParse(parsed);
   if (!validated.success) {
+    // Mensajes amigables al user para los mismatches más comunes.
+    const issues = validated.error.issues;
+    const friendly = issues
+      .slice(0, 3)
+      .map((i) => {
+        const field = i.path.join('.');
+        if (field === 'concepts' && i.code === 'too_small') {
+          return 'Claude generó pocos conceptos para este audio. Probá con un audio más largo o con más contenido temático.';
+        }
+        if (field === 'questions' && i.code === 'too_small') {
+          return 'Claude generó pocas preguntas para este audio. Esto pasa cuando el audio es muy corto o repetitivo.';
+        }
+        if (field === 'flashcards' && i.code === 'too_small') {
+          return 'Claude generó pocas flashcards. El audio puede ser demasiado breve para sacar suficientes conceptos clave.';
+        }
+        if (field === 'summary' && i.code === 'too_small') {
+          return 'El resumen quedó muy corto. Probá con un audio que tenga más contenido.';
+        }
+        return `${field || 'campo'}: ${i.message}`;
+      })
+      .join(' · ');
+
     log.error('Note schema validation failed', {
-      issues: validated.error.issues.slice(0, 5),
+      issues: issues.slice(0, 5),
+      raw_summary_preview: rawText.slice(0, 200),
     });
-    throw new Error(
-      `Estructura del apunte inválida: ${validated.error.issues
-        .slice(0, 3)
-        .map((i) => `${i.path.join('.')}: ${i.message}`)
-        .join('; ')}`,
-    );
+
+    throw new Error(`Estructura del apunte inválida: ${friendly}`);
   }
 
   const usage = response.usage;
