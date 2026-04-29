@@ -97,8 +97,12 @@ export function CaptureClient({
     setErrorMsg(null);
     setResult(null);
     setPendingFile(null);
-    await recorder.start();
-    if (recorder.state !== 'error') setPhase('recording');
+    // recorder.start() retorna boolean — si fue exitoso (mic OK, codec OK,
+    // permission OK), avanzamos a 'recording'. Si falló, recorder.state
+    // ya quedó en 'error' y el ErrorBanner se renderiza solo. NO leer
+    // recorder.state después del await — race condition (closure stale).
+    const ok = await recorder.start();
+    if (ok) setPhase('recording');
   };
 
   const stopRecording = () => {
@@ -184,7 +188,14 @@ export function CaptureClient({
       const processData = await processRes.json();
 
       if (!processRes.ok) {
-        throw new Error(processData.message ?? 'Falló la transcripción');
+        // Si refund_ok === false, el server falló refundeando el counter.
+        // El user perdió 1 uso por un fallo nuestro — avisarle.
+        const baseMsg = processData.message ?? 'Falló la transcripción';
+        const refundMsg =
+          processData.refund_ok === false
+            ? ` · Te debemos un uso de tu beta — contactanos por las redes para resolverlo.`
+            : '';
+        throw new Error(baseMsg + refundMsg);
       }
 
       const pending: PendingProcessData = {
@@ -240,7 +251,12 @@ export function CaptureClient({
       const generateData = await generateRes.json();
 
       if (!generateRes.ok) {
-        throw new Error(generateData.message ?? 'Falló la generación del apunte');
+        const baseMsg = generateData.message ?? 'Falló la generación del apunte';
+        const refundMsg =
+          generateData.refund_ok === false
+            ? ` · Te debemos un uso — contactanos.`
+            : '';
+        throw new Error(baseMsg + refundMsg);
       }
 
       // TTS (no bloqueante — si falla, igual tenemos el apunte)
@@ -501,14 +517,17 @@ function ActionCard({
     <button
       type="button"
       onClick={onClick}
+      aria-label={`${title}. ${subtitle}`}
       className={cn(
-        'group relative flex flex-col items-center justify-center gap-3 rounded-2xl border p-8 transition-all',
+        'group relative flex flex-col items-center justify-center gap-3 rounded-2xl border p-8 transition-all min-h-[140px]',
         primary
           ? 'border-primary/40 bg-primary/10 hover:border-primary hover:bg-primary/20'
           : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10',
       )}
     >
-      <div className={cn('text-4xl', primary && 'text-primary')}>{icon}</div>
+      <div className={cn('text-4xl', primary && 'text-primary')} aria-hidden="true">
+        {icon}
+      </div>
       <div>
         <div className="font-semibold">{title}</div>
         <div className="mt-1 text-xs text-white/50">{subtitle}</div>

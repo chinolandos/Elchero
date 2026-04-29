@@ -82,7 +82,7 @@ export function useRecorder(options: UseRecorderOptions = {}) {
 
   useEffect(() => cleanup, [cleanup]);
 
-  const start = useCallback(async () => {
+  const start = useCallback(async (): Promise<boolean> => {
     setErrorMessage(null);
     setResult(null);
     setElapsedSec(0);
@@ -93,7 +93,7 @@ export function useRecorder(options: UseRecorderOptions = {}) {
         'Tu navegador no soporta grabación de audio. Probá Chrome, Safari (iOS 14.5+) o Firefox.',
       );
       setState('error');
-      return;
+      return false;
     }
 
     const mimeType = pickMimeType();
@@ -102,7 +102,7 @@ export function useRecorder(options: UseRecorderOptions = {}) {
         'Tu navegador no soporta los formatos de audio necesarios. Subí un archivo en su lugar.',
       );
       setState('error');
-      return;
+      return false;
     }
 
     let stream: MediaStream;
@@ -126,7 +126,7 @@ export function useRecorder(options: UseRecorderOptions = {}) {
         setErrorMessage(`No se pudo acceder al micrófono: ${e.message ?? 'error desconocido'}`);
       }
       setState('error');
-      return;
+      return false;
     }
 
     streamRef.current = stream;
@@ -159,7 +159,7 @@ export function useRecorder(options: UseRecorderOptions = {}) {
       );
       cleanup();
       setState('error');
-      return;
+      return false;
     }
 
     recorder.ondataavailable = (e) => {
@@ -198,6 +198,8 @@ export function useRecorder(options: UseRecorderOptions = {}) {
     autoStopRef.current = setTimeout(() => {
       stop();
     }, maxDurationSec * 1000);
+
+    return true;
   }, [bitsPerSecond, cleanup, maxDurationSec, pickMimeType]);
 
   const stop = useCallback(() => {
