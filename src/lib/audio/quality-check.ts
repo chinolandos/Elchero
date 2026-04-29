@@ -31,22 +31,37 @@ export interface QualityReport {
 
 /**
  * Patrones que indican ruido / no-academia.
- * Los conteos se ponderan por su frecuencia relativa al texto.
+ *
+ * Notas de regex:
+ *   - NO usamos \b al final porque palabras tipo "jajajajajaj" (con `j`
+ *     final sin `a`) o "jajajajajaja" no tienen word boundary "limpio"
+ *     entre las repeticiones — todo es word chars contiguos. El \b final
+ *     hacía que el match no disparase correctamente.
+ *   - Usamos lookbehind/lookahead "no-word" `(?:^|[^a-záéíóú])` para
+ *     anclar el inicio sin requerir boundary final problemático.
+ *   - Cobertura: "jaja", "jajaja", "jajajajajaja", "ja ja ja", "JAJAJA",
+ *     "Jajaja", igual para je/ji.
  */
 const LAUGHTER_PATTERNS = [
-  /\bja+\s*ja+(\s*ja+)*\b/gi, // ja, jaja, jajaja, ja ja ja
-  /\bje+\s*je+\b/gi, // jeje, je je
-  /\bji+\s*ji+\b/gi, // jiji
+  /(?:^|\W)j[ae]+(?:\s*j[ae]+)+/gi, // ja+, je+, jaja, jeje, jajaja, ja ja, etc
+  /(?:^|\W)ji+(?:\s*ji+)+/gi, // jiji, ji ji
+  /(?:^|\W)ha+(?:\s*ha+){1,}/gi, // hahaha (inglés/escrito alterno)
 ];
 
+/**
+ * Muletillas / filler words / interjecciones de duda.
+ * Sin \b al final por la misma razón que arriba.
+ */
 const FILLER_PATTERNS = [
-  /\beh+\b/gi,
-  /\bah+\b/gi,
-  /\bum+\b/gi,
-  /\boh+\b/gi,
-  /\bmm+\b/gi,
+  /(?:^|\W)eh+(?:\W|$)/gi,
+  /(?:^|\W)ah+(?:\W|$)/gi,
+  /(?:^|\W)um+(?:\W|$)/gi,
+  /(?:^|\W)oh+(?:\W|$)/gi,
+  /(?:^|\W)mm+(?:\W|$)/gi,
+  /(?:^|\W)este\s+\.{3}/gi, // "este..."
   /\bes\s+que\b/gi,
-  /\bo\s+sea\b/gi, // muletilla común
+  /\bo\s+sea\b/gi,
+  /\bdigamos\b/gi,
 ];
 
 /**
@@ -103,17 +118,25 @@ export function analyzeTranscriptQuality(transcript: string): QualityReport {
   const shortWords = words.filter((w) => w.length <= SHORT_WORD_THRESHOLD);
   const shortWordsRatio = shortWords.length / Math.max(1, wordCount);
 
-  // Cálculo del score (0-100, mayor = más limpio)
-  // Ratios relativos al wordCount para no penalizar audios largos
-  const laughterRatio = laughterCount / Math.max(1, wordCount / 100); // por 100 palabras
-  const fillerRatio = fillerCount / Math.max(1, wordCount / 100);
+  // Cálculo del score (0-100, mayor = más limpio).
+  // Ratios relativos al wordCount para no penalizar audios largos.
+  // Las constantes están afinadas con el caso real:
+  //   - Audio "jajajajaja eh eh" (~10 palabras) con 3 risas + 2 muletillas
+  //     debe dar score ~40 (very_noisy o noisy fuerte)
+  //   - Audio limpio sin risas debe quedar >85
+  const laughterRatio = laughterCount / Math.max(1, wordCount / 50); // por 50 palabras (más sensible)
+  const fillerRatio = fillerCount / Math.max(1, wordCount / 50);
 
-  // Penalizaciones (cada tipo descuenta puntos)
+  // Penalizaciones — las risas pesan fuerte porque son señal clara de ruido
   let score = 100;
-  score -= Math.min(40, laughterRatio * 8); // laughter pesa fuerte
-  score -= Math.min(25, fillerRatio * 4); // fillers pesan medio
-  score -= Math.min(25, repetitionCount * 5); // repeticiones pesan fuerte (Whisper looping)
-  score -= Math.max(0, (shortWordsRatio - 0.55) * 100); // si >55% de palabras son cortas, penaliza
+  score -= Math.min(60, laughterRatio * 15); // laughter peso aumentado (era 8)
+  score -= Math.min(35, fillerRatio * 7); // fillers peso aumentado (era 4)
+  score -= Math.min(40, repetitionCount * 8); // repetitions peso aumentado (era 5)
+  score -= Math.max(0, (shortWordsRatio - 0.55) * 100);
+  // Bonus penalty si hay AMBAS risas y fillers (señal compuesta)
+  if (laughterCount > 0 && fillerCount > 0) {
+    score -= 10;
+  }
   score = Math.max(0, Math.round(score));
 
   // Signals para debug y UI

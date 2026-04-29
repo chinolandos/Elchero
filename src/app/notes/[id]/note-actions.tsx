@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
+import { orbGradient, shadows } from '@/lib/design-tokens';
 
 interface NoteActionsProps {
   noteId: string;
@@ -59,7 +60,6 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
       toast.error('Este apunte no tiene transcripción guardada.');
       return;
     }
-    // Latch: si ya hay un regenerate en curso (desde header o modal), ignorar
     if (regeneratingRef.current) return;
     regeneratingRef.current = true;
     setIsRegenerating(true);
@@ -76,7 +76,11 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? 'No se pudo regenerar');
-      toast.success(useEdited ? 'Apunte regenerado con tu transcripción' : 'Apunte regenerado');
+      toast.success(
+        useEdited ? 'Apunte regenerado con tu transcripción' : 'Apunte regenerado',
+      );
+      // Cerramos el modal SOLO si el regenerate fue exitoso. Si falló, el
+      // modal sigue abierto con los cambios del user para que pueda reintentar.
       setIsEditingTranscript(false);
       router.refresh();
     } catch (err) {
@@ -89,6 +93,11 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
 
   return (
     <>
+      {/* Overlay full-screen mientras se regenera — bloquea interacción
+          y le da al user feedback claro de qué está pasando. Antes la página
+          se "congelaba" durante 30-60s sin indicación visual. */}
+      {isRegenerating && <RegeneratingOverlay />}
+
       <div className="flex flex-wrap items-center gap-2">
         {hasTranscript && (
           <>
@@ -153,6 +162,27 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
         />
       )}
     </>
+  );
+}
+
+function RegeneratingOverlay() {
+  return (
+    <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-6 bg-[#0a0a14]/95 px-6 backdrop-blur">
+      <div
+        className="orb-pulse h-32 w-32 rounded-full"
+        style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
+      />
+      <div className="text-center">
+        <h2 className="mb-2 text-2xl font-bold text-white">Regenerando tu apunte</h2>
+        <p className="text-sm text-white/60">
+          Claude Sonnet está reescribiendo el contenido. Esto tarda 30-60 segundos.
+        </p>
+        <p className="mt-2 text-xs text-white/40">
+          No cierres la pestaña.
+        </p>
+      </div>
+      <Spinner size="md" />
+    </div>
   );
 }
 
