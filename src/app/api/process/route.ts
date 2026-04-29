@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase/server';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { transcribeAudio } from '@/lib/openai/transcribe';
 import { detectContext } from '@/lib/anthropic/detect';
 import { tryIncrementUsage, refundUsage } from '@/lib/usage/check';
+import { issueProcessToken } from '@/lib/auth/process-token';
 import { createLogger } from '@/lib/logger';
 import type { UserProfile } from '@/lib/types/chero';
 
@@ -34,21 +35,6 @@ function baseMime(mime: string): string {
   return mime.toLowerCase().split(';')[0].trim();
 }
 
-/**
- * Supabase Storage rechaza algunos MIME types "raros" que sí son válidos para Whisper
- * (audio/x-m4a, audio/x-wav, audio/mpga, audio/webm;codecs=opus). Normalizamos al
- * canónico SIN parámetros de codec para que Storage los acepte. La transcripción
- * usa el File original, no este normalizado.
- */
-function normalizeStorageMime(mime: string): string {
-  const m = baseMime(mime);
-  if (m === 'audio/x-m4a' || m === 'audio/m4a') return 'audio/mp4';
-  if (m === 'audio/x-wav') return 'audio/wav';
-  if (m === 'audio/mpga' || m === 'audio/mp3') return 'audio/mpeg';
-  if (m === 'audio/opus') return 'audio/ogg';
-  return m || 'audio/mpeg';
-}
-
 const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // 25 MB (límite Whisper API)
 
 // ⚠️ NOTA sobre el body size limit en Vercel:
@@ -56,9 +42,10 @@ const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // 25 MB (límite Whisper API)
 // - Vercel Pro: limite es ~10 MB (configurable hasta 100 MB con soporte)
 // - Whisper acepta hasta 25 MB
 //
-// El día 7 al upgradear a Pro, audios hasta 10 MB pasan directo al endpoint.
-// Para audios mayores: el frontend debe subir directo a Supabase Storage
-// con signed upload URL (sin pasar por nuestro API) — implementación post-pitch.
+// Para audios >4.5 MB en Hobby: el frontend debe subir directo a Supabase
+// Storage con signed upload URL (sin pasar por nuestro API) — implementación
+// post-pitch. Hoy el frontend usa MediaRecorder a 32kbps que mantiene los
+// audios bajo 4.5 MB para hasta 18 min de grabación.
 
 /**
  * POST /api/process
@@ -68,12 +55,14 @@ const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // 25 MB (límite Whisper API)
  * Flow:
  * 1. Auth check
  * 2. Validar archivo (MIME, tamaño)
- * 3. Counter check + increment ATÓMICO (try_increment_usage RPC)
- * 4. Subir audio a Supabase Storage
- * 5. Transcribir con GPT-4o Mini Transcribe
- * 6. Borrar audio del storage (privacy-by-design)
- * 7. Auto-detectar contexto con Claude Haiku
- * 8. Devolver { transcript, detected, usage }
+ * 3. Enforzar consentimiento parental si is_minor
+ * 4. Counter check + increment ATÓMICO (try_increment_usage RPC)
+ * 5. Transcribir con GPT-4o Mini Transcribe (sin pasar por Storage —
+ *    privacy-by-design: el audio nunca toca disco)
+ * 6. Auto-detectar contexto con Claude Haiku (transcript completo,
+ *    no solo primeros 2000 chars)
+ * 7. Emitir process_token firmado para que /api/generate-notes pueda validar
+ * 8. Devolver { transcript, detected, usage, process_token }
  *
  * Si transcripción falla → refund del counter.
  */
@@ -145,6 +134,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 2.5 Enforzar consentimiento parental si menor de edad (Ley SV)
+    const { data: profileForCheck } = await supabase
+      .from('profiles')
+      .select('is_minor, has_guardian_consent')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileForCheck?.is_minor && !profileForCheck?.has_guardian_consent) {
+      log.warn('Minor without guardian consent attempted to process', { userId: user.id });
+      return NextResponse.json(
+        {
+          error: 'consent_required',
+          message:
+            'Para usar Chero como menor de edad necesitamos el consentimiento de tu madre, padre o tutor. Volvé al onboarding.',
+        },
+        { status: 403 },
+      );
+    }
+
     // 3. Counter check + increment ATÓMICO
     const usage = await tryIncrementUsage(user.id);
     if (!usage.success) {
@@ -166,31 +174,9 @@ export async function POST(req: NextRequest) {
       user_uses: usage.user_uses,
     });
 
-    // 4. Subir audio a Supabase Storage (path SIN prefijo "audios/" — el bucket ya se llama así)
-    const admin = createSupabaseAdminClient();
-    const safeFilename = audioFile.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
-    const audioPath = `${user.id}/${Date.now()}-${safeFilename}`;
-
-    const buffer = Buffer.from(await audioFile.arrayBuffer());
-    const storageMime = normalizeStorageMime(audioFile.type);
-    const { error: uploadError } = await admin.storage
-      .from('audios')
-      .upload(audioPath, buffer, {
-        contentType: storageMime,
-        upsert: false,
-      });
-
-    if (uploadError) {
-      log.error('Upload failed', { err: uploadError.message, audioPath });
-      // Refund counter porque ya lo incrementamos
-      await refundUsage(user.id);
-      return NextResponse.json(
-        { error: 'upload_failed', message: 'No se pudo subir el audio. Intentá de nuevo.' },
-        { status: 500 },
-      );
-    }
-
-    // 5. Transcribir
+    // 4. Transcribir directo (sin upload a Storage previo — Whisper recibe el File del FormData).
+    //    Privacy-by-design: el audio NUNCA se persiste en disco. Solo vive en memoria del
+    //    serverless function durante el request, y muere al final.
     let transcript: Awaited<ReturnType<typeof transcribeAudio>>;
     try {
       transcript = await transcribeAudio(audioFile);
@@ -204,42 +190,31 @@ export async function POST(req: NextRequest) {
       log.error('Transcription failed', {
         err: err instanceof Error ? err.message : String(err),
       });
-      // Borrar audio + refund
-      await admin.storage.from('audios').remove([audioPath]);
-      await refundUsage(user.id);
+      const refund = await refundUsage(user.id);
       return NextResponse.json(
         {
           error: 'transcription_failed',
           message: err instanceof Error ? err.message : 'Falló la transcripción.',
+          refund_ok: refund.ok,
         },
         { status: 500 },
       );
     }
 
-    // 6. Borrar audio del storage (privacy-by-design — ya tenemos la transcripción)
-    const { error: deleteError } = await admin.storage.from('audios').remove([audioPath]);
-    if (deleteError) {
-      // No es bloqueante: el cron de cleanup limpia eventualmente. Solo loguear.
-      log.warn('Audio delete failed (non-blocking)', {
-        err: deleteError.message,
-        audioPath,
-      });
-    } else {
-      log.info('Audio deleted post-transcription', { audioPath });
-    }
-
-    // 7. Cargar perfil del usuario para auto-detect
+    // 5. Cargar perfil del usuario para auto-detect
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .maybeSingle();
 
-    // 8. Auto-detect contexto (Claude Haiku)
+    // 6. Auto-detect contexto (Claude Haiku) — transcript completo (el regex
+    // override busca menciones explícitas de "AVANZO" / "período" / "parcial"
+    // en TODO el texto, no solo en los primeros 2000 chars).
     let detected: Awaited<ReturnType<typeof detectContext>>;
     try {
       detected = await detectContext(
-        transcript.text.slice(0, 2000),
+        transcript.text,
         (profile as Partial<UserProfile>) ?? {},
       );
     } catch (err) {
@@ -264,6 +239,10 @@ export async function POST(req: NextRequest) {
       confidence: detected.confidence,
     });
 
+    // 7. Emitir token firmado para que /api/generate-notes valide que el
+    // transcript viene de un /api/process legítimo (no inventado por el cliente).
+    const processToken = issueProcessToken(user.id, transcript.text);
+
     return NextResponse.json({
       success: true,
       transcript: {
@@ -276,6 +255,7 @@ export async function POST(req: NextRequest) {
         total_uses: usage.total_uses,
         user_uses: usage.user_uses,
       },
+      process_token: processToken,
       elapsed_ms: elapsedMs,
     });
   } catch (err) {

@@ -1,5 +1,8 @@
 import { createSupabaseAdminClient } from '@/lib/supabase/server';
+import { createLogger } from '@/lib/logger';
 import type { UsageStatus } from '@/lib/types/chero';
+
+const log = createLogger('usage/check');
 
 const MAX_TOTAL_USES = Number(process.env.MAX_TOTAL_USES ?? 50);
 const MAX_USES_PER_USER = Number(process.env.MAX_USES_PER_USER ?? 5);
@@ -84,12 +87,24 @@ export async function tryIncrementUsage(userId: string): Promise<TryIncrementRes
  * Si transcribimos pero algo falla después, refundimos el uso para no penalizar al user.
  *
  * Usa el RPC `refund_usage` que hace ambos decrementos atómicos y no baja de 0.
+ *
+ * Retorna `{ ok: boolean, error?: string }`. NO throws — los callers ya están en
+ * camino de error y no queremos enmascarar el error original con un refund failure.
  */
-export async function refundUsage(userId: string): Promise<void> {
+export async function refundUsage(
+  userId: string,
+): Promise<{ ok: boolean; error?: string }> {
   const supabase = createSupabaseAdminClient();
 
   const { error } = await supabase.rpc('refund_usage', { p_user_id: userId });
   if (error) {
-    console.error('[refundUsage] RPC failed:', error);
+    log.error('refund RPC failed (counter inflated)', {
+      userId,
+      err: error.message,
+      hint: 'Manual fix: SELECT refund_usage(...)',
+    });
+    return { ok: false, error: error.message };
   }
+  log.info('Usage refunded', { userId });
+  return { ok: true };
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { generateNotes } from '@/lib/anthropic/generate';
+import { verifyProcessToken } from '@/lib/auth/process-token';
 import { createLogger } from '@/lib/logger';
 import type { UserProfile } from '@/lib/types/chero';
 
@@ -21,6 +22,9 @@ const RequestBodySchema = z.object({
     confidence: z.number().int().min(0).max(100),
   }),
   audio_duration_minutes: z.number().nonnegative().optional(),
+  // Token firmado emitido por /api/process. Bloquea uso directo del endpoint
+  // sin haber pasado por transcripción real (anti-abuso).
+  process_token: z.string().min(20),
 });
 
 /**
@@ -85,7 +89,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { transcript, detected, audio_duration_minutes } = validated.data;
+    const { transcript, detected, audio_duration_minutes, process_token } =
+      validated.data;
+
+    // 2.5 Verificar token firmado emitido por /api/process. Esto bloquea el
+    // abuso directo del endpoint con transcripts inventados (que costaría
+    // tokens de Sonnet sin tocar el counter de usos).
+    const tokenCheck = verifyProcessToken(process_token, user.id, transcript);
+    if (!tokenCheck.ok) {
+      log.warn('process_token verification failed', {
+        userId: user.id,
+        reason: tokenCheck.reason,
+      });
+      const message =
+        tokenCheck.reason === 'expired'
+          ? 'El token expiró (más de 15 min entre transcribir y generar). Volvé a procesar el audio.'
+          : 'El token de procesamiento es inválido. Procesá el audio de nuevo.';
+      return NextResponse.json(
+        { error: 'invalid_process_token', reason: tokenCheck.reason, message },
+        { status: 403 },
+      );
+    }
 
     // 3. Cargar perfil del usuario
     const { data: profile } = await supabase
