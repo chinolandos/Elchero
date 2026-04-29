@@ -43,7 +43,7 @@ export function CaptureClient({
   totalUserLimit,
   preferredVoice,
 }: CaptureClientProps) {
-  const recorder = useRecorder({ bitsPerSecond: 32000, maxDurationSec: 1080 });
+  const recorder = useRecorder({ bitsPerSecond: 64000, maxDurationSec: 540 });
   const [phase, setPhase] = useState<Phase>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [result, setResult] = useState<FinalResult | null>(null);
@@ -358,7 +358,7 @@ function IdleScreen({
         <ActionCard
           icon={<MicIcon />}
           title="Grabar ahora"
-          subtitle="Hasta 20 min"
+          subtitle="Hasta 9 min, voz HD"
           onClick={onRecord}
           primary
         />
@@ -371,8 +371,8 @@ function IdleScreen({
       </div>
 
       <p className="max-w-md text-xs text-white/40">
-        Idiomas soportados: español. Para grabaciones largas (&gt;18 min) usá la
-        opción de subir archivo MP3 a 64 kbps.
+        Idiomas soportados: español. Para grabaciones más largas (&gt;9 min) usá
+        la opción de subir archivo MP3 ya comprimido (≤4.5 MB).
       </p>
     </div>
   );
@@ -460,7 +460,7 @@ function RecordingScreen({
       </div>
 
       <p className="text-xs text-white/40">
-        Hablá normal, cerca del dispositivo. Auto-stop a los 20 min.
+        Hablá normal, cerca del dispositivo. Auto-stop a los 9 min.
       </p>
     </div>
   );

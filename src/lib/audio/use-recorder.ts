@@ -26,16 +26,20 @@ interface UseRecorderOptions {
  *   - Safari iOS 14.5+ / macOS: mp4 con aac codec
  *   - Safari iOS <14.5: NO soportado, devuelve error explícito
  *
- * Bitrate por defecto 32 kbps mono (ideal para voz):
- *   - 1 min ≈ 240 KB
- *   - 10 min ≈ 2.4 MB
- *   - 18 min ≈ 4.3 MB (cabe en Vercel Hobby 4.5MB)
+ * Bitrate por defecto 64 kbps mono — sweet spot para voz inteligible.
+ * Notas:
+ *   - 32 kbps en iOS Safari (AAC mono) suena metálico/robotizado, especialmente
+ *     en voz. 64 kbps es donde la voz se siente "natural".
+ *   - 1 min ≈ 480 KB
+ *   - 5 min ≈ 2.4 MB
+ *   - 9 min ≈ 4.3 MB (cabe en Vercel Hobby 4.5MB)
  *
- * maxDurationSec defaultea a 1080 (18 min) — calculado para que el archivo
- * resultante NO supere el límite de body de Vercel Hobby (4.5 MB).
+ * maxDurationSec defaultea a 540 (9 min) — calculado para que el archivo
+ * resultante NO supere el límite de body de Vercel Hobby (4.5 MB) a 64 kbps.
+ * Para clases más largas, el user puede subir un MP3 ya comprimido por su lado.
  */
 export function useRecorder(options: UseRecorderOptions = {}) {
-  const { bitsPerSecond = 32000, maxDurationSec = 1080 } = options; // 18 min max
+  const { bitsPerSecond = 64000, maxDurationSec = 540 } = options; // 9 min max @ 64kbps
 
   const [state, setState] = useState<RecorderState>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
