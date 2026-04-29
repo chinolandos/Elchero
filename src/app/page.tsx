@@ -1,4 +1,7 @@
+import Link from 'next/link';
+import { buttonVariants } from '@/components/ui/button';
 import { ambientGlow, brandGradient, orbGradient, shadows } from '@/lib/design-tokens';
+import { getUserOrNull } from '@/lib/auth/require-auth';
 
 /**
  * Landing pública de Chero — placeholder durante el build (días 1-6).
@@ -6,7 +9,9 @@ import { ambientGlow, brandGradient, orbGradient, shadows } from '@/lib/design-t
  *
  * Aesthetic v2: dark con orb central morado + glow ambient sutil.
  */
-export default function HomePage() {
+export default async function HomePage() {
+  const user = await getUserOrNull();
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0a0a14] text-white">
       {/* Ambient glow background — violeta + indigo profundo */}
@@ -73,13 +78,51 @@ export default function HomePage() {
           Hecho para AVANZO, parciales universitarios y pruebas de período.
         </p>
 
-        {/* Status pill */}
-        <div className="rounded-2xl border border-white/8 bg-white/5 px-6 py-4 text-sm backdrop-blur">
-          <div className="font-semibold text-white">🚧 En construcción</div>
-          <div className="mt-1 text-white/50">
-            Estamos puliendo cada detalle. Volvé pronto, o seguinos en redes
-            para ser de los primeros en probarlo.
-          </div>
+        {/* CTAs */}
+        <div className="flex flex-col items-center gap-3 sm:flex-row">
+          {user ? (
+            <>
+              <Link
+                href="/library"
+                className={buttonVariants({ size: 'lg', className: 'px-8' })}
+              >
+                Mis apuntes
+              </Link>
+              <Link
+                href="/capture"
+                className={buttonVariants({
+                  size: 'lg',
+                  variant: 'ghost',
+                  className: 'px-8 text-white/70 hover:bg-white/5 hover:text-white',
+                })}
+              >
+                + Nuevo apunte
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className={buttonVariants({ size: 'lg', className: 'px-8' })}
+              >
+                Empezar gratis
+              </Link>
+              <Link
+                href="/login"
+                className={buttonVariants({
+                  size: 'lg',
+                  variant: 'ghost',
+                  className: 'px-8 text-white/70 hover:bg-white/5 hover:text-white',
+                })}
+              >
+                Ya tengo cuenta
+              </Link>
+            </>
+          )}
+        </div>
+
+        <div className="mt-6 text-xs text-white/40">
+          Beta · 50 usos gratis para CBE 2026
         </div>
 
         {/* Mini-footer */}
