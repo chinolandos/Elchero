@@ -110,8 +110,28 @@ export async function POST(req: NextRequest) {
       include_examples: include_examples ?? false,
     });
 
-    // Generar audio
-    const tts = await generateTts({ text, voice });
+    // Generar audio — try/catch específico para distinguir error de OpenAI TTS
+    // de errores posteriores (upload, DB).
+    let tts: Awaited<ReturnType<typeof generateTts>>;
+    try {
+      tts = await generateTts({ text, voice });
+    } catch (err) {
+      log.error('OpenAI TTS API failed', {
+        err: err instanceof Error ? err.message : String(err),
+        noteId: note_id,
+        chars: text.length,
+      });
+      return NextResponse.json(
+        {
+          error: 'tts_failed',
+          message:
+            err instanceof Error
+              ? `No pudimos generar el audio: ${err.message}`
+              : 'No se pudo generar el audio. Probá de nuevo.',
+        },
+        { status: 502 },
+      );
+    }
 
     // Subir a Supabase Storage bucket público `tts-output`
     const admin = createSupabaseAdminClient();

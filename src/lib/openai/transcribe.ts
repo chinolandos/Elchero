@@ -49,9 +49,13 @@ export async function transcribeAudio(
 
   const text = response.text ?? '';
 
-  // Estimación de duración por tamaño del archivo.
-  // Asumimos bitrate típico ~64-128 kbps (8-16 KB/seg).
-  // Promedio conservador: ~12 KB/seg → bytes / 12000 = segundos.
+  // Estimación de duración por tamaño del archivo. NO es exacta — gpt-4o-mini-
+  // transcribe no devuelve duration en json (solo en verbose_json que no soporta).
+  // Asumimos bitrate típico ~96 kbps mp3/m4a (12 KB/seg) → bytes / 12000.
+  //   - Audio a 64 kbps: estimación ~33% LARGA de más
+  //   - Audio a 128 kbps: estimación ~25% CORTA de menos
+  // El error solo afecta `audio_duration_minutes` mostrado al user; no rompe lógica.
+  // Para precisión real: parsear el header del audio container post-MVP.
   const durationSeconds = Math.max(1, sizeBytes / 12_000);
   const durationMinutes = durationSeconds / 60;
   const costUsd = durationMinutes * 0.003;

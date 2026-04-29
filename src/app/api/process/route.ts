@@ -118,11 +118,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: 'audio_too_large',
-          message: `El audio supera los 25 MB. Tu archivo tiene ${(audioFile.size / 1024 / 1024).toFixed(1)} MB. Comprimílo a MP3 64kbps (50min ≈ 24MB).`,
+          message: `El audio supera los 25 MB de Whisper. Tu archivo tiene ${(audioFile.size / 1024 / 1024).toFixed(1)} MB. Comprimílo a MP3 64 kbps.`,
         },
         { status: 413 },
       );
     }
+    // Nota: Vercel Hobby corta el body en ~4.5 MB ANTES de llegar acá. Este
+    // chequeo de 25MB solo aplicaría con Vercel Pro. Lo dejamos como defensa
+    // en profundidad (defense in depth).
 
     if (audioFile.type && !ALLOWED_MIME_TYPES.has(baseMime(audioFile.type))) {
       log.warn('Unsupported MIME type', { type: audioFile.type, name: audioFile.name });
@@ -135,14 +138,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2.5 Enforzar consentimiento parental si menor de edad (Ley SV)
-    const { data: profileForCheck } = await supabase
+    // 2.5 Cargar perfil UNA SOLA VEZ (consent check + detect lo necesitan).
+    //    Antes hacíamos 2 queries separadas (acá + en step 5) — desperdicio
+    //    de 1 round-trip a la DB.
+    const { data: profile } = await supabase
       .from('profiles')
-      .select('is_minor, has_guardian_consent')
+      .select('*')
       .eq('id', user.id)
       .maybeSingle();
 
-    if (profileForCheck?.is_minor && !profileForCheck?.has_guardian_consent) {
+    // Enforzar consentimiento parental si menor de edad (Ley SV)
+    if (profile?.is_minor && !profile?.has_guardian_consent) {
       log.warn('Minor without guardian consent attempted to process', { userId: user.id });
       return NextResponse.json(
         {
@@ -202,13 +208,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 5. Cargar perfil del usuario para auto-detect
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle();
-
+    // 5. (perfil ya cargado en 2.5 — reusamos `profile` para auto-detect)
     // 6. Auto-detect contexto (Claude Haiku) — transcript completo (el regex
     // override busca menciones explícitas de "AVANZO" / "período" / "parcial"
     // en TODO el texto, no solo en los primeros 2000 chars).
