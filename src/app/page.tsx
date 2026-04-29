@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { User } from '@supabase/supabase-js';
 import { buttonVariants } from '@/components/ui/button';
 import { ambientGlow, brandGradient, orbGradient, shadows } from '@/lib/design-tokens';
 import { getUserOrNull } from '@/lib/auth/require-auth';
@@ -41,7 +42,7 @@ export default async function HomePage() {
 }
 
 // ─── Hero ───
-function Hero({ user }: { user: { id: string } | null }) {
+function Hero({ user }: { user: User | null }) {
   return (
     <section className="mx-auto flex min-h-[90vh] max-w-4xl flex-col items-center justify-center px-6 py-20 text-center">
       {/* Badge beta */}
@@ -152,7 +153,7 @@ function HowItWorksSection() {
     {
       n: '1',
       title: 'Grabás o subís',
-      body: 'Tu profe explica un tema. Vos grabás 9 minutos en la app o subís el audio que ya tenés (MP3, M4A, WAV).',
+      body: 'Grabás hasta 9 minutos directo desde la app, o subís un audio que ya tenés (MP3, M4A, WAV, hasta 4.5 MB).',
       icon: '🎙',
     },
     {
@@ -179,7 +180,7 @@ function HowItWorksSection() {
           Cómo funciona
         </div>
         <h2 className="text-4xl font-black tracking-tight md:text-5xl">
-          De tu voz a apunte en 3 pasos
+          Del audio al apunte en 3 pasos
         </h2>
         <p className="mt-4 text-white/60">Total: 1-2 minutos.</p>
       </div>
@@ -212,7 +213,7 @@ function FeaturesSection() {
   const features = [
     {
       title: 'Voseo salvadoreño nativo',
-      body: 'No es Spanish genérico. "Tenés", "podés", "ojo con esto". Los apuntes se sienten como te explica un cherito de confianza.',
+      body: 'No es español neutro genérico. "Tenés", "podés", "ojo con esto". Los apuntes se sienten como te explica un cherito de confianza.',
       icon: '🇸🇻',
     },
     {
@@ -237,7 +238,7 @@ function FeaturesSection() {
     },
     {
       title: 'Privacy-first',
-      body: 'Tu audio se borra apenas se transcribe — nunca toca disco. Podés eliminar tu cuenta y todos tus apuntes con un click.',
+      body: 'Tu audio se borra apenas se transcribe — nunca toca disco. Podés eliminar tu cuenta y todos tus apuntes desde tu perfil cuando quieras.',
       icon: '🔒',
     },
   ];
@@ -313,8 +314,8 @@ function ForWhoSection() {
           </p>
           <ul className="space-y-2 text-sm text-white/70">
             <li>· Cuantitativas: Cálculo, Estadística, Álgebra Lineal</li>
-            <li>· Negocios: Microeco, Macro, Finanzas, Marketing</li>
-            <li>· Software: Algoritmos, BBDD, ML, Sistemas Operativos</li>
+            <li>· Negocios: Microeconomía, Macroeconomía, Finanzas, Marketing</li>
+            <li>· Software: Algoritmos, Bases de Datos, Inteligencia Artificial, Sistemas Operativos</li>
             <li>· Salud, Derecho, Comunicación, Humanidades</li>
           </ul>
         </div>
@@ -329,10 +330,10 @@ function PricingSection() {
     {
       name: 'Free',
       price: '$0',
-      period: 'para siempre',
+      period: 'cada mes',
       description: 'Para probar el producto y casos eventuales.',
       features: [
-        '3 apuntes por mes',
+        '3 apuntes nuevos por mes',
         'Voz HD del apunte',
         'Mapa mental visual',
         'Privacidad total',
@@ -471,7 +472,7 @@ function FaqSection() {
     },
     {
       q: '¿Para qué materias sirve?',
-      a: 'Cualquier clase con voz humana en español: AVANZO (Lenguaje, Mate, Ciencias, Sociales, Inglés), bachillerato general, y 50+ materias universitarias (Cálculo, Microeconomía, Programación, Anatomía, Derecho Constitucional, etc.).',
+      a: 'Cualquier clase con voz humana en español: AVANZO (Lenguaje y Literatura, Matemática, Ciencias Naturales, Estudios Sociales y Ciudadanía, Inglés), bachillerato general, y 50+ materias universitarias (Cálculo, Microeconomía, Programación, Anatomía, Derecho Constitucional, entre otras).',
     },
     {
       q: '¿Y si el audio sale mal?',
@@ -518,7 +519,7 @@ function FaqSection() {
 }
 
 // ─── CTA final ───
-function CtaSection({ user }: { user: { id: string } | null }) {
+function CtaSection({ user }: { user: User | null }) {
   return (
     <section className="mx-auto max-w-3xl px-6 py-24 md:py-28">
       <div className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/15 to-primary/5 p-10 text-center md:p-14">
@@ -526,7 +527,8 @@ function CtaSection({ user }: { user: { id: string } | null }) {
           Probalo con tu próxima clase
         </h2>
         <p className="mb-8 text-white/70 md:text-lg">
-          50 usos gratis. Sin tarjeta. 1 minuto desde el login al primer apunte.
+          50 usos gratis. Sin tarjeta. Menos de 5 minutos del login a tu
+          primer apunte completo.
         </p>
         <Link
           href={user ? '/capture' : '/login'}
