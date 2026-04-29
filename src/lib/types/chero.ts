@@ -59,11 +59,6 @@ export interface CheroNote {
   mermaid_chart: string | null;
 }
 
-/**
- * @deprecated usar CheroNote — alias por compatibilidad
- */
-export type ChroNote = CheroNote;
-
 export interface UsageStatus {
   total_uses: number;
   user_uses: number;

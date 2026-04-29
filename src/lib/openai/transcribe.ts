@@ -14,15 +14,15 @@ export interface TranscribeResult {
  * Transcribe un audio usando GPT-4o Mini Transcribe ($0.003/min).
  *
  * IMPORTANTE: este código NO hace chunking automático. Asumimos que:
- *   - El audio ya viene comprimido a MP3 64kbps por el cliente
- *     (50 min de audio ≈ 24MB → cabe en el límite de 25MB de Whisper)
+ *   - El audio ya viene comprimido a MP3/WebM/M4A por el cliente
+ *   - Para 50 min de audio @96kbps ≈ 36MB → tendríamos que chunkear
+ *   - Para nuestro caso (max 9 min @64kbps = 4.3MB) cabe holgado
  *
- * Si recibimos un archivo >25MB, devolvemos error y le pedimos al cliente
- * que lo comprima. El chunking real con ffmpeg/lamejs viene post-pitch.
+ * Si recibimos un archivo >25MB, devolvemos error. El chunking real con
+ * ffmpeg viene post-pitch.
  */
 export async function transcribeAudio(
   audioFile: File | Blob,
-  filename = 'audio.mp3',
 ): Promise<TranscribeResult> {
   const sizeBytes = audioFile.size;
 
@@ -32,11 +32,12 @@ export async function transcribeAudio(
     );
   }
 
-  // OpenAI SDK acepta File/Blob directamente
+  // OpenAI SDK acepta File/Blob directamente. Si es Blob (sin nombre), envolvemos
+  // en File con nombre genérico — el nombre solo afecta logging del SDK.
   const file =
     audioFile instanceof File
       ? audioFile
-      : new File([audioFile], filename, { type: audioFile.type || 'audio/mpeg' });
+      : new File([audioFile], 'audio.mp3', { type: audioFile.type || 'audio/mpeg' });
 
   // gpt-4o-mini-transcribe NO soporta verbose_json — solo json o text.
   // Por eso no tenemos `duration` exacta del API.
