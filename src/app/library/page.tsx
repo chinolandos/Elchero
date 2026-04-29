@@ -15,7 +15,8 @@ interface NoteRow {
   mode: CheroMode;
   subject: string;
   institution: string | null;
-  summary: string;
+  /** Excerpt corto del resumen, no el texto completo (ahorra bandwidth). */
+  summary_excerpt: string;
   created_at: string;
   audio_duration_minutes: number | null;
   audio_tts_url: string | null;
@@ -39,16 +40,30 @@ export default async function LibraryPage() {
   const user = await requireAuth('/library');
   const supabase = await createSupabaseServerClient();
 
-  const { data: notes } = await supabase
+  // Pedimos summary completo y lo cortamos en cliente. SELECT con SUBSTRING en
+  // Postgres requeriría una computed column o RPC; para 50 usos esto es OK.
+  // Cuando escalemos: agregar columna `summary_excerpt` generada por trigger.
+  type RawNote = Omit<NoteRow, 'summary_excerpt'> & { summary: string };
+  const { data: rawNotes } = await supabase
     .from('notes')
     .select(
       'id, mode, subject, institution, summary, created_at, audio_duration_minutes, audio_tts_url',
     )
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
-    .returns<NoteRow[]>();
+    .limit(50)
+    .returns<RawNote[]>();
 
-  const list = notes ?? [];
+  const list: NoteRow[] = (rawNotes ?? []).map((n) => ({
+    id: n.id,
+    mode: n.mode,
+    subject: n.subject,
+    institution: n.institution,
+    summary_excerpt: firstSentence(n.summary ?? ''),
+    created_at: n.created_at,
+    audio_duration_minutes: n.audio_duration_minutes,
+    audio_tts_url: n.audio_tts_url,
+  }));
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0a0a14] text-white">
@@ -118,7 +133,7 @@ function NoteList({ notes }: { notes: NoteRow[] }) {
           </div>
 
           <p className="line-clamp-2 text-sm leading-relaxed text-white/80 transition-colors group-hover:text-white">
-            {firstSentence(note.summary)}
+            {note.summary_excerpt}
           </p>
 
           <div className="mt-3 flex items-center justify-between text-xs text-white/40">

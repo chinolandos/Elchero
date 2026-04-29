@@ -1,4 +1,7 @@
 import { openai } from './client';
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('openai/tts');
 
 const TTS_MODEL = 'gpt-4o-mini-tts' as const;
 type TtsVoice = 'nova' | 'echo' | 'alloy' | 'onyx' | 'shimmer' | 'fable' | 'coral' | 'sage';
@@ -28,6 +31,10 @@ export interface TtsResult {
   durationEstimateSeconds: number;
   costUsd: number;
   charsUsed: number;
+  /** true si el texto original superaba el límite de 4096 chars y fue cortado. */
+  truncated: boolean;
+  /** chars perdidos por truncado (0 si no se truncó). */
+  truncatedChars: number;
 }
 
 export interface TtsInput {
@@ -73,6 +80,14 @@ export async function generateTts(input: TtsInput): Promise<TtsResult> {
 
   const truncated = trimmed.slice(0, MAX_TTS_CHARS);
   const charsUsed = truncated.length;
+  const wasTruncated = trimmed.length > MAX_TTS_CHARS;
+  if (wasTruncated) {
+    log.warn('TTS input truncated', {
+      original_chars: trimmed.length,
+      truncated_to: MAX_TTS_CHARS,
+      lost_chars: trimmed.length - MAX_TTS_CHARS,
+    });
+  }
 
   const response = await openai.audio.speech.create({
     model: TTS_MODEL,
@@ -95,6 +110,8 @@ export async function generateTts(input: TtsInput): Promise<TtsResult> {
     durationEstimateSeconds,
     costUsd,
     charsUsed,
+    truncated: wasTruncated,
+    truncatedChars: wasTruncated ? trimmed.length - MAX_TTS_CHARS : 0,
   };
 }
 
