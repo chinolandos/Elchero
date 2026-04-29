@@ -162,7 +162,14 @@ export function OnboardingFlow({ initialEmail }: OnboardingFlowProps) {
 
 function ProgressBar({ step }: { step: Step }) {
   return (
-    <div className="mb-10 flex items-center gap-2">
+    <div
+      className="mb-10 flex items-center gap-2"
+      role="progressbar"
+      aria-valuenow={step}
+      aria-valuemin={1}
+      aria-valuemax={3}
+      aria-label={`Onboarding paso ${step} de 3`}
+    >
       {[1, 2, 3].map((n) => (
         <div
           key={n}
@@ -170,9 +177,12 @@ function ProgressBar({ step }: { step: Step }) {
             'h-1.5 flex-1 rounded-full transition-colors',
             n <= step ? 'bg-primary' : 'bg-white/10',
           )}
+          aria-hidden="true"
         />
       ))}
-      <div className="ml-3 shrink-0 text-xs text-white/50">{step} / 3</div>
+      <div className="ml-3 shrink-0 text-xs text-white/50" aria-hidden="true">
+        {step} / 3
+      </div>
     </div>
   );
 }
@@ -290,8 +300,10 @@ function TypeCard({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={selected}
+      aria-label={`${title} — ${subtitle}`}
       className={cn(
-        'rounded-xl border p-5 text-left transition-all',
+        'rounded-xl border p-5 text-left transition-all min-h-[80px]',
         selected
           ? 'border-primary bg-primary/10 ring-2 ring-primary/40'
           : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10',
@@ -341,6 +353,7 @@ function Step2({
               <button
                 key={inst.value}
                 type="button"
+                aria-pressed={isSelected}
                 onClick={() => {
                   if (isOtherOption) {
                     update({ institutionIsOther: true, institution: null });
@@ -353,7 +366,7 @@ function Step2({
                   }
                 }}
                 className={cn(
-                  'rounded-lg border px-4 py-3 text-left text-sm transition-all',
+                  'rounded-lg border px-4 py-3 text-left text-sm transition-all min-h-[44px]',
                   isSelected
                     ? 'border-primary bg-primary/10 text-white'
                     : 'border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10',
@@ -381,11 +394,14 @@ function Step2({
         <Label className="text-white/80">
           {isUniversitario ? 'Año de carrera' : 'Año de bachillerato'}
         </Label>
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex gap-2" role="radiogroup" aria-label="Año de estudios">
           {(isUniversitario ? [1, 2, 3, 4, 5] : [1, 2]).map((y) => (
             <button
               key={y}
               type="button"
+              role="radio"
+              aria-checked={state.year === y}
+              aria-label={`${y}° año`}
               onClick={() => update({ year: y })}
               className={cn(
                 'h-12 w-12 rounded-lg border text-sm font-semibold transition-all',
@@ -462,7 +478,7 @@ function Step3({
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Materias actuales">
         {allSubjects.map((subject) => {
           const selected = state.subjects.includes(subject);
           const avanzo = state.user_type === 'bachiller' && isAvanzo(subject);
@@ -470,15 +486,17 @@ function Step3({
             <button
               key={subject}
               type="button"
+              aria-pressed={selected}
+              aria-label={avanzo ? `${subject} (entra en AVANZO)` : subject}
               onClick={() => toggle(subject)}
               className={cn(
-                'rounded-full border px-4 py-2 text-sm transition-all',
+                'rounded-full border px-4 py-2 text-sm transition-all min-h-[36px]',
                 selected
                   ? 'border-primary bg-primary text-primary-foreground'
                   : 'border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10',
               )}
             >
-              {avanzo && <span className="mr-1.5">★</span>}
+              {avanzo && <span className="mr-1.5" aria-hidden="true">★</span>}
               {subject}
             </button>
           );

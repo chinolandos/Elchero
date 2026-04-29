@@ -102,11 +102,13 @@ export default async function NotePage({ params }: NotePageProps) {
             )}
           </div>
           <h1 className="text-4xl font-black leading-tight tracking-tight md:text-5xl">
-            Apunte
+            {note.subject}
           </h1>
           <p className="mt-3 text-sm text-white/40">
-            Generado el {formatDate(note.created_at)}
-            {note.audio_duration_minutes ? ` · ${note.audio_duration_minutes.toFixed(1)} min de audio` : ''}
+            Apunte · Generado el {formatDate(note.created_at)}
+            {note.audio_duration_minutes
+              ? ` · ${note.audio_duration_minutes.toFixed(1)} min de audio`
+              : ''}
           </p>
         </div>
 
