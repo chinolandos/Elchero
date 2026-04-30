@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase/server';
 import { createLogger } from '@/lib/logger';
 
@@ -9,6 +10,13 @@ const log = createLogger('api/notes/[id]');
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
+
+// Schema para PATCH — por ahora solo soporta mover a carpeta (folder_id).
+// Si en futuro queremos editar otros campos del apunte (ej: subject), agregar acá.
+const PatchNoteSchema = z.object({
+  // null = mover a Inbox; string UUID = mover a esa carpeta
+  folder_id: z.string().uuid().nullable(),
+});
 
 /**
  * GET /api/notes/[id]
@@ -48,6 +56,92 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
   }
 
   return NextResponse.json({ note });
+}
+
+/**
+ * PATCH /api/notes/[id]
+ * Body: { folder_id: string | null }
+ *
+ * Mueve el apunte a otra carpeta (o a Inbox si folder_id=null).
+ * RLS garantiza que solo el dueño puede mover sus notas.
+ *
+ * Si la carpeta destino no existe o no es del user, Supabase devuelve error
+ * de FK constraint (carpeta no existe) o RLS deny (no es del user).
+ */
+export async function PATCH(req: NextRequest, ctx: RouteContext) {
+  const { id } = await ctx.params;
+
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
+  }
+
+  const validated = PatchNoteSchema.safeParse(body);
+  if (!validated.success) {
+    return NextResponse.json(
+      { error: 'invalid_body', issues: validated.error.issues },
+      { status: 400 },
+    );
+  }
+
+  const { folder_id } = validated.data;
+
+  // Si folder_id no es null, validar que la carpeta sea del user.
+  // Aunque RLS lo enforce, validamos antes para devolver error claro.
+  if (folder_id) {
+    const { data: folder, error: folderError } = await supabase
+      .from('folders')
+      .select('id')
+      .eq('id', folder_id)
+      .maybeSingle();
+
+    if (folderError || !folder) {
+      return NextResponse.json(
+        {
+          error: 'folder_not_found',
+          message: 'La carpeta destino no existe o no es tuya.',
+        },
+        { status: 404 },
+      );
+    }
+  }
+
+  const { error: updateError } = await supabase
+    .from('notes')
+    .update({ folder_id })
+    .eq('id', id);
+
+  if (updateError) {
+    log.error('Move note to folder failed', {
+      err: updateError.message,
+      noteId: id,
+      folderId: folder_id,
+    });
+    return NextResponse.json(
+      { error: 'update_failed', message: 'No se pudo mover el apunte.' },
+      { status: 500 },
+    );
+  }
+
+  log.info('Note moved', {
+    userId: user.id,
+    noteId: id,
+    folder_id: folder_id ?? 'inbox',
+  });
+
+  return NextResponse.json({ success: true });
 }
 
 /**

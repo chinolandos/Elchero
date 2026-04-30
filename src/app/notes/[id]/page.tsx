@@ -7,6 +7,8 @@ import { ambientGlow, orbGradient, shadows } from '@/lib/design-tokens';
 import type { CheroNote, CheroMode } from '@/lib/types/chero';
 import { MermaidChart } from './mermaid-chart';
 import { NoteActions } from './note-actions';
+import { FolderPicker } from './folder-picker';
+import { AudioPlayer } from '@/components/ui/audio-player';
 
 interface NotePageProps {
   params: Promise<{ id: string }>;
@@ -35,6 +37,7 @@ interface DbNote extends CheroNote {
   audio_tts_url: string | null;
   audio_duration_minutes: number | null;
   transcript: string | null;
+  folder_id: string | null;
   created_at: string;
 }
 
@@ -76,14 +79,20 @@ export default async function NotePage({ params }: NotePageProps) {
 
       <main className="relative z-10 mx-auto max-w-3xl px-6 py-10">
         {/* Header */}
-        <header className="mb-10 flex items-center justify-between gap-4">
+        <header className="mb-10 flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/library"
             className="inline-flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-white"
           >
             ← Mis apuntes
           </Link>
-          <NoteActions noteId={note.id} transcript={note.transcript} />
+          <div className="flex flex-wrap items-center gap-2">
+            <FolderPicker
+              noteId={note.id}
+              currentFolderId={note.folder_id}
+            />
+            <NoteActions noteId={note.id} transcript={note.transcript} />
+          </div>
         </header>
 
         {/* Title block */}
@@ -112,9 +121,9 @@ export default async function NotePage({ params }: NotePageProps) {
           </p>
         </div>
 
-        {/* Audio TTS — sticky pill arriba */}
+        {/* Audio TTS — pill con waveform animado, drag-to-seek y descarga MP3 */}
         {note.audio_tts_url && (
-          <section className="mb-10 rounded-2xl border border-primary/20 bg-primary/5 p-5">
+          <section className="mb-10">
             <div className="mb-3 flex items-center gap-3">
               <div
                 className="orb-pulse h-6 w-6 rounded-full"
@@ -123,11 +132,15 @@ export default async function NotePage({ params }: NotePageProps) {
               <div className="flex-1">
                 <div className="text-sm font-semibold">Escuchá el apunte</div>
                 <div className="text-xs text-white/40">
-                  Resumen + conceptos + repaso · voz natural
+                  Resumen + conceptos + repaso · voz natural · arrastrá para
+                  buscar
                 </div>
               </div>
             </div>
-            <audio controls src={note.audio_tts_url} className="w-full" />
+            <AudioPlayer
+              src={note.audio_tts_url}
+              downloadName={`chero-${note.subject.toLowerCase().replace(/\s+/g, '-')}`}
+            />
           </section>
         )}
 
