@@ -29,10 +29,34 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isEditingTranscript, setIsEditingTranscript] = useState(false);
   const [editedTranscript, setEditedTranscript] = useState(transcript ?? '');
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   // Latch contra doble-click rápido (header + modal pueden ambos disparar regenerate)
   const regeneratingRef = useRef(false);
 
   const hasTranscript = !!transcript;
+
+  /**
+   * Descarga el PDF del apunte.
+   *
+   * Usamos `window.location.href` en lugar de `<a download>` o fetch+blob
+   * porque es lo más compatible con Safari iOS:
+   *   - <a download> es ignorado en iOS y abre el PDF en preview.
+   *   - fetch+blob funciona pero pierde el filename del Content-Disposition.
+   *   - location.href respeta el header Content-Disposition: attachment del
+   *     server y guarda con el filename correcto en todos los browsers.
+   *
+   * El feedback visual (botón deshabilitado 2.5s) compensa que el browser
+   * no muestre spinner antes de empezar a descargar.
+   */
+  const handleDownloadPdf = () => {
+    if (isDownloadingPdf) return;
+    setIsDownloadingPdf(true);
+    window.location.href = `/api/notes/${noteId}/pdf`;
+    // Re-habilitar después de un tiempo razonable. El server-side render
+    // tarda ~2s para apuntes promedio. Si tarda más, el usuario puede
+    // re-clickear cuando vuelva el botón.
+    setTimeout(() => setIsDownloadingPdf(false), 2500);
+  };
 
   const handleDelete = async () => {
     if (!confirmingDelete) {
@@ -105,7 +129,7 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
               variant="ghost"
               size="sm"
               onClick={() => setIsEditingTranscript(true)}
-              disabled={isRegenerating || isDeleting}
+              disabled={isRegenerating || isDeleting || isDownloadingPdf}
               className="text-white/70 hover:bg-white/5 hover:text-white"
             >
               ✎ Editar transcript
@@ -114,7 +138,7 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
               variant="ghost"
               size="sm"
               onClick={() => handleRegenerate(false)}
-              disabled={isRegenerating || isDeleting}
+              disabled={isRegenerating || isDeleting || isDownloadingPdf}
               className="text-white/70 hover:bg-white/5 hover:text-white"
             >
               {isRegenerating ? <Spinner size="sm" /> : '↻ Regenerar'}
@@ -124,8 +148,25 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
         <Button
           variant="ghost"
           size="sm"
+          onClick={handleDownloadPdf}
+          disabled={isDownloadingPdf || isRegenerating || isDeleting}
+          className="text-white/70 hover:bg-white/5 hover:text-white"
+          aria-label="Descargar apunte en PDF"
+        >
+          {isDownloadingPdf ? (
+            <>
+              <Spinner size="sm" />
+              <span className="ml-1.5">Generando…</span>
+            </>
+          ) : (
+            '↓ PDF'
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={handleDelete}
-          disabled={isDeleting || isRegenerating}
+          disabled={isDeleting || isRegenerating || isDownloadingPdf}
           className={cn(
             'transition-colors',
             confirmingDelete
