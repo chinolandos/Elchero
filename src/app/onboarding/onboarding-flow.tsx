@@ -35,7 +35,9 @@ interface OnboardingState {
 
 const INITIAL: OnboardingState = {
   step: 1,
-  user_type: null,
+  // Pre-seleccionado a 'bachiller' porque es el target principal de Chero.
+  // Universitario sigue disponible (toggleable) por compatibilidad backend.
+  user_type: 'bachiller',
   age: null,
   has_guardian_consent: false,
   institution: null,
@@ -213,7 +215,8 @@ function Step1({
             selected={state.user_type === 'bachiller'}
             onClick={() => update({ user_type: 'bachiller' })}
             title="Bachillerato"
-            subtitle="Período + AVANZO"
+            subtitle="AVANZO + exámenes de período"
+            badge="El target de Chero"
           />
           <TypeCard
             selected={state.user_type === 'universitario'}
@@ -290,11 +293,13 @@ function TypeCard({
   onClick,
   title,
   subtitle,
+  badge,
 }: {
   selected: boolean;
   onClick: () => void;
   title: string;
   subtitle: string;
+  badge?: string;
 }) {
   return (
     <button
@@ -303,12 +308,17 @@ function TypeCard({
       aria-pressed={selected}
       aria-label={`${title} — ${subtitle}`}
       className={cn(
-        'rounded-xl border p-5 text-left transition-all min-h-[80px]',
+        'relative rounded-xl border p-5 text-left transition-all min-h-[80px]',
         selected
           ? 'border-primary bg-primary/10 ring-2 ring-primary/40'
           : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10',
       )}
     >
+      {badge && (
+        <span className="absolute -top-2 right-3 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
+          {badge}
+        </span>
+      )}
       <div className="font-semibold">{title}</div>
       <div className="mt-1 text-xs text-white/50">{subtitle}</div>
     </button>

@@ -16,7 +16,24 @@ export interface InstitutionOption {
 }
 
 export const INSTITUTIONS: InstitutionOption[] = [
-  // Universidades top SV
+  // Bachillerato — top colegios e institutos SV (orden alfabético).
+  // Mix de privados conocidos + institutos públicos top + opción Otro.
+  { value: 'ABC', label: 'Academia Británica Cuscatleca (ABC)', type: 'bachiller' },
+  { value: 'Don Bosco', label: 'Colegio Don Bosco', type: 'bachiller' },
+  { value: 'Escuela Americana', label: 'Escuela Americana', type: 'bachiller' },
+  { value: 'Externado', label: 'Externado de San José', type: 'bachiller' },
+  { value: 'Highlands', label: 'Highlands School', type: 'bachiller' },
+  { value: 'INFRAMEN', label: 'INFRAMEN — Inst. Nac. Francisco Menéndez', type: 'bachiller' },
+  { value: 'INTI', label: 'INTI — Inst. Nac. Técnico Industrial', type: 'bachiller' },
+  { value: 'Lamatepec', label: 'Liceo Cristiano "Lamatepec"', type: 'bachiller' },
+  { value: 'Liceo Salvadoreño', label: 'Liceo Salvadoreño', type: 'bachiller' },
+  { value: 'Sagrado Corazón', label: 'Colegio Sagrado Corazón', type: 'bachiller' },
+  { value: 'Santa Cecilia', label: 'Colegio Santa Cecilia', type: 'bachiller' },
+  { value: 'Walter Soundy', label: 'Centro Escolar Walter Soundy', type: 'bachiller' },
+  { value: 'Otro', label: 'Otro colegio (lo escribo después)', type: 'bachiller' },
+
+  // Universidades — sigue disponible para users que escogen 'universitario'
+  // (el sistema soporta ambos; pero la landing y el flow defaultean a bachiller).
   { value: 'ESEN', label: 'ESEN', type: 'universitario' },
   { value: 'UCA', label: 'UCA — Universidad Centroamericana', type: 'universitario' },
   { value: 'UES', label: 'UES — Universidad de El Salvador', type: 'universitario' },
@@ -28,8 +45,6 @@ export const INSTITUTIONS: InstitutionOption[] = [
   { value: 'UJMD', label: 'UJMD — Dr. José Matías Delgado', type: 'universitario' },
   { value: 'Mónica Herrera', label: 'Universidad Mónica Herrera', type: 'universitario' },
   { value: 'Otra', label: 'Otra universidad', type: 'universitario' },
-  // Bachillerato (no listamos colegios — son cientos. Ponemos un input libre)
-  { value: 'Otro', label: 'Mi colegio (lo escribo después)', type: 'bachiller' },
 ];
 
 /**

@@ -366,12 +366,13 @@ function PricingSection() {
       name: 'Premium',
       price: '$4.99',
       period: 'por mes',
-      description: 'Lo mismo que Spotify Student. Para users power.',
+      description: 'Lo mismo que Spotify Student. Para bachilleres serios.',
       features: [
         'Apuntes ilimitados',
         'Audio TTS HD',
         'Edit transcript + regenerar',
         'Soporte prioritario',
+        '👨‍👩‍👧 Plan familia $9.99 — hasta 3 hermanos',
       ],
       cta: 'Próximamente',
       ctaHref: null,
@@ -398,6 +399,10 @@ function PricingSection() {
         <span className="text-amber-100/90">
           50 usos gratis limitados · Lanzamiento Premium Q3 2026
         </span>
+        <div className="mt-2 text-xs text-amber-100/70">
+          ¿Tenés varios hermanos en bachillerato? El plan familia te deja
+          compartir 3 cuentas por $9.99/mes.
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
