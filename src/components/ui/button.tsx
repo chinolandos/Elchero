@@ -18,6 +18,14 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        // Premium gradient (rediseño Lovable landing). Gradient violet→magenta
+        // + sombra glow + sheen blanco arriba (pseudo-elem before) + active
+        // scale-down sutil. Es la variante estrella de la landing.
+        premium:
+          "relative overflow-hidden bg-gradient-primary text-primary-foreground font-semibold shadow-button-premium transition-smooth hover:brightness-110 active:scale-[0.98] before:absolute before:inset-x-0 before:top-0 before:h-1/2 before:rounded-t-[inherit] before:bg-gradient-to-b before:from-white/30 before:to-transparent before:pointer-events-none",
+        // Glass blur con borde sutil. Para CTAs secundarios sobre fondos dark.
+        glass:
+          "glass text-foreground hover:bg-white/5 transition-smooth",
       },
       size: {
         // Heights bumped para cumplir Apple HIG (44pt) / WCAG 2.5.5 AAA (44px).
@@ -27,6 +35,10 @@ const buttonVariants = cva(
         xs: "h-7 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
         sm: "h-9 gap-1 rounded-[min(var(--radius-md),12px)] px-3 text-[0.85rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3.5",
         lg: "h-12 gap-1.5 px-4 text-base has-data-[icon=inline-end]:pr-3.5 has-data-[icon=inline-start]:pl-3.5",
+        // xl: CTAs hero/landing — toca como premium en Apple HIG, generosos
+        xl: "h-14 gap-2 rounded-2xl px-8 text-base",
+        // pill: full radius para CTAs secundarios y switchers
+        pill: "h-12 gap-2 rounded-full px-7 text-sm",
         icon: "size-10",
         "icon-xs":
           "size-7 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",

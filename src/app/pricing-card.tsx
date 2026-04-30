@@ -2,214 +2,217 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Check, Sparkles } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 /**
- * PricingCard — tarjeta central con tabs de planes (ref Zentra Finance imagen 5).
+ * LandingPricing — sección de precios con tab switcher (rediseño Lovable).
  *
  * Estructura:
- *   - Tabs arriba (Free / Pay-per-use / Premium) con pill animado del activo
- *   - Body: precio grande + descripción + lista features con check
- *   - CTA gradient violeta-magenta
+ *   - Heading "Empezá gratis" con "gratis" en text-gradient italic Fraunces
+ *   - Switcher pill 3-cols (Free / Por mes / Premium) — gradient en activo
+ *   - Card glass con badge, descripción, precio grande, lista features check
+ *   - Banner beta debajo
  *
- * Premium es el tab default (más popular, lo que querés vender post-launch).
+ * Premium es el default (es el que querés vender post-launch).
  *
- * Las tabs son interactivas (state local), por eso es Client Component.
- * Server Component padre se encarga del header de la sección + banner beta.
+ * Como tiene `useState` para el tab activo, es Client Component.
+ * El padre (page.tsx) le pasa `userLoggedIn` para saber qué CTA renderizar.
  */
 
-interface Tier {
-  id: 'free' | 'payperuse' | 'premium';
+type PlanId = 'free' | 'monthly' | 'premium';
+
+interface Plan {
+  id: PlanId;
   name: string;
   price: string;
   period: string;
-  description: string;
+  desc: string;
   features: string[];
   cta: string;
-  ctaHref: string | null;
-  badge?: string;
+  ctaHref: string | null; // null = "Próximamente" (disabled)
+  loggedInCta?: string;
+  loggedInHref?: string;
 }
 
-const TIERS: Tier[] = [
-  {
+const PLANS: Record<PlanId, Plan> = {
+  free: {
     id: 'free',
     name: 'Free',
     price: '$0',
-    period: 'cada mes',
-    description: 'Para probar el producto y casos eventuales.',
+    period: 'para siempre',
+    desc: 'Probá las funciones básicas sin tarjeta.',
     features: [
-      '3 apuntes nuevos por mes',
-      'Voz HD del apunte',
-      'Mapa mental visual',
-      'Privacidad total',
+      '10 apuntes por mes',
+      'Resúmenes con IA',
+      'Exportar a PDF',
+      'Soporte por mail',
     ],
     cta: 'Empezar gratis',
     ctaHref: '/login',
+    loggedInCta: 'Ir a mis apuntes',
+    loggedInHref: '/library',
   },
-  {
-    id: 'payperuse',
-    name: 'Pay-per-use',
-    price: '$0.99',
-    period: 'por apunte',
-    description: 'Cuando necesitás más que el plan free, sin compromiso.',
+  monthly: {
+    id: 'monthly',
+    name: 'Por mes',
+    price: '$1.99',
+    period: '/ mes',
+    desc: 'Acceso flexible cuando lo necesites.',
     features: [
-      'Sin suscripción',
-      'Pagás solo cuando lo necesitás',
-      'Mismo producto que Premium',
-      'Para semanas de exámenes',
+      'Apuntes ilimitados',
+      'Audio → texto',
+      'Edit avanzado',
+      'Soporte prioritario',
     ],
     cta: 'Próximamente',
     ctaHref: null,
   },
-  {
+  premium: {
     id: 'premium',
     name: 'Premium',
     price: '$4.99',
-    period: 'por mes',
-    description: 'Lo mismo que Spotify Student. Para bachilleres serios.',
+    period: '/ 3 meses',
+    desc: 'Lo mejor de El Chero. Pensado para bachillerato.',
     features: [
       'Apuntes ilimitados',
-      'Audio TTS HD',
-      'Edit transcript + regenerar',
+      'Audio TTS HD (770 MB)',
+      'Edit avanzado + reescritura',
       'Soporte prioritario',
-      'Plan familia $9.99 — hasta 3 hermanos',
+      'Plan Familia $9.99 — hasta 5 usuarios',
     ],
-    cta: 'Próximamente',
-    ctaHref: null,
-    badge: 'Más popular',
+    cta: 'Quiero Premium',
+    ctaHref: null, // post-launch lo activamos
   },
-];
+};
 
-export function PricingCard() {
-  // Premium es el default — es lo que querés vender post-launch
-  const [activeId, setActiveId] = useState<Tier['id']>('premium');
-  const active = TIERS.find((t) => t.id === activeId)!;
+const ORDER: PlanId[] = ['free', 'monthly', 'premium'];
+
+export function LandingPricing({ userLoggedIn }: { userLoggedIn: boolean }) {
+  const [active, setActive] = useState<PlanId>('premium');
+  const plan = PLANS[active];
+
+  // Resolver CTA según estado de auth + plan activo
+  const ctaLabel =
+    userLoggedIn && plan.loggedInCta ? plan.loggedInCta : plan.cta;
+  const ctaHref =
+    userLoggedIn && plan.loggedInHref ? plan.loggedInHref : plan.ctaHref;
 
   return (
-    <div className="mx-auto w-full max-w-md">
-      {/* Tabs container — pill background con tabs adentro */}
-      <div className="mb-6 flex rounded-full border border-white/10 bg-white/[0.04] p-1 backdrop-blur">
-        {TIERS.map((tier) => {
-          const isActive = tier.id === activeId;
+    <section id="planes" className="px-5 py-14">
+      <div className="mb-7 text-center">
+        <h2 className="font-display text-4xl font-semibold tracking-tight text-white">
+          Empezá <span className="text-gradient italic">gratis</span>
+        </h2>
+        <p className="mx-auto mt-2 max-w-xs text-sm text-white/60">
+          Un equipo para vos. Cobramos por lo que vas a usar bien.
+        </p>
+      </div>
+
+      {/* Plan switcher — pill background con 3 tabs */}
+      <div className="glass mx-auto mb-6 grid max-w-sm grid-cols-3 gap-1 rounded-full p-1">
+        {ORDER.map((k) => {
+          const isActive = k === active;
           return (
             <button
-              key={tier.id}
+              key={k}
               type="button"
-              onClick={() => setActiveId(tier.id)}
+              onClick={() => setActive(k)}
               aria-pressed={isActive}
               className={cn(
-                'relative flex-1 rounded-full px-3 py-2 text-xs font-semibold transition-all sm:text-sm',
+                'h-10 rounded-full text-xs font-semibold capitalize transition-smooth',
                 isActive
-                  ? 'bg-gradient-to-r from-primary to-primaryHover text-white shadow-[0_4px_16px_rgba(147,51,234,0.4)]'
-                  : 'text-white/55 hover:text-white/80',
+                  ? 'bg-gradient-primary text-primary-foreground shadow-button-premium'
+                  : 'text-white/55 hover:text-white',
               )}
-              style={
-                isActive
-                  ? {
-                      backgroundImage:
-                        'linear-gradient(135deg, #9333ea 0%, #ec4899 100%)',
-                    }
-                  : undefined
-              }
             >
-              {tier.name}
+              {PLANS[k].name}
             </button>
           );
         })}
       </div>
 
-      {/* Card central — el contenido cambia con el tab activo */}
+      {/* Card del plan activo */}
       <div
-        className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-7 backdrop-blur transition-all sm:p-8"
-        // Glow violeta sutil en el border cuando hay un tab "vendible" (Premium)
-        style={{
-          boxShadow:
-            activeId === 'premium'
-              ? '0 12px 48px rgba(147, 51, 234, 0.2), inset 0 0 0 1px rgba(147, 51, 234, 0.15)'
-              : 'none',
-        }}
+        // key force-remount al cambiar tab → re-trigger animate-fade-up
+        key={active}
+        className="glass animate-fade-up shadow-card-premium mx-auto max-w-sm rounded-3xl p-6"
       >
-        {/* Badge "Más popular" si aplica */}
-        {active.badge && (
-          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">
-            ⭐ {active.badge}
-          </div>
-        )}
-
-        {/* Heading: nombre + tagline */}
-        <h3 className="mb-1 text-2xl font-black tracking-tight text-white sm:text-3xl">
-          {active.name}
-        </h3>
-        <p className="mb-6 text-sm text-white/55">{active.description}</p>
-
-        {/* Precio grande */}
-        <div className="mb-6 flex items-baseline gap-2">
-          <span className="text-5xl font-black tabular-nums text-white sm:text-6xl">
-            {active.price}
+        <div className="mb-3 flex items-center gap-2">
+          <span
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider',
+              'text-primary-glow',
+            )}
+          >
+            <Sparkles aria-hidden className="h-3 w-3" /> {plan.name}
           </span>
-          <span className="text-sm text-white/50">{active.period}</span>
         </div>
 
-        {/* Features list */}
-        <ul className="mb-8 space-y-3 text-sm">
-          {active.features.map((f) => (
-            <li key={f} className="flex items-start gap-3 text-white/80">
+        <p className="mb-4 text-sm text-white/65">{plan.desc}</p>
+
+        <div className="mb-5 flex items-baseline gap-1.5">
+          <span className="font-display text-5xl font-bold tracking-tight text-white">
+            {plan.price}
+          </span>
+          <span className="text-sm text-white/55">{plan.period}</span>
+        </div>
+
+        <ul className="mb-6 space-y-3">
+          {plan.features.map((f) => (
+            <li key={f} className="flex items-start gap-3 text-sm">
               <span
                 aria-hidden
-                className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary"
+                className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary/20 text-primary-glow"
               >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M2.5 6.5L4.5 8.5L9.5 3.5"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <Check className="h-3 w-3" />
               </span>
-              <span className="leading-relaxed">{f}</span>
+              <span className="leading-relaxed text-white/90">{f}</span>
             </li>
           ))}
         </ul>
 
-        {/* CTA — gradient si es plan activo + comprable, opaco si "Próximamente" */}
-        {active.ctaHref ? (
+        {ctaHref ? (
           <Link
-            href={active.ctaHref}
-            className="flex w-full items-center justify-center rounded-full px-6 py-3.5 text-sm font-bold text-white shadow-[0_8px_24px_rgba(147,51,234,0.35)] transition-transform hover:scale-[1.02]"
-            style={{
-              backgroundImage:
-                'linear-gradient(135deg, #9333ea 0%, #c084fc 50%, #ec4899 100%)',
-            }}
+            href={ctaHref}
+            className={buttonVariants({
+              variant: 'premium',
+              size: 'xl',
+              className: 'w-full',
+            })}
           >
-            {active.cta}
+            {ctaLabel}
           </Link>
         ) : (
           <button
             type="button"
             disabled
-            className="flex w-full cursor-not-allowed items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-6 py-3.5 text-sm font-semibold text-white/45"
+            className={buttonVariants({
+              variant: 'glass',
+              size: 'xl',
+              className: 'w-full opacity-60',
+            })}
           >
-            {active.cta}
+            {ctaLabel}
           </button>
         )}
 
-        {/* Tagline mini debajo del CTA */}
-        <p className="mt-3 text-center text-xs text-white/35">
-          {activeId === 'free'
-            ? 'Sin tarjeta. Andá a tu Google y listo.'
-            : activeId === 'premium'
-              ? 'Cancelás cuando quieras. Sin permanencias.'
-              : 'Pagás solo lo que usás. Sin límites mensuales.'}
+        <p className="mt-3 text-center text-[11px] text-white/45">
+          Cancelá cuando quieras · Sin compromiso
         </p>
       </div>
-    </div>
+
+      {/* Beta banner */}
+      <div className="glass mx-auto mt-5 flex max-w-sm items-start gap-3 rounded-2xl px-4 py-3.5">
+        <span aria-hidden className="text-xl">
+          🚀
+        </span>
+        <p className="text-xs leading-relaxed text-white/65">
+          <span className="font-semibold text-white">Beta abierta:</span> 10
+          usos gratis al iniciarte. Lanzamiento Premium Q3 2026.
+        </p>
+      </div>
+    </section>
   );
 }
