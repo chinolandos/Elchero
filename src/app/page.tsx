@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import type { User } from '@supabase/supabase-js';
 import { buttonVariants } from '@/components/ui/button';
+import { PremiumButton } from '@/components/ui/premium-button';
+import { AuroraBg } from '@/components/ui/aurora-bg';
 import { ambientGlow, brandGradient, orbGradient, shadows } from '@/lib/design-tokens';
 import { getUserOrNull } from '@/lib/auth/require-auth';
 import { PricingCard } from './pricing-card';
@@ -22,10 +24,14 @@ export default async function HomePage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0a0a14] text-white">
-      {/* Ambient glow background */}
+      {/* Aurora background — full intensity en landing (primer impresión) */}
+      <AuroraBg intensity="full" />
+
+      {/* Ambient glow legacy — capa extra de profundidad por encima del aurora */}
       <div
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 opacity-50"
         style={{ background: ambientGlow }}
+        aria-hidden
       />
 
       <div className="relative z-10">
@@ -112,62 +118,42 @@ function Hero({ user }: { user: User | null }) {
         El Chero
       </div>
 
-      {/* Tagline principal */}
-      <h1 className="mb-5 max-w-3xl text-5xl font-black leading-[1.05] tracking-tight md:text-7xl">
-        El{' '}
+      {/* Tagline principal — mix sans-bold + serif-italic estilo VibeMove */}
+      <h1 className="mb-5 max-w-3xl text-5xl leading-[1.05] tracking-tight md:text-7xl">
+        <span className="font-black">El </span>
         <span
-          className="bg-clip-text text-transparent"
+          className="serif-italic bg-clip-text text-transparent"
           style={{ backgroundImage: brandGradient }}
         >
           cherito
-        </span>{' '}
-        que tu cuaderno nunca fue.
+        </span>
+        <span className="font-black"> que tu cuaderno nunca fue.</span>
       </h1>
 
-      <p className="mb-10 max-w-xl text-lg leading-relaxed text-white/60 md:text-xl">
+      <p className="mb-10 max-w-xl text-lg leading-relaxed text-white/65 md:text-xl">
         De tu clase a tus apuntes en minutos. Hecho para{' '}
-        <strong className="text-white/80">AVANZO</strong>, exámenes de período
+        <strong className="text-white/85">AVANZO</strong>, exámenes de período
         y todo lo que tenés que estudiar en bachillerato.
       </p>
 
       <div className="flex flex-col items-center gap-3 sm:flex-row">
         {user ? (
           <>
-            <Link
-              href="/library"
-              className={buttonVariants({ size: 'lg', className: 'px-8' })}
-            >
-              Mis apuntes
-            </Link>
-            <Link
-              href="/capture"
-              className={buttonVariants({
-                size: 'lg',
-                variant: 'ghost',
-                className: 'px-8 text-white/70 hover:bg-white/5 hover:text-white',
-              })}
-            >
-              + Nuevo apunte
-            </Link>
+            <PremiumButton variant="primary" size="lg" asChild>
+              <Link href="/library">Mis apuntes</Link>
+            </PremiumButton>
+            <PremiumButton variant="ghost" size="lg" asChild>
+              <Link href="/capture">+ Nuevo apunte</Link>
+            </PremiumButton>
           </>
         ) : (
           <>
-            <Link
-              href="/login"
-              className={buttonVariants({ size: 'lg', className: 'px-8' })}
-            >
-              Empezar gratis
-            </Link>
-            <Link
-              href="#como-funciona"
-              className={buttonVariants({
-                size: 'lg',
-                variant: 'ghost',
-                className: 'px-8 text-white/70 hover:bg-white/5 hover:text-white',
-              })}
-            >
-              ¿Cómo funciona?
-            </Link>
+            <PremiumButton variant="primary" size="lg" asChild>
+              <Link href="/login">Empezar gratis</Link>
+            </PremiumButton>
+            <PremiumButton variant="ghost" size="lg" asChild>
+              <Link href="#como-funciona">¿Cómo funciona?</Link>
+            </PremiumButton>
           </>
         )}
       </div>
@@ -211,8 +197,10 @@ function HowItWorksSection() {
         <div className="mb-3 text-xs uppercase tracking-widest text-primary">
           Cómo funciona
         </div>
-        <h2 className="text-4xl font-black tracking-tight md:text-5xl">
-          Del audio al apunte en 3 pasos
+        <h2 className="text-4xl tracking-tight md:text-5xl">
+          <span className="font-black">Del audio al </span>
+          <span className="serif-italic">apunte</span>
+          <span className="font-black"> en 3 pasos</span>
         </h2>
         <p className="mt-4 text-white/60">Total: 1-2 minutos.</p>
       </div>
@@ -281,8 +269,9 @@ function FeaturesSection() {
         <div className="mb-3 text-xs uppercase tracking-widest text-primary">
           Features
         </div>
-        <h2 className="text-4xl font-black tracking-tight md:text-5xl">
-          Hecho para estudiantes salvadoreños
+        <h2 className="text-4xl tracking-tight md:text-5xl">
+          <span className="font-black">Hecho para estudiantes </span>
+          <span className="serif-italic">salvadoreños</span>
         </h2>
       </div>
 
@@ -312,8 +301,9 @@ function ForWhoSection() {
         <div className="mb-3 text-xs uppercase tracking-widest text-primary">
           ¿Es para mí?
         </div>
-        <h2 className="text-4xl font-black tracking-tight md:text-5xl">
-          Hecho para bachilleres
+        <h2 className="text-4xl tracking-tight md:text-5xl">
+          <span className="font-black">Hecho para </span>
+          <span className="serif-italic">bachilleres</span>
         </h2>
         <p className="mt-4 text-white/60">
           Primero, segundo año, AVANZO, exámenes de período. Todo cubierto.
@@ -370,8 +360,9 @@ function PricingSection() {
         <div className="mb-3 text-xs uppercase tracking-widest text-primary">
           Pricing
         </div>
-        <h2 className="text-4xl font-black tracking-tight md:text-5xl">
-          Empezá gratis
+        <h2 className="text-4xl tracking-tight md:text-5xl">
+          <span className="font-black">Empezá </span>
+          <span className="serif-italic">gratis</span>
         </h2>
         <p className="mt-4 text-white/60">
           Sin tarjeta para probar. Cobramos justo lo que cuesta hacerlo bien.
@@ -429,8 +420,9 @@ function FaqSection() {
         <div className="mb-3 text-xs uppercase tracking-widest text-primary">
           Preguntas frecuentes
         </div>
-        <h2 className="text-4xl font-black tracking-tight md:text-5xl">
-          ¿Tenés dudas?
+        <h2 className="text-4xl tracking-tight md:text-5xl">
+          <span className="font-black">¿Tenés </span>
+          <span className="serif-italic">dudas?</span>
         </h2>
       </div>
 
@@ -466,19 +458,20 @@ function CtaSection({ user }: { user: User | null }) {
   return (
     <section className="mx-auto max-w-3xl px-6 py-24 md:py-28">
       <div className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/15 to-primary/5 p-10 text-center md:p-14">
-        <h2 className="mb-4 text-3xl font-black tracking-tight md:text-5xl">
-          Probalo con tu próxima clase
+        <h2 className="mb-4 text-3xl tracking-tight md:text-5xl">
+          <span className="font-black">Probalo con tu </span>
+          <span className="serif-italic">próxima</span>
+          <span className="font-black"> clase</span>
         </h2>
         <p className="mb-8 text-white/70 md:text-lg">
           50 usos gratis. Sin tarjeta. Menos de 5 minutos del login a tu
           primer apunte completo.
         </p>
-        <Link
-          href={user ? '/capture' : '/login'}
-          className={buttonVariants({ size: 'lg', className: 'px-10' })}
-        >
-          {user ? 'Crear apunte ahora' : 'Empezar gratis'}
-        </Link>
+        <PremiumButton variant="gradient" size="lg" asChild>
+          <Link href={user ? '/capture' : '/login'}>
+            {user ? 'Crear apunte ahora' : 'Empezar gratis'}
+          </Link>
+        </PremiumButton>
       </div>
     </section>
   );
