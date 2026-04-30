@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { requireAuth } from '@/lib/auth/require-auth';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { buttonVariants } from '@/components/ui/button';
+import { PremiumButton } from '@/components/ui/premium-button';
 import { orbGradient, shadows } from '@/lib/design-tokens';
 import type { CheroMode } from '@/lib/types/chero';
 import { LibraryClient, type NoteRow } from './library-client';
@@ -60,6 +60,7 @@ export default async function LibraryPage() {
           <div
             className="orb-pulse h-9 w-9 rounded-full"
             style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
+            aria-hidden
           />
           <div>
             <div className="text-base font-bold">El Chero</div>
@@ -68,15 +69,17 @@ export default async function LibraryPage() {
             </div>
           </div>
         </div>
-        <Link href="/capture" className={buttonVariants({ size: 'sm' })}>
-          + Nuevo apunte
-        </Link>
+        <PremiumButton variant="gradient" size="sm" asChild>
+          <Link href="/capture">+ Nuevo</Link>
+        </PremiumButton>
       </header>
 
-      <h1 className="mb-2 text-4xl font-black tracking-tight md:text-5xl">
-        Tus apuntes
+      {/* Headline serif italic estilo VibeMove */}
+      <h1 className="mb-2 text-4xl tracking-tight md:text-5xl">
+        <span className="font-black">Tus </span>
+        <span className="serif-italic">apuntes</span>
       </h1>
-      <p className="mb-10 text-white/60">
+      <p className="mb-10 text-white/55">
         Organizados por carpetas. Tap largo en una carpeta para editarla o
         borrarla.
       </p>

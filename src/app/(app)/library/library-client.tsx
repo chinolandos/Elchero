@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { buttonVariants } from '@/components/ui/button';
+import { GraduationCap, Target, Award, BookOpen, ChevronRight } from 'lucide-react';
+import { PremiumButton } from '@/components/ui/premium-button';
 import { orbGradient, shadows } from '@/lib/design-tokens';
 import type { CheroMode } from '@/lib/types/chero';
 import { FolderTabs } from './folder-tabs';
@@ -29,24 +30,25 @@ const MODE_LABEL: Record<CheroMode, string> = {
 };
 
 /**
- * 5 gradients procedural de la paleta Aura. Cada subject hashea a uno
- * consistente — "Matemática" siempre tendrá el mismo gradient.
- *
- * Cada gradient combina 2-3 colores del brand (violeta, magenta, cyan,
- * indigo, pink) para mantener cohesión visual.
+ * 3 gradients procedural estilo lovable hue-learn-glow. Cada subject hashea
+ * a uno consistente — "Matemática" siempre el mismo color.
  */
 const SUBJECT_GRADIENTS: string[] = [
-  // 0 — violeta profundo + magenta (default Aura)
-  'linear-gradient(135deg, #6b21a8 0%, #9333ea 45%, #ec4899 100%)',
-  // 1 — cyan + violeta (ciencias / tech)
-  'linear-gradient(135deg, #1e1b4b 0%, #4f46e5 50%, #22d3ee 100%)',
-  // 2 — pink + orange (literatura / arts)
-  'linear-gradient(135deg, #831843 0%, #ec4899 50%, #f59e0b 100%)',
-  // 3 — indigo profundo + violeta vibrante
-  'linear-gradient(135deg, #312e81 0%, #6366f1 50%, #c084fc 100%)',
-  // 4 — magenta + violeta + cyan (orbe-like)
-  'linear-gradient(135deg, #ec4899 0%, #9333ea 50%, #22d3ee 100%)',
+  // 0 — violeta-magenta vibrante (estilo "Parciales" del lovable)
+  'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
+  // 1 — coral-rosa (estilo "SAT")
+  'linear-gradient(135deg, #ec4899 0%, #f97316 100%)',
+  // 2 — naranja vibrante (estilo "Prueba Avanzo")
+  'linear-gradient(135deg, #f97316 0%, #fb923c 100%)',
 ];
+
+/** Iconos lucide por modo del apunte. */
+const MODE_ICONS: Record<CheroMode, React.ComponentType<{ className?: string }>> = {
+  avanzo: Award,
+  periodo: BookOpen,
+  parciales: GraduationCap,
+  repaso: Target,
+};
 
 /**
  * Hash determinístico (DJB2 simplificado) que mapea un subject a un índice
@@ -86,33 +88,24 @@ export function LibraryClient({ initialNotes }: { initialNotes: NoteRow[] }) {
 }
 
 /**
- * Grid de cards estilo "Daily memo" (ref Taskello card design).
+ * Lista de cards estilo lovable hue-learn-glow (Parciales / SAT / Avanzo).
  *
  * Layout:
- *   - Mobile: 1 columna
- *   - Tablet (sm 640px+): 2 columnas
- *   - Desktop (lg 1024px+): 3 columnas
+ *   - Cada card es un Link full-width con gradient saturado
+ *   - Icono circular gradient brillante a la izquierda
+ *   - Texto: title bold + UPPERCASE label + descripción
+ *   - Chevron right para affordance de navegación
+ *   - Press: scale 0.98
  *
- * Cada card tiene:
- *   - Banda superior con gradient procedural por subject + mode badge top-right
- *   - Body: subject grande + resumen 2 líneas
- *   - Footer: número secuencial grande izq + counter "X preg · Y flash" der
- *   - Corner-radius asimétrico: top-left grande, resto medio
+ * En desktop ancho amplio se mantiene single column hasta sm, luego
+ * 2 cols a partir de md para aprovechar espacio.
  */
 function NoteGrid({ notes }: { notes: NoteRow[] }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {notes.map((note, index) => {
+    <div className="flex flex-col gap-3 md:grid md:grid-cols-2">
+      {notes.map((note) => {
         const gradient = SUBJECT_GRADIENTS[hashSubject(note.subject)];
-        const seq = String(index + 1).padStart(2, '0'); // "01", "02", ...
-        return (
-          <NoteCard
-            key={note.id}
-            note={note}
-            gradient={gradient}
-            seq={seq}
-          />
-        );
+        return <NoteCard key={note.id} note={note} gradient={gradient} />;
       })}
     </div>
   );
@@ -121,108 +114,78 @@ function NoteGrid({ notes }: { notes: NoteRow[] }) {
 function NoteCard({
   note,
   gradient,
-  seq,
 }: {
   note: NoteRow;
   gradient: string;
-  seq: string;
 }) {
+  const ModeIcon = MODE_ICONS[note.mode];
   return (
     <Link
       href={`/notes/${note.id}`}
-      className="group relative flex flex-col overflow-hidden rounded-tl-3xl rounded-2xl border border-white/[0.06] bg-[#0e0e1a] transition-all hover:scale-[1.02] hover:border-primary/30 hover:shadow-[0_8px_32px_rgba(147,51,234,0.18)]"
+      className="group relative flex items-center gap-4 overflow-hidden rounded-3xl border border-white/[0.06] p-4 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
+      style={{
+        background: gradient,
+        boxShadow: '0 8px 32px rgba(147, 51, 234, 0.18)',
+      }}
     >
-      {/* Banda superior con gradient procedural */}
-      <div
-        className="relative h-24 w-full"
-        style={{ background: gradient }}
+      {/* Sheen overlay sutil para depth — match lovable */}
+      <span
         aria-hidden
-      >
-        {/* Overlay grain sutil para profundidad */}
-        <div
-          className="absolute inset-0 opacity-30 mix-blend-overlay"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4), transparent 60%)',
-          }}
-        />
+        className="pointer-events-none absolute inset-0 opacity-30"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 30% 20%, rgba(255,255,255,0.35), transparent 55%)',
+        }}
+      />
 
-        {/* Mode badge top-right */}
-        <span className="absolute right-3 top-3 rounded-full bg-black/40 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
-          {MODE_LABEL[note.mode]}
-        </span>
+      {/* Icono circular gradient brillante */}
+      <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-md ring-1 ring-white/20">
+        <ModeIcon className="h-6 w-6 text-white" />
+      </span>
 
-        {/* Audio indicator (si tiene TTS) */}
-        {note.audio_tts_url && (
-          <span
-            className="absolute left-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-black/40 text-xs text-white backdrop-blur-md"
-            aria-label="Tiene audio"
-          >
-            🎧
-          </span>
-        )}
-      </div>
-
-      {/* Body */}
-      <div className="flex flex-1 flex-col p-5">
-        <h3 className="mb-2 line-clamp-1 text-lg font-bold tracking-tight text-white">
+      {/* Body texto */}
+      <div className="relative flex-1 overflow-hidden">
+        <h3 className="line-clamp-1 text-base font-bold tracking-tight text-white">
           {note.subject}
         </h3>
-        <p className="line-clamp-2 flex-1 text-sm leading-relaxed text-white/55 transition-colors group-hover:text-white/75">
-          {note.summary_excerpt || 'Sin resumen disponible'}
-        </p>
-
-        {/* Footer: número secuencial grande + counter */}
-        <div className="mt-5 flex items-end justify-between border-t border-white/[0.05] pt-4">
-          <div>
-            <div className="text-3xl font-black tabular-nums leading-none text-white">
-              {seq}
-            </div>
-            <div className="mt-1 text-[10px] uppercase tracking-wider text-white/35">
-              {formatShortDate(note.created_at)}
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-xs text-white/65">
-              <span className="font-semibold text-white/85">
-                {note.questions_count}
-              </span>{' '}
-              preg
-            </div>
-            <div className="text-xs text-white/65">
-              <span className="font-semibold text-white/85">
-                {note.flashcards_count}
-              </span>{' '}
-              flash
-            </div>
-          </div>
+        <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/75">
+          {MODE_LABEL[note.mode]}
+          {note.audio_tts_url && <span className="ml-1.5">· 🎧</span>}
         </div>
+        <p className="mt-1 line-clamp-1 text-xs leading-relaxed text-white/85">
+          {note.summary_excerpt || formatShortDate(note.created_at)}
+        </p>
       </div>
+
+      {/* Chevron right */}
+      <ChevronRight
+        className="relative h-5 w-5 shrink-0 text-white/70 transition-transform group-hover:translate-x-1"
+        aria-hidden
+      />
     </Link>
   );
 }
 
 function EmptyState({ isInbox }: { isInbox: boolean }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-10 text-center backdrop-blur">
       <div
         className="orb-pulse mx-auto mb-6 h-16 w-16 rounded-full opacity-60"
         style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
+        aria-hidden
       />
-      <h2 className="mb-2 text-xl font-bold">
-        {isInbox ? 'Tu inbox está vacío' : 'Esta carpeta está vacía'}
+      <h2 className="mb-2 text-2xl tracking-tight">
+        <span className="font-black">Tu inbox está </span>
+        <span className="serif-italic">vacío</span>
       </h2>
       <p className="mb-6 text-sm text-white/60">
         {isInbox
           ? 'Subí o grabá el audio de tu clase y Chero te genera el apunte completo.'
           : 'Todavía no tenés apuntes en esta carpeta. Generá uno o moveuno desde otra carpeta.'}
       </p>
-      <Link
-        href="/capture"
-        className={buttonVariants({ size: 'lg', className: 'px-8' })}
-      >
-        Crear apunte
-      </Link>
+      <PremiumButton variant="gradient" size="lg" asChild>
+        <Link href="/capture">Crear apunte</Link>
+      </PremiumButton>
     </div>
   );
 }
