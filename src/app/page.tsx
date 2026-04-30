@@ -34,14 +34,13 @@ export default async function HomePage() {
         aria-hidden
       />
 
-      {/*
-       * Landing minimalista: Hero + Pricing + CTA + Footer.
-       * Las secciones eliminadas (HowItWorks, Features, ForWho, FAQ) viven
-       * ahora en /como-funciona, accesible vía link en Hero y Footer.
-       */}
       <div className="relative z-10">
         <Hero user={user} />
+        <HowItWorksSection />
+        <FeaturesSection />
+        <ForWhoSection />
         <PricingSection />
+        <FaqSection />
         <CtaSection user={user} />
         <Footer />
       </div>
@@ -153,7 +152,7 @@ function Hero({ user }: { user: User | null }) {
               <Link href="/login">Empezar gratis</Link>
             </PremiumButton>
             <PremiumButton variant="ghost" size="lg" asChild>
-              <Link href="/como-funciona">¿Cómo funciona?</Link>
+              <Link href="#como-funciona">¿Cómo funciona?</Link>
             </PremiumButton>
           </>
         )}
@@ -162,6 +161,193 @@ function Hero({ user }: { user: User | null }) {
       <p className="mt-6 text-xs text-white/40">
         Sin tarjeta. Sin descargas. Andá a tu cuenta de Google y listo.
       </p>
+    </section>
+  );
+}
+
+// ─── ¿Cómo funciona? ───
+function HowItWorksSection() {
+  const steps = [
+    {
+      n: '1',
+      title: 'Grabás o subís',
+      body: 'Grabás hasta 9 minutos directo desde la app, o subís un audio que ya tenés (MP3, M4A, WAV, hasta 4.5 MB).',
+      icon: '🎙',
+    },
+    {
+      n: '2',
+      title: 'Procesamos con IA',
+      body: 'Whisper transcribe a texto. Claude Sonnet detecta materia, modo (AVANZO o examen de período) y genera tu apunte completo.',
+      icon: '⚡',
+    },
+    {
+      n: '3',
+      title: 'Recibís tu apunte',
+      body: 'Resumen, conceptos clave con ejemplos, preguntas tipo examen, flashcards, repaso de 30s y audio para escuchar yendo a clase.',
+      icon: '📝',
+    },
+  ];
+
+  return (
+    <section
+      id="como-funciona"
+      className="mx-auto max-w-5xl px-6 py-24 md:py-32"
+    >
+      <div className="mb-14 text-center">
+        <div className="mb-3 text-xs uppercase tracking-widest text-primary">
+          Cómo funciona
+        </div>
+        <h2 className="text-4xl tracking-tight md:text-5xl">
+          <span className="font-black">Del audio al </span>
+          <span className="serif-italic">apunte</span>
+          <span className="font-black"> en 3 pasos</span>
+        </h2>
+        <p className="mt-4 text-white/60">Total: 1-2 minutos.</p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        {steps.map((step) => (
+          <div
+            key={step.n}
+            className="rounded-2xl border border-white/10 bg-white/[0.03] p-7 transition-colors hover:border-primary/30 hover:bg-primary/5"
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-base font-bold text-primary">
+                {step.n}
+              </span>
+              <span className="text-3xl" aria-hidden="true">
+                {step.icon}
+              </span>
+            </div>
+            <h3 className="mb-2 text-xl font-bold">{step.title}</h3>
+            <p className="text-sm leading-relaxed text-white/60">{step.body}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─── Features ───
+function FeaturesSection() {
+  const features = [
+    {
+      title: 'Voseo salvadoreño nativo',
+      body: 'No es español neutro genérico. "Tenés", "podés", "ojo con esto". Los apuntes se sienten como te explica un cherito de confianza.',
+      icon: '🇸🇻',
+    },
+    {
+      title: 'Detecta tu modo',
+      body: 'Si decís "para AVANZO", arma apunte estilo AVANZO. Si decís "examen de período", lo adapta al período. Sin que configures nada.',
+      icon: '🎯',
+    },
+    {
+      title: 'Audio HD para repasar',
+      body: 'Cada apunte viene con audio TTS natural. Escuchalo yendo a clase, antes del examen, en el bus. Repaso sin pantalla.',
+      icon: '🎧',
+    },
+    {
+      title: 'Mapa mental visual',
+      body: 'Diagrama auto-generado con los conceptos relacionados. Se entiende de un vistazo lo que tardás 1 hora leyendo.',
+      icon: '🗺️',
+    },
+    {
+      title: 'Detector de calidad',
+      body: 'Si tu audio tiene mucho ruido (risas de compañeros, muletillas), te avisamos antes de gastar tu uso. Te devolvemos el cupo si decidís regrabar.',
+      icon: '👂',
+    },
+    {
+      title: 'Privacy-first',
+      body: 'Tu audio se borra apenas se transcribe — nunca toca disco. Podés eliminar tu cuenta y todos tus apuntes desde tu perfil cuando quieras.',
+      icon: '🔒',
+    },
+  ];
+
+  return (
+    <section className="mx-auto max-w-6xl px-6 py-24 md:py-28">
+      <div className="mb-14 text-center">
+        <div className="mb-3 text-xs uppercase tracking-widest text-primary">
+          Features
+        </div>
+        <h2 className="text-4xl tracking-tight md:text-5xl">
+          <span className="font-black">Hecho para estudiantes </span>
+          <span className="serif-italic">salvadoreños</span>
+        </h2>
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {features.map((feat) => (
+          <div
+            key={feat.title}
+            className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-all hover:border-primary/30 hover:bg-white/[0.05]"
+          >
+            <div className="mb-3 text-3xl" aria-hidden="true">
+              {feat.icon}
+            </div>
+            <h3 className="mb-2 text-lg font-bold">{feat.title}</h3>
+            <p className="text-sm leading-relaxed text-white/60">{feat.body}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─── ¿Para quién es? ───
+function ForWhoSection() {
+  return (
+    <section className="mx-auto max-w-5xl px-6 py-24 md:py-28">
+      <div className="mb-14 text-center">
+        <div className="mb-3 text-xs uppercase tracking-widest text-primary">
+          ¿Es para mí?
+        </div>
+        <h2 className="text-4xl tracking-tight md:text-5xl">
+          <span className="font-black">Hecho para </span>
+          <span className="serif-italic">bachilleres</span>
+        </h2>
+        <p className="mt-4 text-white/60">
+          Primero, segundo año, AVANZO, exámenes de período. Todo cubierto.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="rounded-2xl border border-primary/40 bg-primary/10 p-7 ring-1 ring-primary/20">
+          <div className="mb-4 flex items-center gap-3">
+            <span className="text-3xl" aria-hidden="true">🎯</span>
+            <h3 className="text-2xl font-bold">AVANZO</h3>
+          </div>
+          <p className="mb-5 text-white/80">
+            La prueba nacional MINED para 2° año. Chero arma apuntes con el
+            formato exacto: selección múltiple, 5 áreas oficiales, preguntas
+            del estilo del examen real.
+          </p>
+          <ul className="space-y-2 text-sm text-white/85">
+            <li>★ Lenguaje y Literatura</li>
+            <li>★ Matemática</li>
+            <li>★ Ciencias Naturales</li>
+            <li>★ Estudios Sociales y Ciudadanía</li>
+            <li>★ Inglés</li>
+          </ul>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
+          <div className="mb-4 flex items-center gap-3">
+            <span className="text-3xl" aria-hidden="true">📅</span>
+            <h3 className="text-2xl font-bold">Exámenes de período</h3>
+          </div>
+          <p className="mb-5 text-white/80">
+            Los 4 períodos evaluativos del año, sea cual sea tu materia.
+            Apuntes específicos a tu profe y a tu colegio.
+          </p>
+          <ul className="space-y-2 text-sm text-white/70">
+            <li>· Filosofía, Psicología, Economía</li>
+            <li>· Educación Artística, Educación Física</li>
+            <li>· Moral, Urbanidad y Cívica</li>
+            <li>· Informática, Contabilidad</li>
+            <li>· Cualquier materia con voz humana en español</li>
+          </ul>
+        </div>
+      </div>
     </section>
   );
 }
@@ -203,6 +389,69 @@ function PricingSection() {
   );
 }
 
+// ─── FAQ ───
+function FaqSection() {
+  const faqs = [
+    {
+      q: '¿Cuánto cuesta cada apunte hoy?',
+      a: 'En la beta es gratis: 50 usos compartidos entre todos los users de prueba. Cuando lancemos Premium en Q3 2026, son 3 apuntes/mes free, $0.99 por extra, o $4.99/mes ilimitado.',
+    },
+    {
+      q: '¿Qué tan privado es mi audio?',
+      a: 'Tu audio NUNCA toca disco — solo vive en memoria mientras se transcribe (~30 segundos). Después se descarta. El texto transcrito se guarda con tu apunte para que puedas regenerarlo, pero podés borrarlo cuando quieras desde tu perfil. Cumplimos la Ley de Protección de Datos Personales SV.',
+    },
+    {
+      q: '¿Funciona si soy menor de edad?',
+      a: 'Sí, desde los 12 años. Si sos menor, te pedimos confirmar que tu madre, padre o tutor sabe que estás usando Chero. Es requisito de la Ley SV.',
+    },
+    {
+      q: '¿Para qué materias sirve?',
+      a: 'Las 5 áreas oficiales de AVANZO (Lenguaje y Literatura, Matemática, Ciencias Naturales, Estudios Sociales y Ciudadanía, Inglés) y todas las materias del bachillerato general (Filosofía, Psicología, Economía, Contabilidad, Informática, Educación Artística, Moral y Cívica, entre otras). Si tu profe lo explica con voz humana en español, Chero lo procesa.',
+    },
+    {
+      q: '¿Y si el audio sale mal?',
+      a: 'Tenemos un detector de calidad: si la transcripción tiene mucho ruido (risas, muletillas), te avisamos antes de gastar tu uso. Si decidís regrabar, te devolvemos el cupo. Si el apunte salió raro, podés regenerarlo o editar el transcript sin gastar otro uso.',
+    },
+  ];
+
+  return (
+    <section id="faq" className="mx-auto max-w-3xl px-6 py-24 md:py-28">
+      <div className="mb-10 text-center">
+        <div className="mb-3 text-xs uppercase tracking-widest text-primary">
+          Preguntas frecuentes
+        </div>
+        <h2 className="text-4xl tracking-tight md:text-5xl">
+          <span className="font-black">¿Tenés </span>
+          <span className="serif-italic">dudas?</span>
+        </h2>
+      </div>
+
+      <div className="space-y-3">
+        {faqs.map((faq) => (
+          <details
+            key={faq.q}
+            className="group rounded-xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-white/20"
+          >
+            <summary className="cursor-pointer list-none">
+              <div className="flex items-start justify-between gap-4">
+                <h3 className="text-base font-semibold text-white/90">
+                  {faq.q}
+                </h3>
+                <span
+                  aria-hidden="true"
+                  className="mt-0.5 text-white/40 transition-transform group-open:rotate-180"
+                >
+                  ▼
+                </span>
+              </div>
+            </summary>
+            <p className="mt-3 text-sm leading-relaxed text-white/65">{faq.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 // ─── CTA final ───
 function CtaSection({ user }: { user: User | null }) {
