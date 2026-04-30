@@ -3,6 +3,7 @@ import type { User } from '@supabase/supabase-js';
 import { buttonVariants } from '@/components/ui/button';
 import { ambientGlow, brandGradient, orbGradient, shadows } from '@/lib/design-tokens';
 import { getUserOrNull } from '@/lib/auth/require-auth';
+import { PricingCard } from './pricing-card';
 
 /**
  * Landing pública de Chero — versión completa Día 7.
@@ -60,17 +61,49 @@ function Hero({ user }: { user: User | null }) {
         Beta abierta · 50 usos gratis
       </div>
 
-      {/* Orb central */}
-      <div className="relative mb-10 flex items-center justify-center">
+      {/*
+       * Orb central — el elemento brand más prominente.
+       *
+       * 3 capas concéntricas (de afuera hacia adentro):
+       *   1. Halo extra-large radial muy difuso (la "atmósfera")
+       *   2. Glow violeta más intenso (capa media)
+       *   3. Orbe sólido con gradient orgánico + shadow propia
+       *
+       * Tamaños:
+       *   - Mobile: orbe 288px (h-72), cabe en viewport de 375px+ con margen
+       *   - Desktop (md+): orbe 384px (h-96), dominante en hero
+       *
+       * La animación `orb-pulse` (definida en globals.css con 4s ease-in-out)
+       * solo se aplica a la esfera sólida — los halos quedan estáticos para
+       * no marear. El brand se refuerza con la profundidad multi-capa.
+       */}
+      <div className="relative mb-12 flex items-center justify-center md:mb-16">
+        {/* Layer 3 — halo atmosférico extra-large */}
         <div
-          className="orb-pulse h-40 w-40 rounded-full md:h-52 md:w-52"
-          style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
-        />
-        <div
-          className="pointer-events-none absolute h-64 w-64 rounded-full md:h-80 md:w-80"
+          aria-hidden
+          className="pointer-events-none absolute h-[28rem] w-[28rem] rounded-full md:h-[36rem] md:w-[36rem]"
           style={{
             background:
-              'radial-gradient(circle, rgba(147, 51, 234, 0.25) 0%, transparent 60%)',
+              'radial-gradient(circle, rgba(147, 51, 234, 0.14) 0%, rgba(236, 72, 153, 0.06) 35%, transparent 70%)',
+          }}
+        />
+
+        {/* Layer 2 — glow violeta medio */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute h-96 w-96 rounded-full md:h-[28rem] md:w-[28rem]"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(168, 85, 247, 0.30) 0%, rgba(192, 132, 252, 0.12) 40%, transparent 70%)',
+          }}
+        />
+
+        {/* Layer 1 — orbe sólido con gradient orgánico */}
+        <div
+          className="orb-pulse relative h-72 w-72 rounded-full md:h-96 md:w-96"
+          style={{
+            background: orbGradient,
+            boxShadow: `${shadows.glowOrb}, 0 0 120px rgba(192, 132, 252, 0.3)`,
           }}
         />
       </div>
@@ -331,55 +364,6 @@ function ForWhoSection() {
 
 // ─── Pricing ───
 function PricingSection() {
-  const tiers = [
-    {
-      name: 'Free',
-      price: '$0',
-      period: 'cada mes',
-      description: 'Para probar el producto y casos eventuales.',
-      features: [
-        '3 apuntes nuevos por mes',
-        'Voz HD del apunte',
-        'Mapa mental visual',
-        'Privacidad total',
-      ],
-      cta: 'Empezar gratis',
-      ctaHref: '/login',
-      highlighted: false,
-    },
-    {
-      name: 'Pay-per-use',
-      price: '$0.99',
-      period: 'por apunte',
-      description: 'Cuando necesitás más que el plan free, sin compromiso.',
-      features: [
-        'Sin suscripción',
-        'Pagás solo cuando lo necesitás',
-        'Mismo producto que Premium',
-        'Para semanas de exámenes',
-      ],
-      cta: 'Próximamente',
-      ctaHref: null,
-      highlighted: false,
-    },
-    {
-      name: 'Premium',
-      price: '$4.99',
-      period: 'por mes',
-      description: 'Lo mismo que Spotify Student. Para bachilleres serios.',
-      features: [
-        'Apuntes ilimitados',
-        'Audio TTS HD',
-        'Edit transcript + regenerar',
-        'Soporte prioritario',
-        '👨‍👩‍👧 Plan familia $9.99 — hasta 3 hermanos',
-      ],
-      cta: 'Próximamente',
-      ctaHref: null,
-      highlighted: true,
-    },
-  ];
-
   return (
     <section id="pricing" className="mx-auto max-w-6xl px-6 py-24 md:py-28">
       <div className="mb-10 text-center">
@@ -394,72 +378,21 @@ function PricingSection() {
         </p>
       </div>
 
-      <div className="mb-10 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 text-center">
+      {/* Card central con tabs (ref Zentra Finance imagen 5).
+          Single card, Premium destacado por default — el plan que querés
+          vender post-launch. */}
+      <PricingCard />
+
+      {/* Banner beta — informativo, debajo del card */}
+      <div className="mx-auto mt-10 max-w-md rounded-2xl border border-amber-500/30 bg-amber-500/[0.08] p-5 text-center">
         <strong className="text-amber-200">🎁 Beta abierta:</strong>{' '}
         <span className="text-amber-100/90">
           50 usos gratis limitados · Lanzamiento Premium Q3 2026
         </span>
         <div className="mt-2 text-xs text-amber-100/70">
-          ¿Tenés varios hermanos en bachillerato? El plan familia te deja
-          compartir 3 cuentas por $9.99/mes.
+          ¿Tenés varios hermanos en bachillerato? Plan familia $9.99/mes
+          comparte 3 cuentas.
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {tiers.map((tier) => (
-          <div
-            key={tier.name}
-            className={
-              tier.highlighted
-                ? 'relative rounded-2xl border-2 border-primary bg-primary/10 p-7 shadow-xl shadow-primary/20'
-                : 'rounded-2xl border border-white/10 bg-white/[0.03] p-7'
-            }
-          >
-            {tier.highlighted && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-xs font-bold text-primary-foreground">
-                MÁS POPULAR
-              </div>
-            )}
-            <div className="mb-2 text-sm font-semibold uppercase tracking-wider text-white/60">
-              {tier.name}
-            </div>
-            <div className="mb-1 flex items-baseline gap-2">
-              <span className="text-4xl font-black">{tier.price}</span>
-              <span className="text-sm text-white/50">{tier.period}</span>
-            </div>
-            <p className="mb-5 text-sm text-white/60">{tier.description}</p>
-            <ul className="mb-6 space-y-2 text-sm text-white/80">
-              {tier.features.map((f) => (
-                <li key={f} className="flex items-start gap-2">
-                  <span className="mt-0.5 text-primary" aria-hidden="true">
-                    ✓
-                  </span>
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-            {tier.ctaHref ? (
-              <Link
-                href={tier.ctaHref}
-                className={buttonVariants({
-                  size: 'lg',
-                  variant: tier.highlighted ? 'default' : 'outline',
-                  className: 'w-full',
-                })}
-              >
-                {tier.cta}
-              </Link>
-            ) : (
-              <button
-                type="button"
-                disabled
-                className="w-full cursor-not-allowed rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/40"
-              >
-                {tier.cta}
-              </button>
-            )}
-          </div>
-        ))}
       </div>
     </section>
   );

@@ -25,12 +25,14 @@ export default async function LibraryPage() {
     audio_duration_minutes: number | null;
     audio_tts_url: string | null;
     folder_id: string | null;
+    questions: unknown[] | null;
+    flashcards: unknown[] | null;
   };
 
   const { data: rawNotes } = await supabase
     .from('notes')
     .select(
-      'id, mode, subject, institution, summary, created_at, audio_duration_minutes, audio_tts_url, folder_id',
+      'id, mode, subject, institution, summary, created_at, audio_duration_minutes, audio_tts_url, folder_id, questions, flashcards',
     )
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
@@ -47,6 +49,8 @@ export default async function LibraryPage() {
     audio_duration_minutes: n.audio_duration_minutes,
     audio_tts_url: n.audio_tts_url,
     folder_id: n.folder_id,
+    questions_count: Array.isArray(n.questions) ? n.questions.length : 0,
+    flashcards_count: Array.isArray(n.flashcards) ? n.flashcards.length : 0,
   }));
 
   return (
