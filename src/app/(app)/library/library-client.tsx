@@ -102,7 +102,7 @@ export function LibraryClient({ initialNotes }: { initialNotes: NoteRow[] }) {
  */
 function NoteGrid({ notes }: { notes: NoteRow[] }) {
   return (
-    <div className="flex flex-col gap-3 md:grid md:grid-cols-2">
+    <div className="flex flex-col gap-2">
       {notes.map((note) => {
         const gradient = SUBJECT_GRADIENTS[hashSubject(note.subject)];
         return <NoteCard key={note.id} note={note} gradient={gradient} />;
@@ -122,44 +122,31 @@ function NoteCard({
   return (
     <Link
       href={`/notes/${note.id}`}
-      className="group relative flex items-center gap-4 overflow-hidden rounded-3xl border border-white/[0.06] p-4 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
-      style={{
-        background: gradient,
-        boxShadow: '0 8px 32px rgba(147, 51, 234, 0.18)',
-      }}
+      className="group flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 backdrop-blur transition-all duration-200 hover:border-white/15 hover:bg-white/[0.07] active:scale-[0.98]"
     >
-      {/* Sheen overlay sutil para depth — match lovable */}
+      {/* Icono circular gradient — único elemento con color saturado */}
       <span
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl shadow-[0_4px_12px_rgba(147,51,234,0.25)]"
+        style={{ background: gradient }}
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-30"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 30% 20%, rgba(255,255,255,0.35), transparent 55%)',
-        }}
-      />
-
-      {/* Icono circular gradient brillante */}
-      <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-md ring-1 ring-white/20">
-        <ModeIcon className="h-6 w-6 text-white" />
+      >
+        <ModeIcon className="h-5 w-5 text-white" />
       </span>
 
       {/* Body texto */}
-      <div className="relative flex-1 overflow-hidden">
-        <h3 className="line-clamp-1 text-base font-bold tracking-tight text-white">
+      <div className="flex-1 overflow-hidden">
+        <h3 className="line-clamp-1 text-sm font-bold tracking-tight text-white">
           {note.subject}
         </h3>
-        <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/75">
+        <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/55">
           {MODE_LABEL[note.mode]}
           {note.audio_tts_url && <span className="ml-1.5">· 🎧</span>}
         </div>
-        <p className="mt-1 line-clamp-1 text-xs leading-relaxed text-white/85">
-          {note.summary_excerpt || formatShortDate(note.created_at)}
-        </p>
       </div>
 
       {/* Chevron right */}
       <ChevronRight
-        className="relative h-5 w-5 shrink-0 text-white/70 transition-transform group-hover:translate-x-1"
+        className="h-4 w-4 shrink-0 text-white/40 transition-transform group-hover:translate-x-0.5"
         aria-hidden
       />
     </Link>

@@ -37,8 +37,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
        */}
       <div className="relative min-h-screen overflow-hidden bg-[#0a0a14] pb-28 text-white md:pb-0 md:pl-[76px]">
         {/* Aurora background — blobs blur animados estilo lovable.
-            Intensidad media en pages auth; el landing usa "full". */}
-        <AuroraBg intensity="medium" />
+            Intensidad subtle en pages auth para no competir con cards y
+            menu list. El landing usa "full". */}
+        <AuroraBg intensity="subtle" />
 
         {/* z-10 para que el contenido quede sobre el aurora */}
         <div className="relative z-10">{children}</div>
