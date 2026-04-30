@@ -20,7 +20,7 @@
  */
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Mic, UserCircle } from 'lucide-react';
+import { Home, Mic, FolderOpen, UserCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TabItem {
@@ -32,6 +32,7 @@ interface TabItem {
 const TABS: TabItem[] = [
   { href: '/library', label: 'Inicio', icon: Home },
   { href: '/capture', label: 'Grabar', icon: Mic },
+  { href: '/library#folders', label: 'Carpetas', icon: FolderOpen },
   { href: '/perfil', label: 'Perfil', icon: UserCircle },
 ];
 
@@ -95,6 +96,13 @@ export function BottomTabBar() {
  */
 function isTabActive(pathname: string, href: string): boolean {
   if (href === '/library' && pathname === '/library') return true;
+  if (href === '/library#folders') {
+    // Sin info del hash desde usePathname, esta tab sólo se "activa" cuando
+    // el user clickeó y la URL actual incluye /library. Lo dejamos inactivo
+    // por defecto para que Inicio gane prioridad. UX: al tocar Carpetas se
+    // hace scroll a la sección, sin marcar como ruta activa.
+    return false;
+  }
   if (href === '/capture' && pathname.startsWith('/capture')) return true;
   if (href === '/perfil' && pathname.startsWith('/perfil')) return true;
   // /notes/[id] cuenta como "Inicio" porque las notas viven dentro de library
