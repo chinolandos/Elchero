@@ -27,22 +27,6 @@
   --orb-cyan: #22d3ee;
   --orb-indigo: #4f46e5;
 
-  /* ─── Aurora v3 — paleta extendida estilo lovable ───
-   * Naranja/coral suman a la familia violeta+magenta para crear el mesh
-   * tipo aurora boreal. Usados en backgrounds blob + gradients de cards.
-   */
-  --aurora-coral: #f97316;
-  --aurora-orange: #ff6b35;
-  --aurora-pink: #fb7185;
-
-  /* Gradients de cards (3 variantes hashed por subject) */
-  --card-grad-1: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
-  --card-grad-2: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
-  --card-grad-3: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
-
-  /* Tipografía premium (cargada desde next/font en layout.tsx) */
-  --font-serif: var(--font-instrument-serif), Georgia, serif;
-
   /* Superficies */
   --surface: #14141f;
   --surface-high: #1e1e2e;
@@ -183,62 +167,6 @@ body {
 
 .orb-pulse {
   animation: orb-pulse 4s ease-in-out infinite;
-}
-
-/* ─── Aurora background — blobs animados estilo lovable ───
- * 3 keyframes con duraciones distintas para que los blobs no se muevan
- * sincronizados. Movimiento muy lento (90-120s) para que sea ambient,
- * no distractor.
- */
-@keyframes aurora-1 {
-  0% { transform: translate(0%, 0%) scale(1) rotate(0deg); }
-  50% { transform: translate(8%, -6%) scale(1.1) rotate(180deg); }
-  100% { transform: translate(0%, 0%) scale(1) rotate(360deg); }
-}
-
-@keyframes aurora-2 {
-  0% { transform: translate(0%, 0%) scale(1) rotate(0deg); }
-  50% { transform: translate(-10%, 8%) scale(1.15) rotate(-180deg); }
-  100% { transform: translate(0%, 0%) scale(1) rotate(-360deg); }
-}
-
-@keyframes aurora-3 {
-  0% { transform: translate(0%, 0%) scale(0.95); }
-  50% { transform: translate(6%, 10%) scale(1.1); }
-  100% { transform: translate(0%, 0%) scale(0.95); }
-}
-
-.aurora-blob-1 { animation: aurora-1 90s ease-in-out infinite; }
-.aurora-blob-2 { animation: aurora-2 120s ease-in-out infinite; }
-.aurora-blob-3 { animation: aurora-3 100s ease-in-out infinite; }
-
-/* Reduced motion: si el user prefiere menos animación, el aurora queda
- * estático pero los colores siguen visibles. */
-@media (prefers-reduced-motion: reduce) {
-  .aurora-blob-1, .aurora-blob-2, .aurora-blob-3, .orb-pulse {
-    animation: none;
-  }
-}
-
-/* Utility para tipografía serif italic premium */
-.font-serif {
-  font-family: var(--font-serif);
-}
-
-/* Headings hero — serif italic mix (estilo VibeMove/Phenomenon).
- * Usar como: <h1>Tus <span class="serif-italic">apuntes</span> de hoy</h1>
- */
-.serif-italic {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-weight: 400;
-}
-
-.serif-display {
-  font-family: var(--font-serif);
-  font-style: normal;
-  font-weight: 400;
-  letter-spacing: -0.02em;
 }
 
 @layer base {
