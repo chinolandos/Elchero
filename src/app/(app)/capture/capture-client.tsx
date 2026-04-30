@@ -466,36 +466,45 @@ function IdleScreen({
   onPickFile: () => void;
 }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
+    <div className="flex flex-1 flex-col items-center justify-center gap-10 py-8 text-center">
       <div>
-        <h1 className="mb-3 text-4xl font-black tracking-tight md:text-5xl">
-          ¿Empezamos?
+        <h1 className="mb-3 text-4xl tracking-tight md:text-5xl">
+          <span className="font-black">¿</span>
+          <span className="serif-italic">Empezamos?</span>
         </h1>
-        <p className="text-lg text-white/60">
-          Grabá tu clase ahora o subí un audio que ya tengas.
+        <p className="text-base text-white/60">
+          Grabá tu clase o subí un audio que ya tengas.
         </p>
       </div>
 
-      <div className="grid w-full max-w-md grid-cols-1 gap-4 sm:grid-cols-2">
+      {/* Action cards estilo premium v3.1 — glassmorphism uniforme + icon
+          circular gradient único elemento colorido */}
+      <div className="grid w-full max-w-md grid-cols-1 gap-3 sm:grid-cols-2">
         <ActionCard
-          icon={<MicIcon />}
-          title="Grabar ahora"
-          subtitle="Hasta 9 min, voz HD"
+          icon={<MicIcon size={24} />}
+          title="Grabar"
+          subtitle="Hasta 9 min · voz HD"
           onClick={onRecord}
-          primary
+          gradient="linear-gradient(135deg, #a855f7 0%, #ec4899 100%)"
         />
         <ActionCard
-          icon={<UploadIcon />}
+          icon={<UploadIcon size={24} />}
           title="Subir audio"
-          subtitle="MP3 / M4A / WAV"
+          subtitle="MP3 · M4A · WAV"
           onClick={onPickFile}
+          gradient="linear-gradient(135deg, #ec4899 0%, #f97316 100%)"
         />
       </div>
 
-      <p className="max-w-md text-xs text-white/40">
-        Idiomas soportados: español. Para grabaciones más largas (&gt;9 min) usá
-        la opción de subir archivo MP3 ya comprimido (≤4.5 MB).
-      </p>
+      {/* Botón discreto "Cómo funciona" — linkea a página dedicada para
+          mantener idle screen minimalista */}
+      <Link
+        href="/como-funciona"
+        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-5 py-2.5 text-xs font-medium text-white/70 backdrop-blur transition-colors hover:border-white/20 hover:text-white"
+      >
+        <span aria-hidden>📖</span>
+        <span>¿Cómo funciona?</span>
+      </Link>
     </div>
   );
 }
@@ -505,32 +514,32 @@ function ActionCard({
   title,
   subtitle,
   onClick,
-  primary,
+  gradient,
 }: {
   icon: React.ReactNode;
   title: string;
   subtitle: string;
   onClick: () => void;
-  primary?: boolean;
+  gradient: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={`${title}. ${subtitle}`}
-      className={cn(
-        'group relative flex flex-col items-center justify-center gap-3 rounded-2xl border p-8 transition-all min-h-[140px]',
-        primary
-          ? 'border-primary/40 bg-primary/10 hover:border-primary hover:bg-primary/20'
-          : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10',
-      )}
+      className="group flex flex-col items-start gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-5 text-left backdrop-blur transition-all hover:border-white/15 hover:bg-white/[0.07] active:scale-[0.98]"
     >
-      <div className={cn('text-4xl', primary && 'text-primary')} aria-hidden="true">
+      {/* Icon circular gradient — único color saturado del card */}
+      <span
+        className="flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-[0_4px_12px_rgba(147,51,234,0.25)]"
+        style={{ background: gradient }}
+        aria-hidden
+      >
         {icon}
-      </div>
+      </span>
       <div>
-        <div className="font-semibold">{title}</div>
-        <div className="mt-1 text-xs text-white/50">{subtitle}</div>
+        <div className="text-base font-bold text-white">{title}</div>
+        <div className="mt-0.5 text-xs text-white/55">{subtitle}</div>
       </div>
     </button>
   );
