@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { PremiumButton } from '@/components/ui/premium-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
@@ -209,16 +208,16 @@ export function ProfileForm({ email, profile }: ProfileFormProps) {
         </Section>
       )}
 
-      {/* Save button — premium pill blanco con dark text estilo VibeMove */}
+      {/* Save button — sticky-ish posición clave */}
       <div className="flex items-center justify-end gap-3">
-        <PremiumButton
-          variant="primary"
+        <Button
           size="lg"
           onClick={handleSave}
           disabled={isSaving}
+          className="px-8"
         >
           {isSaving ? <Spinner size="sm" /> : 'Guardar cambios'}
-        </PremiumButton>
+        </Button>
       </div>
 
       {/* Datos read-only — abajo porque el user ya los conoce */}
