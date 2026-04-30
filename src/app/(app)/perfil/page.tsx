@@ -4,7 +4,6 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { readUsage } from '@/lib/usage/check';
 import { ProfileForm } from './profile-form';
 import { ProfileHero } from './profile-hero';
-import { ambientGlow } from '@/lib/design-tokens';
 import type { UserProfile } from '@/lib/types/chero';
 
 export const metadata = {
@@ -79,28 +78,22 @@ export default async function PerfilPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0a0a14] text-white">
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ background: ambientGlow }}
-      />
-      <main className="relative z-10 mx-auto max-w-2xl px-6 py-10">
-        <header className="mb-8 flex items-center justify-between gap-4">
-          <Link
-            href="/library"
-            className="inline-flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-white"
-          >
-            ← Mis apuntes
-          </Link>
-          <span className="text-xs uppercase tracking-wider text-white/40">
-            Perfil
-          </span>
-        </header>
+    <main className="mx-auto max-w-2xl px-6 py-10">
+      <header className="mb-8 flex items-center justify-between gap-4">
+        <Link
+          href="/library"
+          className="inline-flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-white"
+        >
+          ← Mis apuntes
+        </Link>
+        <span className="text-xs uppercase tracking-wider text-white/40">
+          Perfil
+        </span>
+      </header>
 
-        <ProfileHero firstName={firstName} profile={profile} stats={stats} />
+      <ProfileHero firstName={firstName} profile={profile} stats={stats} />
 
-        <ProfileForm email={user.email ?? ''} profile={profile} />
-      </main>
-    </div>
+      <ProfileForm email={user.email ?? ''} profile={profile} />
+    </main>
   );
 }

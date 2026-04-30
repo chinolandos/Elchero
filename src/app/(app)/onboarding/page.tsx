@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/auth/require-auth';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { OnboardingFlow } from './onboarding-flow';
-import { ambientGlow } from '@/lib/design-tokens';
 
 export const metadata = {
   title: 'Configurá tu cuenta · Chero',
@@ -39,16 +38,8 @@ export default async function OnboardingPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0a0a14] text-white">
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ background: ambientGlow }}
-      />
-      <main className="relative z-10 mx-auto flex min-h-screen max-w-lg flex-col px-6 py-12">
-        <OnboardingFlow
-          initialEmail={user.email ?? null}
-        />
-      </main>
-    </div>
+    <main className="mx-auto flex min-h-screen max-w-lg flex-col px-6 py-12">
+      <OnboardingFlow initialEmail={user.email ?? null} />
+    </main>
   );
 }

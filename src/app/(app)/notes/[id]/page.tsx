@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { requireAuth } from '@/lib/auth/require-auth';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { buttonVariants } from '@/components/ui/button';
-import { ambientGlow, orbGradient, shadows } from '@/lib/design-tokens';
+import { orbGradient, shadows } from '@/lib/design-tokens';
 import type { CheroNote, CheroMode } from '@/lib/types/chero';
 import { MermaidChart } from './mermaid-chart';
 import { NoteActions } from './note-actions';
@@ -71,13 +71,7 @@ export default async function NotePage({ params }: NotePageProps) {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0a0a14] text-white">
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ background: ambientGlow }}
-      />
-
-      <main className="relative z-10 mx-auto max-w-3xl px-6 py-10">
+    <main className="mx-auto max-w-3xl px-6 py-10">
         {/* Header */}
         <header className="mb-10 flex flex-wrap items-center justify-between gap-3">
           <Link
@@ -268,12 +262,11 @@ export default async function NotePage({ params }: NotePageProps) {
           </Section>
         )}
 
-        {/* Footer */}
-        <footer className="mt-16 border-t border-white/10 pt-8 text-center text-xs text-white/30">
-          Generado por Chero · IA con voseo salvadoreño
-        </footer>
-      </main>
-    </div>
+      {/* Footer */}
+      <footer className="mt-16 border-t border-white/10 pt-8 text-center text-xs text-white/30">
+        Generado por Chero · IA con voseo salvadoreño
+      </footer>
+    </main>
   );
 }
 
