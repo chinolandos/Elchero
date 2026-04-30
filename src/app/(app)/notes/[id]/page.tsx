@@ -104,11 +104,10 @@ export default async function NotePage({ params }: NotePageProps) {
               </>
             )}
           </div>
-          {/* Subject — serif display estilo VibeMove */}
-          <h1 className="serif-display text-5xl leading-[1.05] tracking-tight md:text-6xl">
+          <h1 className="text-4xl font-black leading-tight tracking-tight md:text-5xl">
             {note.subject}
           </h1>
-          <p className="mt-3 text-sm text-white/45">
+          <p className="mt-3 text-sm text-white/40">
             Apunte · Generado el {formatDate(note.created_at)}
             {note.audio_duration_minutes
               ? ` · ${note.audio_duration_minutes.toFixed(1)} min de audio`
