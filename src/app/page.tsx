@@ -81,21 +81,20 @@ function Hero({ user }: { user: User | null }) {
 
       {/* Tagline principal */}
       <h1 className="mb-5 max-w-3xl text-5xl font-black leading-[1.05] tracking-tight md:text-7xl">
-        Tu clase, en apuntes en{' '}
+        El{' '}
         <span
           className="bg-clip-text text-transparent"
           style={{ backgroundImage: brandGradient }}
         >
-          2 minutos
-        </span>
-        .
+          cherito
+        </span>{' '}
+        que tu cuaderno nunca fue.
       </h1>
 
       <p className="mb-10 max-w-xl text-lg leading-relaxed text-white/60 md:text-xl">
-        Grabá o subí el audio de tu clase. Recibí apuntes en español
-        salvadoreño con preguntas tipo examen, flashcards y audio para repasar.
-        Hecho para <strong className="text-white/80">AVANZO</strong>, parciales
-        universitarios y pruebas de período.
+        De tu clase a tus apuntes en minutos. Hecho para{' '}
+        <strong className="text-white/80">AVANZO</strong>, exámenes de período
+        y todo lo que tenés que estudiar en bachillerato.
       </p>
 
       <div className="flex flex-col items-center gap-3 sm:flex-row">
@@ -159,7 +158,7 @@ function HowItWorksSection() {
     {
       n: '2',
       title: 'Procesamos con IA',
-      body: 'Whisper transcribe a texto. Claude Sonnet detecta materia, modo (AVANZO / parcial / período) y genera tu apunte completo.',
+      body: 'Whisper transcribe a texto. Claude Sonnet detecta materia, modo (AVANZO o examen de período) y genera tu apunte completo.',
       icon: '⚡',
     },
     {
@@ -218,7 +217,7 @@ function FeaturesSection() {
     },
     {
       title: 'Detecta tu modo',
-      body: 'Si decís "para AVANZO", genera apunte tipo AVANZO. Si decís "parcial", lo arma como parcial universitario. Sin que configures nada.',
+      body: 'Si decís "para AVANZO", arma apunte estilo AVANZO. Si decís "examen de período", lo adapta al período. Sin que configures nada.',
       icon: '🎯',
     },
     {
@@ -281,42 +280,48 @@ function ForWhoSection() {
           ¿Es para mí?
         </div>
         <h2 className="text-4xl font-black tracking-tight md:text-5xl">
-          Bachillerato y universidad
+          Hecho para bachilleres
         </h2>
+        <p className="mt-4 text-white/60">
+          Primero, segundo año, AVANZO, exámenes de período. Todo cubierto.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="rounded-2xl border border-primary/30 bg-primary/5 p-7">
+        <div className="rounded-2xl border border-primary/40 bg-primary/10 p-7 ring-1 ring-primary/20">
           <div className="mb-4 flex items-center gap-3">
-            <span className="text-3xl" aria-hidden="true">🎓</span>
-            <h3 className="text-2xl font-bold">Bachiller</h3>
+            <span className="text-3xl" aria-hidden="true">🎯</span>
+            <h3 className="text-2xl font-bold">AVANZO</h3>
           </div>
           <p className="mb-5 text-white/80">
-            Si te toca AVANZO o estás en cualquier período evaluativo, Chero
-            arma apuntes con el formato MINED.
+            La prueba nacional MINED para 2° año. Chero arma apuntes con el
+            formato exacto: selección múltiple, 5 áreas oficiales, preguntas
+            del estilo del examen real.
           </p>
-          <ul className="space-y-2 text-sm text-white/70">
-            <li>★ Las 5 áreas AVANZO: Lenguaje, Matemática, Ciencias, Sociales, Inglés</li>
-            <li>★ Cualquier materia de bachillerato general</li>
-            <li>★ Preguntas estilo selección múltiple del MINED</li>
-            <li>★ Repaso 30s para días antes del examen</li>
+          <ul className="space-y-2 text-sm text-white/85">
+            <li>★ Lenguaje y Literatura</li>
+            <li>★ Matemática</li>
+            <li>★ Ciencias Naturales</li>
+            <li>★ Estudios Sociales y Ciudadanía</li>
+            <li>★ Inglés</li>
           </ul>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
           <div className="mb-4 flex items-center gap-3">
-            <span className="text-3xl" aria-hidden="true">🎒</span>
-            <h3 className="text-2xl font-bold">Universitario</h3>
+            <span className="text-3xl" aria-hidden="true">📅</span>
+            <h3 className="text-2xl font-bold">Exámenes de período</h3>
           </div>
           <p className="mb-5 text-white/80">
-            Para parciales y finales en ESEN, UCA, UES, UDB, UTEC, UEES, UFG y
-            más. 50+ materias soportadas.
+            Los 4 períodos evaluativos del año, sea cual sea tu materia.
+            Apuntes específicos a tu profe y a tu colegio.
           </p>
           <ul className="space-y-2 text-sm text-white/70">
-            <li>· Cuantitativas: Cálculo, Estadística, Álgebra Lineal</li>
-            <li>· Negocios: Microeconomía, Macroeconomía, Finanzas, Marketing</li>
-            <li>· Software: Algoritmos, Bases de Datos, Inteligencia Artificial, Sistemas Operativos</li>
-            <li>· Salud, Derecho, Comunicación, Humanidades</li>
+            <li>· Filosofía, Psicología, Economía</li>
+            <li>· Educación Artística, Educación Física</li>
+            <li>· Moral, Urbanidad y Cívica</li>
+            <li>· Informática, Contabilidad</li>
+            <li>· Cualquier materia con voz humana en español</li>
           </ul>
         </div>
       </div>
@@ -472,7 +477,7 @@ function FaqSection() {
     },
     {
       q: '¿Para qué materias sirve?',
-      a: 'Cualquier clase con voz humana en español: AVANZO (Lenguaje y Literatura, Matemática, Ciencias Naturales, Estudios Sociales y Ciudadanía, Inglés), bachillerato general, y 50+ materias universitarias (Cálculo, Microeconomía, Programación, Anatomía, Derecho Constitucional, entre otras).',
+      a: 'Las 5 áreas oficiales de AVANZO (Lenguaje y Literatura, Matemática, Ciencias Naturales, Estudios Sociales y Ciudadanía, Inglés) y todas las materias del bachillerato general (Filosofía, Psicología, Economía, Contabilidad, Informática, Educación Artística, Moral y Cívica, entre otras). Si tu profe lo explica con voz humana en español, Chero lo procesa.',
     },
     {
       q: '¿Y si el audio sale mal?',
