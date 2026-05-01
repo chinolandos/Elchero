@@ -1,7 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces, Playfair_Display } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces, Playfair_Display, Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
+
+// Inter — sans-serif principal del sitio (matching Lovable hue-learn-glow).
+// Variable font: sin `weight` explícito, carga el axis completo 100-900.
+// Esto permite font-medium / font-semibold / font-bold / font-black sin
+// fallback a system font.
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -70,7 +80,7 @@ export default function RootLayout({
   return (
     <html
       lang="es-SV"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${playfair.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {children}
