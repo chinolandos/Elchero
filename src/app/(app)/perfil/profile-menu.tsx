@@ -3,13 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useAuth } from '@/lib/auth/use-auth';
 import { cn } from '@/lib/utils';
 
 /**
- * ProfileMenu — menu list estilo Lovable + Zona peligrosa + Cerrar sesión.
+ * ProfileMenu — menu list estilo Lovable + Cerrar sesión + Eliminar cuenta.
  *
  * Cada row tipo Lovable: icono left + label + chevron right.
  * Click navega a sub-page correspondiente.
@@ -126,42 +125,6 @@ export function ProfileMenu() {
         </ul>
       </nav>
 
-      {/* Zona peligrosa */}
-      <section className="rounded-3xl border border-red-500/30 bg-red-500/[0.08] p-5 backdrop-blur-md sm:p-6">
-        <h2 className="font-display-pf mb-1 text-xl font-semibold text-red-200 sm:text-2xl">
-          Zona peligrosa
-        </h2>
-        <p className="mb-4 text-xs text-white/65">
-          Cumple con tu derecho al olvido (Ley Protección Datos SV)
-        </p>
-        <h3 className="mb-2 text-sm font-semibold text-red-200">
-          Eliminar mi cuenta
-        </h3>
-        <p className="mb-4 text-xs text-red-200/70">
-          Esto borra tu perfil, todos los apuntes y el audio TTS de forma
-          permanente. No se puede deshacer.
-        </p>
-        <Button
-          variant="ghost"
-          onClick={handleDeleteAccount}
-          disabled={isDeleting}
-          className={cn(
-            'w-full transition-colors',
-            confirmingDelete
-              ? 'bg-red-500/20 text-red-200 hover:bg-red-500/30'
-              : 'border border-red-500/30 text-red-300 hover:bg-red-500/10',
-          )}
-        >
-          {isDeleting ? (
-            <Spinner size="sm" />
-          ) : confirmingDelete ? (
-            '⚠️ Confirmá: borrar TODO permanentemente'
-          ) : (
-            'Eliminar mi cuenta'
-          )}
-        </Button>
-      </section>
-
       {/* Cerrar sesión — full-width glass pill */}
       <button
         type="button"
@@ -170,6 +133,29 @@ export function ProfileMenu() {
       >
         <LogOutIcon />
         <span>Cerrar sesión</span>
+      </button>
+
+      {/* Eliminar mi cuenta — botón discreto al final con confirm de 2 clicks
+          (compliance Ley Protección Datos SV / derecho al olvido). El primer
+          click muestra la confirmación; el segundo dentro de 8s ejecuta. */}
+      <button
+        type="button"
+        onClick={handleDeleteAccount}
+        disabled={isDeleting}
+        className={cn(
+          'flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-sm font-medium transition-all',
+          confirmingDelete
+            ? 'border border-red-500/40 bg-red-500/15 text-red-200 hover:bg-red-500/25'
+            : 'text-red-300/80 hover:bg-red-500/10 hover:text-red-200',
+        )}
+      >
+        {isDeleting ? (
+          <Spinner size="sm" />
+        ) : confirmingDelete ? (
+          <span>⚠️ Confirmá: borrar TODO permanentemente</span>
+        ) : (
+          <span>Eliminar mi cuenta</span>
+        )}
       </button>
     </div>
   );
