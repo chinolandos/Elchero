@@ -62,11 +62,25 @@ export const AVANZO_SUBJECTS = [
 ] as const;
 
 /**
- * Materias frecuentes en bachillerato general SV.
+ * Materias frecuentes en bachillerato general SV (currículo MINED).
  * Aparecen en períodos evaluativos aunque no estén en AVANZO.
+ *
+ * Nota: "Ciencias Sociales" NO se incluye porque duplica el contenido de
+ * "Estudios Sociales y Ciudadanía" (AVANZO). Son el mismo cuerpo de
+ * historia + geografía + cívica con nombre diferente según pensum.
+ *
+ * "Moral, Urbanidad y Cívica" SÍ está aparte — enfoque en valores y ética,
+ * común en colegios católicos (Don Bosco, Sagrado Corazón, Externado).
+ *
+ * Física, Química, Biología y Religión se mantienen aunque "Ciencias
+ * Naturales" (AVANZO) las englobe — los colegios suelen separarlas en 2°
+ * y 3° de bachillerato técnico.
  */
 export const BACHILLER_EXTRA_SUBJECTS = [
-  'Ciencias Sociales',
+  'Física',
+  'Química',
+  'Biología',
+  'Religión',
   'Educación Física',
   'Educación Artística',
   'Moral, Urbanidad y Cívica',

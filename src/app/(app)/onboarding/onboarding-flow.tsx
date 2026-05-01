@@ -580,7 +580,7 @@ function InstitutionCombobox({
   );
 }
 
-// ─── Step 3: materias (chips) ───
+// ─── Step 3: materias (combobox multi-select) ───
 function Step3({
   state,
   update,
@@ -588,23 +588,6 @@ function Step3({
   state: OnboardingState;
   update: (p: Partial<OnboardingState>) => void;
 }) {
-  const allSubjects =
-    state.user_type === 'bachiller'
-      ? BACHILLER_SUBJECTS
-      : UNIVERSITARIO_SUBJECTS;
-
-  const isAvanzo = (s: string) =>
-    (AVANZO_SUBJECTS as readonly string[]).includes(s);
-
-  const toggle = (subject: string) => {
-    const current = state.subjects;
-    if (current.includes(subject)) {
-      update({ subjects: current.filter((s) => s !== subject) });
-    } else if (current.length < 15) {
-      update({ subjects: [...current, subject] });
-    }
-  };
-
   return (
     <div>
       <h1 className="mb-2 text-3xl font-black tracking-tight">
@@ -615,44 +598,179 @@ function Step3({
         mejor el contexto del audio. Podés cambiarlas después.
       </p>
 
-      <div className="mb-4 flex items-center gap-2 text-xs">
-        <span className="rounded-full bg-primary/20 px-3 py-1 text-primary">
-          {state.subjects.length} / 15
-        </span>
-        {state.user_type === 'bachiller' && (
-          <span className="text-white/40">★ AVANZO</span>
-        )}
-      </div>
-
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Materias actuales">
-        {allSubjects.map((subject) => {
-          const selected = state.subjects.includes(subject);
-          const avanzo = state.user_type === 'bachiller' && isAvanzo(subject);
-          return (
-            <button
-              key={subject}
-              type="button"
-              aria-pressed={selected}
-              aria-label={avanzo ? `${subject} (entra en AVANZO)` : subject}
-              onClick={() => toggle(subject)}
-              className={cn(
-                'rounded-full border px-4 py-2 text-sm transition-all min-h-[36px]',
-                selected
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10',
-              )}
-            >
-              {avanzo && <span className="mr-1.5" aria-hidden="true">★</span>}
-              {subject}
-            </button>
-          );
-        })}
-      </div>
+      <SubjectsCombobox state={state} update={update} />
 
       <p className="mt-6 text-xs text-white/40">
         Si no las elegís ahora no pasa nada — el motor detecta la materia
         automáticamente del audio.
       </p>
+    </div>
+  );
+}
+
+/**
+ * SubjectsCombobox — multi-select con search + chips persistentes.
+ *
+ * Layout:
+ *   - Header: contador X/15 + leyenda ★ AVANZO (si bachiller)
+ *   - Selected: chips wrap, cada uno con × para remover
+ *   - Search: input "Buscar materia..." con icono lupa
+ *   - List: filtrado substring case-insens, SOLO no-seleccionadas, AVANZO ★
+ *   - Cap 15: al llegar al límite la lista se deshabilita con mensaje
+ *
+ * NO permite agregar materias custom — solo del catálogo MINED para que
+ * los apuntes generados queden bien anclados al currículo.
+ */
+function SubjectsCombobox({
+  state,
+  update,
+}: {
+  state: OnboardingState;
+  update: (p: Partial<OnboardingState>) => void;
+}) {
+  const isBachiller = state.user_type === 'bachiller';
+  const [query, setQuery] = useState('');
+
+  const allSubjects = useMemo<readonly string[]>(
+    () => (isBachiller ? BACHILLER_SUBJECTS : UNIVERSITARIO_SUBJECTS),
+    [isBachiller],
+  );
+
+  const isAvanzo = (s: string) =>
+    (AVANZO_SUBJECTS as readonly string[]).includes(s);
+
+  const selected = state.subjects;
+  const atLimit = selected.length >= 15;
+
+  // Lista que aparece en el dropdown: solo no-seleccionadas + filtro substring
+  const normalized = query.trim().toLowerCase();
+  const matches = useMemo(() => {
+    const available = allSubjects.filter((s) => !selected.includes(s));
+    if (normalized.length === 0) return available;
+    return available.filter((s) => s.toLowerCase().includes(normalized));
+  }, [allSubjects, selected, normalized]);
+
+  const addSubject = (subject: string) => {
+    if (selected.includes(subject) || atLimit) return;
+    update({ subjects: [...selected, subject] });
+    setQuery('');
+  };
+
+  const removeSubject = (subject: string) => {
+    update({ subjects: selected.filter((s) => s !== subject) });
+  };
+
+  return (
+    <div>
+      {/* Header: contador + leyenda AVANZO */}
+      <div className="mb-3 flex items-center gap-2 text-xs">
+        <span
+          className={cn(
+            'rounded-full px-3 py-1 font-medium',
+            atLimit
+              ? 'bg-amber-500/20 text-amber-300'
+              : 'bg-primary/20 text-primary',
+          )}
+        >
+          {selected.length} / 15
+        </span>
+        {isBachiller && <span className="text-white/40">★ AVANZO</span>}
+      </div>
+
+      {/* Chips seleccionadas — siempre visibles */}
+      {selected.length > 0 && (
+        <div
+          className="mb-4 flex flex-wrap gap-2"
+          role="group"
+          aria-label="Materias seleccionadas"
+        >
+          {selected.map((subject) => {
+            const avanzo = isBachiller && isAvanzo(subject);
+            return (
+              <span
+                key={subject}
+                className="inline-flex items-center gap-1.5 rounded-full border border-primary bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+              >
+                {avanzo && <span aria-hidden="true">★</span>}
+                {subject}
+                <button
+                  type="button"
+                  onClick={() => removeSubject(subject)}
+                  aria-label={`Quitar ${subject}`}
+                  className="ml-0.5 rounded-full p-0.5 text-primary-foreground/70 transition-colors hover:bg-white/15 hover:text-primary-foreground"
+                >
+                  <X aria-hidden className="h-3 w-3" />
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Search input */}
+      <div className="relative">
+        <Search
+          aria-hidden
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40"
+        />
+        <Input
+          type="text"
+          inputMode="search"
+          autoComplete="off"
+          placeholder="Buscar materia..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          disabled={atLimit}
+          className="pl-9 disabled:cursor-not-allowed disabled:opacity-50"
+          aria-label="Buscar materia"
+        />
+      </div>
+
+      {/* Lista de no-seleccionadas */}
+      {atLimit ? (
+        <div className="mt-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+          Llegaste al máximo de 15 materias. Quitá alguna para agregar otra.
+        </div>
+      ) : (
+        <div
+          role="listbox"
+          aria-label="Materias disponibles"
+          className="mt-2 max-h-[260px] overflow-y-auto rounded-lg border border-white/10 bg-white/[0.02]"
+        >
+          {matches.map((subject, idx) => {
+            const avanzo = isBachiller && isAvanzo(subject);
+            return (
+              <button
+                key={subject}
+                type="button"
+                role="option"
+                aria-selected={false}
+                aria-label={avanzo ? `${subject} (entra en AVANZO)` : subject}
+                onClick={() => addSubject(subject)}
+                className={cn(
+                  'flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-white/85 transition-colors hover:bg-white/5 hover:text-white',
+                  idx !== matches.length - 1 && 'border-b border-white/5',
+                )}
+              >
+                {avanzo && (
+                  <span aria-hidden="true" className="text-primary">
+                    ★
+                  </span>
+                )}
+                <span className="flex-1">{subject}</span>
+              </button>
+            );
+          })}
+
+          {matches.length === 0 && (
+            <div className="px-4 py-3 text-sm text-white/40">
+              {normalized.length > 0
+                ? `No encontramos "${query.trim()}" en el catálogo.`
+                : 'Ya agregaste todas las materias del catálogo.'}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
