@@ -10,6 +10,7 @@ import { FolderPicker } from './folder-picker';
 import { AudioPlayer } from '@/components/ui/audio-player';
 import { FlashcardsDeck } from './flashcards-deck';
 import { QuizQuestions } from './quiz-questions';
+import { ConceptsCarousel } from './concepts-carousel';
 
 interface NotePageProps {
   params: Promise<{ id: string }>;
@@ -185,31 +186,9 @@ export default async function NotePage({ params }: NotePageProps) {
           </article>
         </Section>
 
-        {/* Conceptos */}
+        {/* Conceptos clave — carrusel horizontal swipeable */}
         <Section title="📚 Conceptos clave">
-          <div className="space-y-4">
-            {note.concepts.map((c, i) => (
-              <article
-                key={i}
-                className="glass rounded-3xl p-5 sm:p-6"
-              >
-                <h3 className="font-display-pf mb-2 text-xl font-semibold text-white">
-                  {c.name}
-                </h3>
-                <p className="text-sm leading-relaxed text-white/85">
-                  {c.definition}
-                </p>
-                {c.example && (
-                  <p className="mt-3 rounded-2xl border-l-2 border-primary-glow bg-primary/10 px-4 py-3 text-sm italic text-white/85">
-                    <span className="not-italic font-semibold text-primary-glow">
-                      Ejemplo:
-                    </span>{' '}
-                    {c.example}
-                  </p>
-                )}
-              </article>
-            ))}
-          </div>
+          <ConceptsCarousel concepts={note.concepts} />
         </Section>
 
         {/* Preguntas tipo examen — interactivo Quizlet-style */}
