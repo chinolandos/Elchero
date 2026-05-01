@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Bell, BellOff } from 'lucide-react';
+import { Bell, BellOff, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
@@ -26,6 +26,7 @@ export function PushNotificationToggle() {
   );
   const [subscribed, setSubscribed] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
+  const [testing, setTesting] = useState(false);
 
   // Detectar soporte y estado actual al mount
   useEffect(() => {
@@ -103,6 +104,26 @@ export function PushNotificationToggle() {
     }
   };
 
+  const sendTestNotification = async () => {
+    setTesting(true);
+    try {
+      const res = await fetch('/api/push/test-send', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message ?? 'No se pudo enviar test.');
+      }
+      if (data.sent > 0) {
+        toast.success(`Test enviado a ${data.sent} device${data.sent === 1 ? '' : 's'}.`);
+      } else {
+        toast.error('No se pudo enviar a ningún device. Probá desactivar y reactivar.');
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error en test.');
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const unsubscribe = async () => {
     setLoading(true);
     try {
@@ -176,25 +197,46 @@ export function PushNotificationToggle() {
             Te avisamos a las 8pm si todavía no estudiaste hoy y tu racha está
             en peligro.
           </p>
-          <button
-            type="button"
-            onClick={subscribed ? unsubscribe : subscribe}
-            disabled={loading}
-            className={cn(
-              'mt-3 inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition-all',
-              subscribed
-                ? 'border border-white/20 bg-white/5 text-white/85 hover:bg-white/10'
-                : 'bg-gradient-primary shadow-button-premium text-white',
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={subscribed ? unsubscribe : subscribe}
+              disabled={loading}
+              className={cn(
+                'inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition-all',
+                subscribed
+                  ? 'border border-white/20 bg-white/5 text-white/85 hover:bg-white/10'
+                  : 'bg-gradient-primary shadow-button-premium text-white',
+              )}
+            >
+              {loading ? (
+                <Spinner size="sm" />
+              ) : subscribed ? (
+                'Desactivar'
+              ) : (
+                'Activar notificaciones'
+              )}
+            </button>
+
+            {/* Botón test — solo visible si está suscripto */}
+            {subscribed && (
+              <button
+                type="button"
+                onClick={sendTestNotification}
+                disabled={testing}
+                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-xs font-semibold text-white/85 transition-all hover:bg-white/10"
+              >
+                {testing ? (
+                  <Spinner size="sm" />
+                ) : (
+                  <>
+                    <Send aria-hidden className="h-3 w-3" />
+                    Probar
+                  </>
+                )}
+              </button>
             )}
-          >
-            {loading ? (
-              <Spinner size="sm" />
-            ) : subscribed ? (
-              'Desactivar'
-            ) : (
-              'Activar notificaciones'
-            )}
-          </button>
+          </div>
         </div>
       </div>
     </div>
