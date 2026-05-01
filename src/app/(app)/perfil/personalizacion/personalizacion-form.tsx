@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,6 +45,52 @@ export function PersonalizacionForm({ profile }: Props) {
     (profile?.preferred_voice as VoiceOption) ?? 'nova',
   );
   const [isSaving, setIsSaving] = useState(false);
+
+  // Estado para preview de voz: cuál se está cargando, cuál está sonando
+  const [playingVoice, setPlayingVoice] = useState<VoiceOption | null>(null);
+  const [loadingVoice, setLoadingVoice] = useState<VoiceOption | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  /**
+   * Reproduce o pausa el sample de voz. Si hay otra voz sonando, la corta
+   * primero. El primer click por voz puede tardar ~1-2s en generar audio
+   * (después se cachea 30 días en Vercel edge).
+   */
+  const togglePlay = async (voice: VoiceOption) => {
+    // Si ya está sonando esta voz, pausá
+    if (playingVoice === voice && audioRef.current) {
+      audioRef.current.pause();
+      setPlayingVoice(null);
+      return;
+    }
+
+    // Cortar audio anterior si había otra voz sonando
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+
+    setLoadingVoice(voice);
+    try {
+      const audio = new Audio(`/api/voice-sample/${voice}`);
+      audio.addEventListener('ended', () => setPlayingVoice(null));
+      audio.addEventListener('pause', () => {
+        // Si fue pause natural (no manual), limpiar estado
+        if (audio.ended || audio.currentTime === 0) {
+          setPlayingVoice(null);
+        }
+      });
+      audioRef.current = audio;
+      await audio.play();
+      setPlayingVoice(voice);
+    } catch (err) {
+      toast.error('No se pudo reproducir el sample.');
+      setPlayingVoice(null);
+      console.error('Voice sample play failed', err);
+    } finally {
+      setLoadingVoice(null);
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -112,27 +159,73 @@ export function PersonalizacionForm({ profile }: Props) {
           <div>
             <Label className="text-white/85">Voz preferida del audio TTS</Label>
             <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {VOICES.map((v) => (
-                <button
-                  key={v.value}
-                  type="button"
-                  onClick={() => setPreferredVoice(v.value)}
-                  className={cn(
-                    'rounded-2xl px-4 py-3 text-left text-sm transition-all',
-                    preferredVoice === v.value
-                      ? 'glass-strong shadow-button-premium ring-2 ring-white/40 text-white'
-                      : 'glass text-white/80 hover:bg-white/[0.18]',
-                  )}
-                >
-                  <div className="font-semibold text-white">{v.label}</div>
-                  <div className="mt-0.5 text-xs text-white/70">
-                    {v.description}
+              {VOICES.map((v) => {
+                const isPlaying = playingVoice === v.value;
+                const isLoading = loadingVoice === v.value;
+                return (
+                  <div
+                    key={v.value}
+                    className={cn(
+                      'flex items-center gap-2 rounded-2xl px-3 py-3 transition-all',
+                      preferredVoice === v.value
+                        ? 'glass-strong shadow-button-premium ring-2 ring-white/40 text-white'
+                        : 'glass text-white/80 hover:bg-white/[0.18]',
+                    )}
+                  >
+                    {/* Botón seleccionar (la card entera al hacer click) */}
+                    <button
+                      type="button"
+                      onClick={() => setPreferredVoice(v.value)}
+                      className="flex-1 text-left"
+                      aria-pressed={preferredVoice === v.value}
+                    >
+                      <div className="text-sm font-semibold text-white">
+                        {v.label}
+                      </div>
+                      <div className="mt-0.5 text-xs text-white/70">
+                        {v.description}
+                      </div>
+                    </button>
+
+                    {/* Botón play sample */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePlay(v.value);
+                      }}
+                      disabled={isLoading}
+                      aria-label={
+                        isPlaying
+                          ? `Pausar muestra de ${v.label}`
+                          : `Escuchar muestra de ${v.label}`
+                      }
+                      className={cn(
+                        'flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all',
+                        isPlaying
+                          ? 'bg-gradient-primary shadow-button-premium text-white'
+                          : 'bg-white/15 text-white hover:bg-white/25',
+                        isLoading && 'cursor-wait opacity-70',
+                      )}
+                    >
+                      {isLoading ? (
+                        <Spinner size="sm" />
+                      ) : isPlaying ? (
+                        <Pause aria-hidden className="h-4 w-4" />
+                      ) : (
+                        <Play
+                          aria-hidden
+                          className="h-4 w-4 translate-x-[1px]"
+                        />
+                      )}
+                    </button>
                   </div>
-                </button>
-              ))}
+                );
+              })}
             </div>
             <p className="mt-2 text-xs text-white/55">
-              Cambia cómo suena la lectura de tus apuntes
+              Tocá ▶ para escuchar cómo suena cada voz · La voz que elijas será
+              la que use Chero al leer tus apuntes
             </p>
           </div>
         </div>
