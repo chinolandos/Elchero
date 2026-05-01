@@ -89,7 +89,7 @@ export default function PrivacidadPage() {
               <strong>{RESPONSIBLE_NAME}</strong>. Contacto:{' '}
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
-                className="text-gradient font-semibold hover:underline"
+                className="text-primary-glow underline underline-offset-2 hover:text-white"
               >
                 {CONTACT_EMAIL}
               </a>
@@ -103,7 +103,7 @@ export default function PrivacidadPage() {
                 href="https://www.asamblea.gob.sv/sites/default/files/documents/decretos/7A4FBD85-7E1B-46BE-9408-6FC549E53E00.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gradient font-semibold hover:underline"
+                className="text-primary-glow underline underline-offset-2 hover:text-white"
               >
                 Decreto Legislativo N.° 144
               </a>
@@ -273,7 +273,7 @@ export default function PrivacidadPage() {
                 Toda tu info está en{' '}
                 <Link
                   href="/perfil"
-                  className="text-gradient font-semibold hover:underline"
+                  className="text-primary-glow underline underline-offset-2 hover:text-white"
                 >
                   /perfil
                 </Link>
@@ -284,7 +284,7 @@ export default function PrivacidadPage() {
                 (edad, materias, voz preferida, carrera) desde{' '}
                 <Link
                   href="/perfil"
-                  className="text-gradient font-semibold hover:underline"
+                  className="text-primary-glow underline underline-offset-2 hover:text-white"
                 >
                   /perfil
                 </Link>
@@ -296,7 +296,7 @@ export default function PrivacidadPage() {
                 usar algún dato sin eliminar la cuenta entera, escribinos a{' '}
                 <a
                   href={`mailto:${CONTACT_EMAIL}`}
-                  className="text-gradient font-semibold hover:underline"
+                  className="text-primary-glow underline underline-offset-2 hover:text-white"
                 >
                   {CONTACT_EMAIL}
                 </a>
@@ -314,7 +314,7 @@ export default function PrivacidadPage() {
                 copiarlo desde{' '}
                 <Link
                   href="/library"
-                  className="text-gradient font-semibold hover:underline"
+                  className="text-primary-glow underline underline-offset-2 hover:text-white"
                 >
                   /library
                 </Link>
@@ -326,7 +326,7 @@ export default function PrivacidadPage() {
                 permanente tu cuenta y todos los datos asociados. Andá a{' '}
                 <Link
                   href="/perfil"
-                  className="text-gradient font-semibold hover:underline"
+                  className="text-primary-glow underline underline-offset-2 hover:text-white"
                 >
                   /perfil
                 </Link>{' '}
@@ -386,7 +386,7 @@ export default function PrivacidadPage() {
               Chero sin tu consentimiento, escribinos a{' '}
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
-                className="text-gradient font-semibold hover:underline"
+                className="text-primary-glow underline underline-offset-2 hover:text-white"
               >
                 {CONTACT_EMAIL}
               </a>{' '}
@@ -420,7 +420,7 @@ export default function PrivacidadPage() {
               <br />
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
-                className="text-gradient font-semibold hover:underline"
+                className="text-primary-glow underline underline-offset-2 hover:text-white"
               >
                 {CONTACT_EMAIL}
               </a>
@@ -507,7 +507,7 @@ function ProviderRow({
           href={link}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-gradient text-xs font-semibold hover:underline"
+          className="text-primary-glow text-xs underline underline-offset-2 hover:text-white"
         >
           Política de privacidad ↗
         </a>

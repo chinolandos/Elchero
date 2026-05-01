@@ -262,7 +262,7 @@ export default function ComoFuncionaPage() {
               cuenta, todo se va. Detalle completo:{' '}
               <Link
                 href="/privacidad"
-                className="text-gradient font-semibold hover:underline"
+                className="text-primary-glow underline underline-offset-2 hover:text-white"
               >
                 Política de Privacidad
               </Link>

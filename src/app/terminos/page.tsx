@@ -99,7 +99,7 @@ export default function TerminosPage() {
               nuestra{' '}
               <Link
                 href="/privacidad"
-                className="text-gradient font-semibold hover:underline"
+                className="text-primary-glow underline underline-offset-2 hover:text-white"
               >
                 Política de Privacidad
               </Link>
@@ -240,7 +240,7 @@ export default function TerminosPage() {
               Podés eliminar tu cuenta en cualquier momento desde{' '}
               <Link
                 href="/perfil"
-                className="text-gradient font-semibold hover:underline"
+                className="text-primary-glow underline underline-offset-2 hover:text-white"
               >
                 /perfil
               </Link>
@@ -283,7 +283,7 @@ export default function TerminosPage() {
               Antes de cualquier acción legal, te pedimos que nos contactes en{' '}
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
-                className="text-gradient font-semibold hover:underline"
+                className="text-primary-glow underline underline-offset-2 hover:text-white"
               >
                 {CONTACT_EMAIL}
               </a>{' '}
@@ -318,7 +318,7 @@ export default function TerminosPage() {
               <br />
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
-                className="text-gradient font-semibold hover:underline"
+                className="text-primary-glow underline underline-offset-2 hover:text-white"
               >
                 {CONTACT_EMAIL}
               </a>
