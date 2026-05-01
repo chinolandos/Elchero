@@ -160,7 +160,7 @@ export function FolderTabs({ selectedFolderId, onSelect }: FolderTabsProps) {
             type="button"
             onClick={() => setShowCreate(true)}
             aria-label="Crear nueva carpeta"
-            className="flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-dashed border-white/20 bg-white/[0.02] px-4 text-sm text-white/60 transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-white"
+            className="flex h-9 shrink-0 items-center gap-1 rounded-full border border-dashed border-white/20 bg-white/[0.02] px-3.5 text-xs text-white/65 transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-white"
           >
             <span aria-hidden="true">+</span>
             <span>Nueva carpeta</span>
@@ -234,7 +234,7 @@ function FolderPill({
       }}
       aria-pressed={selected}
       className={cn(
-        'flex h-10 shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-all',
+        'flex h-9 shrink-0 items-center gap-1 rounded-full border px-3.5 text-xs font-medium transition-all',
         selected
           ? COLOR_SOLID_CLASSES[color] ?? COLOR_SOLID_CLASSES.violet
           : COLOR_CLASSES[color] ?? COLOR_CLASSES.violet,
@@ -245,7 +245,7 @@ function FolderPill({
       <span>{label}</span>
       <span
         className={cn(
-          'rounded-full px-1.5 py-0.5 text-[10px] font-bold',
+          'rounded-full px-1.5 py-0 text-[9px] font-bold',
           selected ? 'bg-white/20' : 'bg-white/10',
         )}
       >
