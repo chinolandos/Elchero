@@ -124,36 +124,36 @@ export function OnboardingFlow({ initialEmail }: OnboardingFlowProps) {
 
       {state.step === 3 && <Step3 state={state} update={update} />}
 
-      {/* Nav */}
+      {/* Nav — Atrás ghost, Siguiente/Empezar premium gradient (v5) */}
       <div className="mt-10 flex items-center justify-between gap-3">
         <Button
           variant="ghost"
           onClick={goBack}
           disabled={state.step === 1 || isSaving}
-          className="text-white/60 hover:bg-white/5 hover:text-white"
+          className="text-white/70 hover:bg-white/10 hover:text-white"
         >
           ← Atrás
         </Button>
 
         {state.step < 3 ? (
           <Button
-            size="lg"
+            variant="premium"
+            size="xl"
             onClick={goNext}
             disabled={
               isSaving ||
               (state.step === 1 && !canAdvanceStep1) ||
               (state.step === 2 && !canAdvanceStep2)
             }
-            className="px-8"
           >
             Siguiente
           </Button>
         ) : (
           <Button
-            size="lg"
+            variant="premium"
+            size="xl"
             onClick={handleFinish}
             disabled={isSaving}
-            className="px-8"
           >
             {isSaving ? <Spinner size="sm" /> : '¡Empezar!'}
           </Button>
@@ -177,13 +177,15 @@ function ProgressBar({ step }: { step: Step }) {
         <div
           key={n}
           className={cn(
-            'h-1.5 flex-1 rounded-full transition-colors',
-            n <= step ? 'bg-primary' : 'bg-white/10',
+            'h-1.5 flex-1 rounded-full transition-all',
+            // v5: barras llenas usan el gradient warm magenta→ember para
+            // matching con el premium button. Pendientes en glass blanco sutil.
+            n <= step ? 'bg-gradient-primary shadow-button-premium' : 'bg-white/10',
           )}
           aria-hidden="true"
         />
       ))}
-      <div className="ml-3 shrink-0 text-xs text-white/50" aria-hidden="true">
+      <div className="ml-3 shrink-0 text-xs text-white/60" aria-hidden="true">
         {step} / 3
       </div>
     </div>
@@ -204,8 +206,10 @@ function Step1({
 
   return (
     <div>
-      <h1 className="mb-2 text-3xl font-black tracking-tight">¿Quién sos?</h1>
-      <p className="mb-8 text-white/60">
+      <h1 className="font-display-pf mb-2 text-3xl font-semibold tracking-tight md:text-4xl">
+        ¿Quién sos?
+      </h1>
+      <p className="mb-8 text-white/75">
         {email ? `Hola, ${email}. ` : ''}Esto nos ayuda a personalizar tus apuntes.
       </p>
 
@@ -309,19 +313,21 @@ function TypeCard({
       aria-pressed={selected}
       aria-label={`${title} — ${subtitle}`}
       className={cn(
-        'relative rounded-xl border p-5 text-left transition-all min-h-[80px]',
+        'relative min-h-[80px] rounded-2xl p-5 text-left transition-all',
+        // v5: glass-strong + ring magenta cuando seleccionado, glass simple
+        // cuando no. Mucho más legible sobre el fondo warm.
         selected
-          ? 'border-primary bg-primary/10 ring-2 ring-primary/40'
-          : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10',
+          ? 'glass-strong shadow-button-premium ring-2 ring-white/40'
+          : 'glass hover:bg-white/[0.18]',
       )}
     >
       {badge && (
-        <span className="absolute -top-2 right-3 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
+        <span className="bg-gradient-primary absolute -top-2 right-3 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-button-premium">
           {badge}
         </span>
       )}
-      <div className="font-semibold">{title}</div>
-      <div className="mt-1 text-xs text-white/50">{subtitle}</div>
+      <div className="font-semibold text-white">{title}</div>
+      <div className="mt-1 text-xs text-white/70">{subtitle}</div>
     </button>
   );
 }
@@ -338,10 +344,10 @@ function Step2({
 
   return (
     <div>
-      <h1 className="mb-2 text-3xl font-black tracking-tight">
+      <h1 className="font-display-pf mb-2 text-3xl font-semibold tracking-tight md:text-4xl">
         ¿Dónde estudiás?
       </h1>
-      <p className="mb-8 text-white/60">
+      <p className="mb-8 text-white/75">
         {isUniversitario
           ? 'Elegí tu universidad y año actual.'
           : 'Decinos tu colegio y año de bachillerato.'}
@@ -370,10 +376,12 @@ function Step2({
               aria-label={`${y}° año`}
               onClick={() => update({ year: y })}
               className={cn(
-                'h-12 w-12 rounded-lg border text-sm font-semibold transition-all',
+                'h-12 w-12 rounded-xl text-sm font-semibold transition-all',
+                // v5: glass + gradient warm cuando seleccionado, glass simple
+                // cuando no.
                 state.year === y
-                  ? 'border-primary bg-primary/10 text-white'
-                  : 'border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10',
+                  ? 'bg-gradient-primary shadow-button-premium text-white'
+                  : 'glass text-white/80 hover:bg-white/[0.18]',
               )}
             >
               {y}°
@@ -489,20 +497,20 @@ function InstitutionCombobox({
   if (currentLabel) {
     return (
       <div
-        className="mt-3 flex items-center gap-3 rounded-lg border border-primary bg-primary/10 px-4 py-3"
+        className="glass-strong mt-3 flex items-center gap-3 rounded-2xl px-4 py-3 ring-1 ring-white/30"
         role="status"
       >
         <div className="flex-1 text-sm text-white">
           {currentLabel}
           {state.institutionIsOther && (
-            <span className="ml-2 text-xs text-white/40">(agregado por vos)</span>
+            <span className="ml-2 text-xs text-white/55">(agregado por vos)</span>
           )}
         </div>
         <button
           type="button"
           onClick={clearSelection}
           aria-label="Cambiar selección"
-          className="rounded-md p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+          className="rounded-md p-1 text-white/70 transition-colors hover:bg-white/15 hover:text-white"
         >
           <X aria-hidden className="h-4 w-4" />
         </button>
@@ -535,7 +543,7 @@ function InstitutionCombobox({
       <div
         role="listbox"
         aria-label={isUniversitario ? 'Universidades' : 'Colegios'}
-        className="mt-2 max-h-[260px] overflow-y-auto rounded-lg border border-white/10 bg-white/[0.02]"
+        className="glass mt-2 max-h-[260px] overflow-y-auto rounded-2xl"
       >
         {matches.map((inst, idx) => (
           <button
@@ -590,10 +598,10 @@ function Step3({
 }) {
   return (
     <div>
-      <h1 className="mb-2 text-3xl font-black tracking-tight">
+      <h1 className="font-display-pf mb-2 text-3xl font-semibold tracking-tight md:text-4xl">
         Tus materias actuales
       </h1>
-      <p className="mb-8 text-white/60">
+      <p className="mb-8 text-white/75">
         Elegí las que estás cursando este período. Sirve para que Chero detecte
         mejor el contexto del audio. Podés cambiarlas después.
       </p>
@@ -750,7 +758,7 @@ function SubjectsCombobox({
         <div
           role="listbox"
           aria-label="Materias disponibles"
-          className="mt-2 max-h-[260px] overflow-y-auto rounded-lg border border-white/10 bg-white/[0.02]"
+          className="glass mt-2 max-h-[260px] overflow-y-auto rounded-2xl"
         >
           {matches.map((subject, idx) => {
             const avanzo = isBachiller && isAvanzo(subject);
