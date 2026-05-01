@@ -99,16 +99,17 @@ export function ProfileMenu() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-white/[0.06] sm:px-6"
+                  className="flex items-center gap-4 px-5 py-5 transition-colors hover:bg-white/[0.06] sm:px-6 sm:py-5"
                 >
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/10 text-white">
+                  {/* Icon container — rounded-2xl iOS-style con tint blanco */}
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white/10 text-white">
                     <Icon />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-semibold text-white">
+                    <div className="text-base font-semibold leading-tight text-white">
                       {item.label}
                     </div>
-                    <div className="truncate text-xs text-white/60">
+                    <div className="mt-0.5 truncate text-xs text-white/55">
                       {item.description}
                     </div>
                   </div>
@@ -204,7 +205,7 @@ function SparkleIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-4 w-4"
+      className="h-[18px] w-[18px]"
       aria-hidden="true"
     >
       <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
@@ -222,7 +223,7 @@ function BookIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-4 w-4"
+      className="h-[18px] w-[18px]"
       aria-hidden="true"
     >
       <path d="M12 7v14" />
@@ -241,7 +242,7 @@ function UserIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-4 w-4"
+      className="h-[18px] w-[18px]"
       aria-hidden="true"
     >
       <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
@@ -260,7 +261,7 @@ function CardIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-4 w-4"
+      className="h-[18px] w-[18px]"
       aria-hidden="true"
     >
       <rect width="20" height="14" x="2" y="5" rx="2" />
@@ -279,7 +280,7 @@ function LogOutIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-4 w-4"
+      className="h-[18px] w-[18px]"
       aria-hidden="true"
     >
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
