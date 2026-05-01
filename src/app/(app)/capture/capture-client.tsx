@@ -467,7 +467,7 @@ function IdleScreen({
           El Chero está listo
         </p>
         <h1 className="font-display-pf text-4xl font-semibold leading-tight tracking-tight text-white md:text-5xl">
-          Grabar <span className="text-gradient italic">clase</span>
+          Grabar <span className="italic">clase</span>
         </h1>
       </div>
 
