@@ -24,11 +24,11 @@ export function LoginForm({ next, error }: LoginFormProps) {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-sm">
       {error && (
         <div
           role="alert"
-          className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+          className="mb-6 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200"
         >
           {error === 'missing_code'
             ? 'No se completó el inicio de sesión. Probá de nuevo.'
@@ -36,14 +36,18 @@ export function LoginForm({ next, error }: LoginFormProps) {
         </div>
       )}
 
+      {/* Premium gradient button — Lovable v5 (magenta→ember).
+          El logo Google G mantiene sus colores oficiales para que sea
+          reconocible como Google sign-in. */}
       <Button
-        size="lg"
+        variant="premium"
+        size="xl"
         onClick={handleGoogleSignIn}
         disabled={isSigningIn}
-        className="w-full bg-white text-black hover:bg-white/90"
+        className="w-full"
       >
         {isSigningIn ? (
-          <Spinner size="sm" className="text-black" />
+          <Spinner size="sm" />
         ) : (
           <>
             <GoogleIcon />
