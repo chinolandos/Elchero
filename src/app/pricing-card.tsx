@@ -102,7 +102,7 @@ export function LandingPricing({ userLoggedIn }: { userLoggedIn: boolean }) {
   return (
     <section id="planes" className="px-5 py-14">
       <div className="mb-7 text-center">
-        <h2 className="font-display text-4xl font-semibold tracking-tight text-white">
+        <h2 className="font-display-pf text-4xl font-semibold tracking-tight text-white">
           Empezá <span className="text-gradient italic">gratis</span>
         </h2>
         <p className="mx-auto mt-2 max-w-xs text-sm text-white/60">
@@ -153,7 +153,7 @@ export function LandingPricing({ userLoggedIn }: { userLoggedIn: boolean }) {
         <p className="mb-4 text-sm text-white/65">{plan.desc}</p>
 
         <div className="mb-5 flex items-baseline gap-1.5">
-          <span className="font-display text-5xl font-bold tracking-tight text-white">
+          <span className="font-display-pf text-5xl font-bold tracking-tight text-white">
             {plan.price}
           </span>
           <span className="text-sm text-white/55">{plan.period}</span>
