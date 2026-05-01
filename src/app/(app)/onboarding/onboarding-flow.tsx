@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Search, X, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -333,9 +334,6 @@ function Step2({
   state: OnboardingState;
   update: (p: Partial<OnboardingState>) => void;
 }) {
-  const filteredInstitutions = INSTITUTIONS.filter(
-    (i) => i.type === state.user_type,
-  );
   const isUniversitario = state.user_type === 'universitario';
 
   return (
@@ -353,51 +351,7 @@ function Step2({
         <Label className="text-white/80">
           {isUniversitario ? 'Universidad' : 'Colegio'}
         </Label>
-        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {filteredInstitutions.map((inst) => {
-            const isOtherOption = inst.value === 'Otro' || inst.value === 'Otra';
-            const isSelected = isOtherOption
-              ? state.institutionIsOther
-              : state.institution === inst.value && !state.institutionIsOther;
-            return (
-              <button
-                key={inst.value}
-                type="button"
-                aria-pressed={isSelected}
-                onClick={() => {
-                  if (isOtherOption) {
-                    update({ institutionIsOther: true, institution: null });
-                  } else {
-                    update({
-                      institutionIsOther: false,
-                      institution: inst.value,
-                      institutionOther: '',
-                    });
-                  }
-                }}
-                className={cn(
-                  'rounded-lg border px-4 py-3 text-left text-sm transition-all min-h-[44px]',
-                  isSelected
-                    ? 'border-primary bg-primary/10 text-white'
-                    : 'border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10',
-                )}
-              >
-                {inst.label}
-              </button>
-            );
-          })}
-        </div>
-        {state.institutionIsOther && (
-          <Input
-            placeholder={
-              isUniversitario ? 'Ej: Universidad Tecnológica' : 'Ej: Liceo Salvadoreño'
-            }
-            value={state.institutionOther}
-            onChange={(e) => update({ institutionOther: e.target.value })}
-            className="mt-3"
-            autoFocus
-          />
-        )}
+        <InstitutionCombobox state={state} update={update} />
       </div>
 
       <div className="mb-6">
@@ -440,6 +394,186 @@ function Step2({
           />
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * InstitutionCombobox — input de búsqueda + lista filtrada con CTA "+ Agregar".
+ *
+ * Estados visuales:
+ *   1. Sin selección → input + lista scrollable filtrada por substring
+ *   2. Selección hecha → pill con label + botón × para limpiar y volver a buscar
+ *
+ * Match exacto: si el query coincide exact-string con label o value (case-insens),
+ * NO se ofrece "+ Agregar". Eso evita duplicar instituciones existentes.
+ *
+ * Filtro: substring sobre label + value, case-insensitive, normalize trim.
+ *
+ * Reuso: el mismo componente sirve para colegios y universidades. La lista
+ * se filtra por `state.user_type` desde INSTITUTIONS.
+ */
+function InstitutionCombobox({
+  state,
+  update,
+}: {
+  state: OnboardingState;
+  update: (p: Partial<OnboardingState>) => void;
+}) {
+  const isUniversitario = state.user_type === 'universitario';
+  const [query, setQuery] = useState('');
+
+  const pool = useMemo(
+    () => INSTITUTIONS.filter((i) => i.type === state.user_type),
+    [state.user_type],
+  );
+
+  const normalized = query.trim().toLowerCase();
+
+  const matches = useMemo(() => {
+    if (normalized.length === 0) return pool;
+    return pool.filter(
+      (i) =>
+        i.label.toLowerCase().includes(normalized) ||
+        i.value.toLowerCase().includes(normalized),
+    );
+  }, [normalized, pool]);
+
+  // ¿El query coincide EXACT con algún label/value? Si sí, no mostramos "+ Agregar"
+  const hasExactMatch = useMemo(() => {
+    if (normalized.length === 0) return false;
+    return pool.some(
+      (i) =>
+        i.label.toLowerCase() === normalized ||
+        i.value.toLowerCase() === normalized,
+    );
+  }, [normalized, pool]);
+
+  const showAddOption = normalized.length >= 2 && !hasExactMatch;
+
+  // Etiqueta visible de la selección actual (si hay una)
+  const currentLabel = state.institutionIsOther
+    ? state.institutionOther.trim()
+    : pool.find((i) => i.value === state.institution)?.label ?? null;
+
+  const clearSelection = () => {
+    update({
+      institution: null,
+      institutionIsOther: false,
+      institutionOther: '',
+    });
+    setQuery('');
+  };
+
+  const pickInstitution = (value: string) => {
+    update({
+      institution: value,
+      institutionIsOther: false,
+      institutionOther: '',
+    });
+    setQuery('');
+  };
+
+  const pickCustom = (custom: string) => {
+    update({
+      institution: null,
+      institutionIsOther: true,
+      institutionOther: custom,
+    });
+    setQuery('');
+  };
+
+  // Estado 2: ya hay selección → mostrar pill con × para reset
+  if (currentLabel) {
+    return (
+      <div
+        className="mt-3 flex items-center gap-3 rounded-lg border border-primary bg-primary/10 px-4 py-3"
+        role="status"
+      >
+        <div className="flex-1 text-sm text-white">
+          {currentLabel}
+          {state.institutionIsOther && (
+            <span className="ml-2 text-xs text-white/40">(agregado por vos)</span>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={clearSelection}
+          aria-label="Cambiar selección"
+          className="rounded-md p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          <X aria-hidden className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  }
+
+  // Estado 1: sin selección → input + lista
+  return (
+    <div className="mt-3">
+      <div className="relative">
+        <Search
+          aria-hidden
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40"
+        />
+        <Input
+          type="text"
+          inputMode="search"
+          autoComplete="off"
+          placeholder={
+            isUniversitario ? 'Buscar tu universidad...' : 'Buscar tu colegio...'
+          }
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="pl-9"
+          aria-label={isUniversitario ? 'Buscar universidad' : 'Buscar colegio'}
+        />
+      </div>
+
+      <div
+        role="listbox"
+        aria-label={isUniversitario ? 'Universidades' : 'Colegios'}
+        className="mt-2 max-h-[260px] overflow-y-auto rounded-lg border border-white/10 bg-white/[0.02]"
+      >
+        {matches.map((inst, idx) => (
+          <button
+            key={inst.value}
+            type="button"
+            role="option"
+            aria-selected={false}
+            onClick={() => pickInstitution(inst.value)}
+            className={cn(
+              'block w-full px-4 py-3 text-left text-sm text-white/85 transition-colors hover:bg-white/5 hover:text-white',
+              idx !== matches.length - 1 && 'border-b border-white/5',
+            )}
+          >
+            {inst.label}
+          </button>
+        ))}
+
+        {matches.length === 0 && !showAddOption && (
+          <div className="px-4 py-3 text-sm text-white/40">
+            Escribí al menos 2 letras para ver opciones o agregar una nueva.
+          </div>
+        )}
+
+        {showAddOption && (
+          <button
+            type="button"
+            onClick={() => pickCustom(query.trim())}
+            className={cn(
+              'flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-primary transition-colors hover:bg-primary/10',
+              matches.length > 0 && 'border-t border-primary/20',
+            )}
+          >
+            <Plus aria-hidden className="h-4 w-4 shrink-0" />
+            <span>
+              Agregar{' '}
+              <span className="text-white">&quot;{query.trim()}&quot;</span>
+            </span>
+          </button>
+        )}
+      </div>
     </div>
   );
 }
