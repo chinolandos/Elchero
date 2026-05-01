@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Pencil, RefreshCw, Download, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
@@ -122,66 +123,58 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
           se "congelaba" durante 30-60s sin indicación visual. */}
       {isRegenerating && <RegeneratingOverlay />}
 
+      {/* Botones acción — glass pills con iconos lucide. Wrap en mobile,
+          spaced en desktop. PDF destacado como acción primary, Borrar
+          con tinte rojo cuando confirma. */}
       <div className="flex flex-wrap items-center gap-2">
         {hasTranscript && (
           <>
-            <Button
-              variant="ghost"
-              size="sm"
+            <ActionPill
+              icon={<Pencil className="h-3.5 w-3.5" />}
+              label="Editar"
               onClick={() => setIsEditingTranscript(true)}
               disabled={isRegenerating || isDeleting || isDownloadingPdf}
-              className="text-white/70 hover:bg-white/5 hover:text-white"
-            >
-              ✎ Editar transcript
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
+            />
+            <ActionPill
+              icon={
+                isRegenerating ? (
+                  <Spinner size="sm" />
+                ) : (
+                  <RefreshCw className="h-3.5 w-3.5" />
+                )
+              }
+              label="Regenerar"
               onClick={() => handleRegenerate(false)}
               disabled={isRegenerating || isDeleting || isDownloadingPdf}
-              className="text-white/70 hover:bg-white/5 hover:text-white"
-            >
-              {isRegenerating ? <Spinner size="sm" /> : '↻ Regenerar'}
-            </Button>
+            />
           </>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
+        <ActionPill
+          icon={
+            isDownloadingPdf ? (
+              <Spinner size="sm" />
+            ) : (
+              <Download className="h-3.5 w-3.5" />
+            )
+          }
+          label={isDownloadingPdf ? 'Generando…' : 'PDF'}
           onClick={handleDownloadPdf}
           disabled={isDownloadingPdf || isRegenerating || isDeleting}
-          className="text-white/70 hover:bg-white/5 hover:text-white"
           aria-label="Descargar apunte en PDF"
-        >
-          {isDownloadingPdf ? (
-            <>
+        />
+        <ActionPill
+          icon={
+            isDeleting ? (
               <Spinner size="sm" />
-              <span className="ml-1.5">Generando…</span>
-            </>
-          ) : (
-            '↓ PDF'
-          )}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
+            ) : (
+              <Trash2 className="h-3.5 w-3.5" />
+            )
+          }
+          label={confirmingDelete ? '¿Confirmás?' : 'Borrar'}
           onClick={handleDelete}
           disabled={isDeleting || isRegenerating || isDownloadingPdf}
-          className={cn(
-            'transition-colors',
-            confirmingDelete
-              ? 'bg-red-500/15 text-red-300 hover:bg-red-500/25 hover:text-red-200'
-              : 'text-white/60 hover:bg-white/5 hover:text-white',
-          )}
-        >
-          {isDeleting ? (
-            <Spinner size="sm" />
-          ) : confirmingDelete ? (
-            '¿Confirmás borrar?'
-          ) : (
-            '🗑 Borrar'
-          )}
-        </Button>
+          variant={confirmingDelete ? 'danger' : 'default'}
+        />
       </div>
 
       {isEditingTranscript && (
@@ -203,6 +196,50 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
         />
       )}
     </>
+  );
+}
+
+/**
+ * ActionPill — botón glass uniforme para las acciones del header del apunte.
+ * Mobile-friendly: h-9 px-3.5 text-xs con icono lucide.
+ *
+ * Variantes:
+ *   - default: glass blanco translúcido
+ *   - danger: rojo (cuando confirmingDelete = true)
+ */
+function ActionPill({
+  icon,
+  label,
+  onClick,
+  disabled,
+  variant = 'default',
+  ...rest
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  variant?: 'default' | 'danger';
+  'aria-label'?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-xs font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50',
+        variant === 'danger'
+          ? 'border border-red-400/40 bg-red-500/15 text-red-100 hover:bg-red-500/25'
+          : 'glass text-white/85 hover:bg-white/[0.18] hover:text-white',
+      )}
+      {...rest}
+    >
+      <span aria-hidden className="grid place-items-center">
+        {icon}
+      </span>
+      <span>{label}</span>
+    </button>
   );
 }
 
