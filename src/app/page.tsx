@@ -118,12 +118,21 @@ function Hero({ user }: { user: User | null }) {
           <br />
           apuntes en minutos.
         </h1>
-        <p className="mx-auto max-w-[320px] text-sm text-white/70">
-          <em className="text-gradient font-display-pf not-italic font-semibold italic">
-            El cherito que tu cuaderno nunca fue.
+        {/* Subtítulo en 2 niveles para legibilidad mobile:
+            - Primera frase: italic Playfair, white/95, con SOLO la palabra
+              "cherito" en text-gradient warm (matching Lovable exacto).
+            - Segunda frase: weight normal, white/70 para jerarquía visual. */}
+        <p className="mx-auto max-w-[320px] text-sm text-white/95">
+          <em className="font-display-pf font-semibold italic">
+            El{' '}
+            <span className="text-gradient">cherito</span>{' '}
+            que tu cuaderno nunca fue.
           </em>{' '}
-          Hecho para <strong className="text-foreground">avanzo</strong>,
-          comunes de período y universidades.
+          <span className="font-normal text-white/70">
+            Hecho para{' '}
+            <strong className="font-semibold text-white">avanzo</strong>,
+            comunes de período y universidades.
+          </span>
         </p>
       </div>
 
