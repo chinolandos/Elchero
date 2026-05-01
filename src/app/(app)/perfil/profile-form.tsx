@@ -131,10 +131,10 @@ export function ProfileForm({ email, profile }: ProfileFormProps) {
                 type="button"
                 onClick={() => setYear(y)}
                 className={cn(
-                  'h-11 w-11 rounded-lg border text-sm font-semibold transition-all',
+                  'h-11 w-11 rounded-xl text-sm font-semibold transition-all',
                   year === y
-                    ? 'border-primary bg-primary/10 text-white'
-                    : 'border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10',
+                    ? 'bg-gradient-primary shadow-button-premium text-white'
+                    : 'glass text-white/80 hover:bg-white/[0.18]',
                 )}
               >
                 {y}°
@@ -154,14 +154,14 @@ export function ProfileForm({ email, profile }: ProfileFormProps) {
                 type="button"
                 onClick={() => setPreferredVoice(v.value)}
                 className={cn(
-                  'rounded-lg border px-4 py-3 text-left text-sm transition-all',
+                  'rounded-2xl px-4 py-3 text-left text-sm transition-all',
                   preferredVoice === v.value
-                    ? 'border-primary bg-primary/10 text-white'
-                    : 'border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10',
+                    ? 'glass-strong shadow-button-premium ring-2 ring-white/40 text-white'
+                    : 'glass text-white/80 hover:bg-white/[0.18]',
                 )}
               >
-                <div className="font-semibold">{v.label}</div>
-                <div className="mt-0.5 text-xs text-white/50">{v.description}</div>
+                <div className="font-semibold text-white">{v.label}</div>
+                <div className="mt-0.5 text-xs text-white/70">{v.description}</div>
               </button>
             ))}
           </div>
@@ -193,10 +193,10 @@ export function ProfileForm({ email, profile }: ProfileFormProps) {
                   type="button"
                   onClick={() => toggleSubject(subject)}
                   className={cn(
-                    'rounded-full border px-4 py-2 text-sm transition-all',
+                    'rounded-full px-4 py-2 text-sm font-medium transition-all',
                     selected
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10',
+                      ? 'bg-gradient-primary shadow-button-premium text-white'
+                      : 'glass text-white/80 hover:bg-white/[0.18]',
                   )}
                 >
                   {avanzo && <span className="mr-1.5">★</span>}
@@ -208,13 +208,13 @@ export function ProfileForm({ email, profile }: ProfileFormProps) {
         </Section>
       )}
 
-      {/* Save button — sticky-ish posición clave */}
+      {/* Save button — premium gradient v5 */}
       <div className="flex items-center justify-end gap-3">
         <Button
-          size="lg"
+          variant="premium"
+          size="xl"
           onClick={handleSave}
           disabled={isSaving}
-          className="px-8"
         >
           {isSaving ? <Spinner size="sm" /> : 'Guardar cambios'}
         </Button>
@@ -223,13 +223,13 @@ export function ProfileForm({ email, profile }: ProfileFormProps) {
       {/* Datos read-only — abajo porque el user ya los conoce */}
       <Section title="Cuenta" subtitle="Datos verificados al ingresar">
         <Field label="Email">
-          <div className="rounded-md border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white/70">
+          <div className="glass rounded-xl px-4 py-2.5 text-sm text-white/85">
             {email}
           </div>
         </Field>
         {profile?.user_type && (
           <Field label="Tipo de estudiante">
-            <div className="rounded-md border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white/70">
+            <div className="glass rounded-xl px-4 py-2.5 text-sm text-white/85">
               {profile.user_type === 'bachiller'
                 ? 'Bachillerato'
                 : 'Universidad'}
@@ -238,14 +238,14 @@ export function ProfileForm({ email, profile }: ProfileFormProps) {
         )}
         {profile?.institution && (
           <Field label="Institución">
-            <div className="rounded-md border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white/70">
+            <div className="glass rounded-xl px-4 py-2.5 text-sm text-white/85">
               {profile.institution}
             </div>
           </Field>
         )}
         {typeof profile?.age === 'number' && (
           <Field label="Edad">
-            <div className="rounded-md border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white/70">
+            <div className="glass rounded-xl px-4 py-2.5 text-sm text-white/85">
               {profile.age} años
               {profile.is_minor && (
                 <span className="ml-2 rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-200">
@@ -317,28 +317,27 @@ function Section({
   children: React.ReactNode;
   tone?: 'default' | 'danger';
 }) {
-  // Card envolvente con glow sutil violeta en hover. La variante "danger"
-  // mantiene el aviso visual rojo de la Zona peligrosa (compliance Ley
-  // Protección de Datos SV).
+  // v5: card glass blanco translúcido. Variante "danger" mantiene el aviso
+  // visual rojo de Zona peligrosa (compliance Ley Protección de Datos SV).
   return (
     <section
       className={
         tone === 'danger'
-          ? 'rounded-2xl border border-red-500/20 bg-red-500/[0.04] p-5 transition-colors hover:border-red-500/30 sm:p-6'
-          : 'rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-all hover:border-primary/25 hover:bg-white/[0.03] sm:p-6'
+          ? 'rounded-3xl border border-red-500/30 bg-red-500/[0.08] p-5 backdrop-blur-md transition-colors hover:border-red-500/40 sm:p-6'
+          : 'glass rounded-3xl p-5 sm:p-6'
       }
     >
       <h2
         className={
           tone === 'danger'
-            ? 'mb-1 text-lg font-bold text-red-200 sm:text-xl'
-            : 'mb-1 text-lg font-bold text-white/90 sm:text-xl'
+            ? 'font-display-pf mb-1 text-xl font-semibold text-red-200 sm:text-2xl'
+            : 'font-display-pf mb-1 text-xl font-semibold text-white sm:text-2xl'
         }
       >
         {title}
       </h2>
       {subtitle && (
-        <p className="mb-5 text-xs text-white/45">{subtitle}</p>
+        <p className="mb-5 text-xs text-white/65">{subtitle}</p>
       )}
       {!subtitle && <div className="mb-5" />}
       <div className="space-y-5">{children}</div>

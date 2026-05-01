@@ -1,12 +1,12 @@
 /**
- * ProfileHero — bloque server-rendered del header del perfil.
+ * ProfileHero — bloque server-rendered del header del perfil (v5).
  *
- * Muestra orbe brand + greeting personalizado + chip glass con
- * institución/tipo + grid de stats (apuntes, usos restantes, carpetas).
+ * Estructura tipo Lovable: card glass-strong con halo magenta arriba,
+ * orb brand + greeting + chip context + stats grid 3 cols (mini-cards
+ * glass adentro).
  *
  * Es Server Component porque solo lee datos derivados de Supabase y no
- * tiene estado interactivo. Mantener fuera del client component evita
- * inflar el bundle del browser.
+ * tiene estado interactivo.
  */
 import { orbGradient, shadows } from '@/lib/design-tokens';
 import type { UserProfile, UserType } from '@/lib/types/chero';
@@ -37,48 +37,64 @@ export function ProfileHero({ firstName, profile, stats }: ProfileHeroProps) {
   if (profile?.year) chipParts.push(`${profile.year}°`);
 
   return (
-    <section className="mb-10 flex flex-col items-center text-center">
-      {/* Orbe brand — mismo gradient que el resto de la app */}
-      <div
-        className="orb-pulse mb-5 h-24 w-24 rounded-full"
-        style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
-        aria-hidden="true"
+    <section className="glass-strong relative mb-8 overflow-hidden rounded-3xl p-6 md:p-8">
+      {/* Halo magenta sutil arriba (matching Lovable hero card) */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full opacity-60 blur-3xl"
+        style={{
+          background: 'hsl(295 90% 55% / 0.6)',
+        }}
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -bottom-16 -left-10 h-48 w-48 rounded-full opacity-50 blur-3xl"
+        style={{
+          background: 'hsl(18 100% 56% / 0.5)',
+        }}
       />
 
-      {/* Greeting */}
-      <h1 className="text-3xl font-black tracking-tight md:text-4xl">
-        {greeting}
-      </h1>
-      <p className="mt-1 text-sm italic text-white/55">
-        tu cuate de estudio
-      </p>
+      <div className="relative flex flex-col items-center text-center">
+        {/* Orb brand */}
+        <div
+          className="orb-pulse mb-4 h-20 w-20 rounded-full md:h-24 md:w-24"
+          style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
+          aria-hidden="true"
+        />
 
-      {/* Chip de contexto */}
-      {chipParts.length > 0 && (
-        <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs text-white/70 backdrop-blur">
-          <span aria-hidden="true">📍</span>
-          <span>{chipParts.join(' · ')}</span>
+        {/* Greeting Playfair */}
+        <h1 className="font-display-pf text-3xl font-semibold tracking-tight text-white md:text-4xl">
+          {greeting}
+        </h1>
+        <p className="mt-1 text-sm italic text-white/65">tu cuate de estudio</p>
+
+        {/* Chip context */}
+        {chipParts.length > 0 && (
+          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs text-white/85 backdrop-blur">
+            <span aria-hidden="true">📍</span>
+            <span>{chipParts.join(' · ')}</span>
+          </div>
+        )}
+
+        {/* Stats grid 3 cols — mini glass cards */}
+        <div className="mt-6 grid w-full grid-cols-3 gap-3">
+          <StatCard
+            value={stats.notes}
+            label="Apuntes"
+            sublabel="creados"
+            accent
+          />
+          <StatCard
+            value={stats.remainingUser}
+            label="Usos"
+            sublabel={`de ${stats.maxPerUser}`}
+          />
+          <StatCard
+            value={stats.folders}
+            label="Carpetas"
+            sublabel={stats.folders === 1 ? 'creada' : 'creadas'}
+          />
         </div>
-      )}
-
-      {/* Stats grid */}
-      <div className="mt-8 grid w-full grid-cols-3 gap-3">
-        <StatCard
-          value={stats.notes}
-          label="Apuntes"
-          sublabel="creados"
-          accent
-        />
-        <StatCard
-          value={stats.remainingUser}
-          label="Usos"
-          sublabel={`de ${stats.maxPerUser}`}
-        />
-        <StatCard
-          value={stats.folders}
-          label="Carpetas"
-          sublabel={stats.folders === 1 ? 'creada' : 'creadas'}
-        />
       </div>
     </section>
   );
@@ -99,23 +115,18 @@ function StatCard({
     <div
       className={
         accent
-          ? 'rounded-2xl border border-primary/30 bg-primary/[0.08] p-4'
-          : 'rounded-2xl border border-white/10 bg-white/[0.03] p-4'
+          ? 'rounded-2xl border border-white/30 bg-white/15 p-3 backdrop-blur md:p-4'
+          : 'rounded-2xl border border-white/15 bg-white/5 p-3 backdrop-blur md:p-4'
       }
     >
-      <div
-        className={
-          'text-3xl font-black tabular-nums leading-none ' +
-          (accent ? 'text-primary' : 'text-white')
-        }
-      >
+      <div className="text-2xl font-black leading-none tabular-nums text-white md:text-3xl">
         {value}
       </div>
-      <div className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-white/60">
+      <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/85">
         {label}
       </div>
       {sublabel && (
-        <div className="text-[10px] text-white/40">{sublabel}</div>
+        <div className="text-[10px] text-white/65">{sublabel}</div>
       )}
     </div>
   );
