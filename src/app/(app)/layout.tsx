@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { BottomTabBar } from '@/components/ui/bottom-tab-bar';
+import { PwaInstallPrompt } from '@/components/ui/pwa-install-prompt';
 import { ambientGlow } from '@/lib/design-tokens';
 
 /**
@@ -42,6 +43,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <div className="relative z-10">{children}</div>
       </div>
       <BottomTabBar />
+      <PwaInstallPrompt />
     </>
   );
 }
