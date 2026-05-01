@@ -335,123 +335,134 @@ function FolderModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-white/10 bg-[#14141f] p-6 shadow-2xl"
+        className="glass-strong shadow-card-premium relative w-full max-w-md overflow-hidden rounded-3xl p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="mb-4 text-xl font-bold">
-          {mode === 'create' ? 'Nueva carpeta' : 'Editar carpeta'}
-        </h3>
+        {/* Halo magenta sutil arriba para coherencia v5 */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -right-10 -top-16 h-40 w-40 rounded-full opacity-50 blur-3xl"
+          style={{ background: 'hsl(295 90% 55% / 0.6)' }}
+        />
 
-        {presets && presets.length > 0 && (
-          <div className="mb-5">
-            <Label className="text-white/70">Sugerencias</Label>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {presets.map((p) => (
-                <button
-                  key={p.name}
-                  type="button"
-                  onClick={() => applyPreset(p)}
-                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70 transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-white"
-                >
-                  {p.emoji} {p.name}
-                </button>
-              ))}
+        <div className="relative">
+          <h3 className="font-display-pf mb-4 text-2xl font-semibold tracking-tight text-white">
+            {mode === 'create' ? 'Nueva carpeta' : 'Editar carpeta'}
+          </h3>
+
+          {presets && presets.length > 0 && (
+            <div className="mb-5">
+              <Label className="text-white/85">Sugerencias</Label>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {presets.map((p) => (
+                  <button
+                    key={p.name}
+                    type="button"
+                    onClick={() => applyPreset(p)}
+                    className="glass rounded-full px-3 py-1.5 text-xs text-white/85 transition-all hover:bg-white/[0.18] hover:text-white"
+                  >
+                    {p.emoji} {p.name}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="folder-name" className="text-white/80">
-              Nombre
-            </Label>
-            <Input
-              id="folder-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ej: AVANZO 2026"
-              maxLength={50}
-              className="mt-2"
-              autoFocus
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="folder-emoji" className="text-white/80">
-              Emoji <span className="text-white/40">(opcional)</span>
-            </Label>
-            <Input
-              id="folder-emoji"
-              value={emoji}
-              onChange={(e) => setEmoji(e.target.value)}
-              placeholder="🎯"
-              maxLength={4}
-              className="mt-2 max-w-[100px] text-center text-xl"
-            />
-          </div>
-
-          <div>
-            <Label className="text-white/80">Color</Label>
-            <div className="mt-2 grid grid-cols-4 gap-2">
-              {COLOR_OPTIONS.map((c) => (
-                <button
-                  key={c.value}
-                  type="button"
-                  onClick={() => setColor(c.value)}
-                  aria-pressed={color === c.value}
-                  aria-label={c.label}
-                  className={cn(
-                    'h-10 rounded-lg border-2 text-xs font-semibold transition-all',
-                    color === c.value
-                      ? COLOR_SOLID_CLASSES[c.value]
-                      : COLOR_CLASSES[c.value] + ' opacity-60',
-                  )}
-                >
-                  {c.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 flex items-center justify-between gap-3">
-          {mode === 'edit' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDelete}
-              disabled={isSaving}
-              className={cn(
-                'transition-colors',
-                confirmDelete
-                  ? 'bg-red-500/15 text-red-300 hover:bg-red-500/25'
-                  : 'text-white/50 hover:text-red-300',
-              )}
-            >
-              {confirmDelete ? '¿Confirmás borrar?' : '🗑 Borrar'}
-            </Button>
           )}
 
-          <div className="ml-auto flex gap-2">
-            <Button
-              variant="ghost"
-              onClick={onClose}
-              disabled={isSaving}
-              className="text-white/60 hover:bg-white/5 hover:text-white"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={isSaving || !name.trim() || name.trim().length < 1}
-              className="px-6"
-            >
-              {isSaving ? <Spinner size="sm" /> : 'Guardar'}
-            </Button>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="folder-name" className="text-white/85">
+                Nombre
+              </Label>
+              <Input
+                id="folder-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Ej: AVANZO 2026"
+                maxLength={50}
+                className="mt-2"
+                autoFocus
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="folder-emoji" className="text-white/85">
+                Emoji <span className="text-white/55">(opcional)</span>
+              </Label>
+              <Input
+                id="folder-emoji"
+                value={emoji}
+                onChange={(e) => setEmoji(e.target.value)}
+                placeholder="🎯"
+                maxLength={4}
+                className="mt-2 max-w-[100px] text-center text-xl"
+              />
+            </div>
+
+            <div>
+              <Label className="text-white/85">Color</Label>
+              <div className="mt-2 grid grid-cols-4 gap-2">
+                {COLOR_OPTIONS.map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => setColor(c.value)}
+                    aria-pressed={color === c.value}
+                    aria-label={c.label}
+                    className={cn(
+                      'h-10 rounded-xl border-2 text-xs font-semibold transition-all',
+                      color === c.value
+                        ? COLOR_SOLID_CLASSES[c.value]
+                        : COLOR_CLASSES[c.value] + ' opacity-60',
+                    )}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-between gap-3">
+            {mode === 'edit' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDelete}
+                disabled={isSaving}
+                className={cn(
+                  'transition-colors',
+                  confirmDelete
+                    ? 'bg-red-500/20 text-red-200 hover:bg-red-500/30'
+                    : 'text-white/65 hover:text-red-300',
+                )}
+              >
+                {confirmDelete ? '¿Confirmás borrar?' : '🗑 Borrar'}
+              </Button>
+            )}
+
+            <div className="ml-auto flex gap-2">
+              <Button
+                variant="ghost"
+                onClick={onClose}
+                disabled={isSaving}
+                className="text-white/70 hover:bg-white/10 hover:text-white"
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="premium"
+                size="lg"
+                onClick={handleSave}
+                disabled={isSaving || !name.trim() || name.trim().length < 1}
+                className="px-6"
+              >
+                {isSaving ? <Spinner size="sm" /> : 'Guardar'}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
