@@ -616,10 +616,13 @@ function Step3({
  *   - Selected: chips wrap, cada uno con × para remover
  *   - Search: input "Buscar materia..." con icono lupa
  *   - List: filtrado substring case-insens, SOLO no-seleccionadas, AVANZO ★
+ *   - "+ Agregar 'X'" CTA al final de la lista cuando query >= 2 chars y
+ *     no hay match exacto en el catálogo ni en las seleccionadas
  *   - Cap 15: al llegar al límite la lista se deshabilita con mensaje
  *
- * NO permite agregar materias custom — solo del catálogo MINED para que
- * los apuntes generados queden bien anclados al currículo.
+ * Las materias custom (las que no están en el catálogo MINED) se guardan
+ * como strings tal cual el user las escribe. NO llevan ★ AVANZO porque
+ * esa lista es fija oficial del MINED.
  */
 function SubjectsCombobox({
   state,
@@ -649,6 +652,18 @@ function SubjectsCombobox({
     if (normalized.length === 0) return available;
     return available.filter((s) => s.toLowerCase().includes(normalized));
   }, [allSubjects, selected, normalized]);
+
+  // ¿El query coincide EXACT con algo del catálogo o de las seleccionadas?
+  // Si sí, no mostramos "+ Agregar" — usar el botón existente o ya está agregada.
+  const hasExactMatch = useMemo(() => {
+    if (normalized.length === 0) return false;
+    const inCatalog = allSubjects.some((s) => s.toLowerCase() === normalized);
+    const inSelected = selected.some((s) => s.toLowerCase() === normalized);
+    return inCatalog || inSelected;
+  }, [allSubjects, selected, normalized]);
+
+  const showAddOption =
+    !atLimit && normalized.length >= 2 && !hasExactMatch;
 
   const addSubject = (subject: string) => {
     if (selected.includes(subject) || atLimit) return;
@@ -762,12 +777,29 @@ function SubjectsCombobox({
             );
           })}
 
-          {matches.length === 0 && (
+          {matches.length === 0 && !showAddOption && (
             <div className="px-4 py-3 text-sm text-white/40">
               {normalized.length > 0
                 ? `No encontramos "${query.trim()}" en el catálogo.`
                 : 'Ya agregaste todas las materias del catálogo.'}
             </div>
+          )}
+
+          {showAddOption && (
+            <button
+              type="button"
+              onClick={() => addSubject(query.trim())}
+              className={cn(
+                'flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-primary transition-colors hover:bg-primary/10',
+                matches.length > 0 && 'border-t border-primary/20',
+              )}
+            >
+              <Plus aria-hidden className="h-4 w-4 shrink-0" />
+              <span>
+                Agregar materia{' '}
+                <span className="text-white">&quot;{query.trim()}&quot;</span>
+              </span>
+            </button>
           )}
         </div>
       )}
