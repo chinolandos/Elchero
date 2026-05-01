@@ -2,10 +2,24 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { Search, X } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { orbGradient, shadows } from '@/lib/design-tokens';
 import type { CheroMode } from '@/lib/types/chero';
 import { FolderTabs } from './folder-tabs';
+
+/**
+ * Normaliza string para matching tolerante: lowercase + remover tildes.
+ * "Matemática" → "matematica" para que match con query "matematica" o "MATEMÁTICA".
+ * Usa Unicode combining marks range ̀-ͯ para diacríticos.
+ */
+function normalizeForSearch(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '');
+}
 
 export interface NoteRow {
   id: string;
@@ -72,25 +86,95 @@ function hashSubject(subject: string): number {
 
 export function LibraryClient({ initialNotes }: { initialNotes: NoteRow[] }) {
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
-  // Filtrar notas según folder seleccionada (null = Inbox = notas sin folder)
+  const normalizedQuery = useMemo(
+    () => normalizeForSearch(query.trim()),
+    [query],
+  );
+
+  // Filtrar notas: primero por folder, después por query (substring match
+  // sobre subject + summary + institution, normalizado sin tildes/case).
   const filteredNotes = useMemo(() => {
-    return initialNotes.filter((n) => n.folder_id === selectedFolderId);
-  }, [initialNotes, selectedFolderId]);
+    const byFolder = initialNotes.filter(
+      (n) => n.folder_id === selectedFolderId,
+    );
+
+    if (normalizedQuery.length === 0) return byFolder;
+
+    return byFolder.filter((n) => {
+      const haystack = normalizeForSearch(
+        `${n.subject} ${n.summary_excerpt} ${n.institution ?? ''}`,
+      );
+      return haystack.includes(normalizedQuery);
+    });
+  }, [initialNotes, selectedFolderId, normalizedQuery]);
+
+  const isSearching = normalizedQuery.length > 0;
 
   return (
     <>
+      {/* Search bar — filtra dentro del folder activo */}
+      <div className="relative mb-4">
+        <Search
+          aria-hidden
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/55"
+        />
+        <Input
+          type="text"
+          inputMode="search"
+          autoComplete="off"
+          placeholder="Buscar apuntes..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="pl-9 pr-9"
+          aria-label="Buscar apuntes por materia, resumen o institución"
+        />
+        {query.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setQuery('')}
+            aria-label="Limpiar búsqueda"
+            className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-white/65 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <X aria-hidden className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
       <FolderTabs
         selectedFolderId={selectedFolderId}
         onSelect={setSelectedFolderId}
       />
 
       {filteredNotes.length === 0 ? (
-        <EmptyState isInbox={selectedFolderId === null} />
+        isSearching ? (
+          <SearchEmptyState query={query.trim()} />
+        ) : (
+          <EmptyState isInbox={selectedFolderId === null} />
+        )
       ) : (
         <NoteGrid notes={filteredNotes} />
       )}
     </>
+  );
+}
+
+function SearchEmptyState({ query }: { query: string }) {
+  return (
+    <div className="glass relative overflow-hidden rounded-3xl p-8 text-center md:p-12">
+      <div className="text-4xl" aria-hidden>
+        🔍
+      </div>
+      <h2 className="font-display-pf mt-3 text-2xl font-semibold text-white">
+        Sin resultados
+      </h2>
+      <p className="mt-2 text-sm text-white/75">
+        No encontramos apuntes con{' '}
+        <span className="font-semibold text-white">&quot;{query}&quot;</span>.
+        Probá con otra palabra o cambiá de carpeta.
+      </p>
+    </div>
   );
 }
 
