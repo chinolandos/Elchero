@@ -29,25 +29,32 @@ const MODE_LABEL: Record<CheroMode, string> = {
 };
 
 /**
- * 5 gradients procedural sobrios — todos dentro de la paleta v5
- * (plum, violet, magenta) para coherencia y feel serio. Eliminados los
- * tonos cyan / orange / amber que rompían el mood.
+ * 5 gradients procedural sobrios pero claramente distintos entre sí.
+ * Cada uno vive en una familia de hue diferente para que ninguna materia
+ * se confunda con otra a vuelo de pájaro.
  *
- * Cada subject hashea a uno consistente — "Matemática" siempre tendrá
- * el mismo gradient. Los 5 son variaciones del mismo cromatismo violeta-
- * magenta-plum: distinguibles entre sí pero familiares.
+ * Cada gradient es MONOCROMÁTICO dentro de su familia (deep → mid → bright)
+ * lo cual mantiene el feel serio. La distinción viene del HUE base, no
+ * de mezclar 3 colores rainbow.
+ *
+ * Los 5 hues:
+ *   0 — Violet/púrpura (brand primary)
+ *   1 — Blue/azul royal (frío, distinto del púrpura)
+ *   2 — Teal/turquesa (verde-azulado, frío y único)
+ *   3 — Rose/rosa profundo (cálido, distinto del violet brand)
+ *   4 — Amber/naranja brasa (cálido, ember-style)
  */
 const SUBJECT_GRADIENTS: string[] = [
-  // 0 — plum profundo → violet brand (default sobrio)
-  'linear-gradient(135deg, hsl(285 55% 18%) 0%, hsl(270 70% 38%) 50%, hsl(270 90% 60%) 100%)',
-  // 1 — indigo deep → violet (técnico, ciencias)
-  'linear-gradient(135deg, hsl(250 60% 18%) 0%, hsl(258 70% 38%) 50%, hsl(270 80% 55%) 100%)',
-  // 2 — plum → magenta sobrio (humanidades)
-  'linear-gradient(135deg, hsl(290 50% 16%) 0%, hsl(295 70% 35%) 50%, hsl(295 80% 52%) 100%)',
-  // 3 — violet deep → violet brand (matemáticas, exactas)
-  'linear-gradient(135deg, hsl(265 60% 16%) 0%, hsl(268 70% 32%) 50%, hsl(272 85% 55%) 100%)',
-  // 4 — magenta deep → violet (artes, lengua)
-  'linear-gradient(135deg, hsl(310 50% 18%) 0%, hsl(300 65% 38%) 50%, hsl(280 80% 55%) 100%)',
+  // 0 — Violet pure (deep purple → bright violet)
+  'linear-gradient(135deg, #3b0764 0%, #7c3aed 55%, #a855f7 100%)',
+  // 1 — Blue royal (deep navy → bright blue)
+  'linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #3b82f6 100%)',
+  // 2 — Teal/turquesa (deep teal → bright)
+  'linear-gradient(135deg, #134e4a 0%, #0d9488 55%, #14b8a6 100%)',
+  // 3 — Rose deep (deep rose → pink vibrant)
+  'linear-gradient(135deg, #4c0519 0%, #be123c 55%, #e11d48 100%)',
+  // 4 — Amber/ember (deep brown-orange → bright orange)
+  'linear-gradient(135deg, #431407 0%, #c2410c 55%, #f97316 100%)',
 ];
 
 /**
