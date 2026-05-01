@@ -17,8 +17,9 @@ export const metadata = {
  *   + blobs animados, encima del bg dark del (app)/layout)
  *
  * El bg-gradient-hero usa `fixed inset-0` para cubrir todo el área de
- * contenido del (app)/layout (que tiene bg-[#0a0a14]). La SidebarNav (z-30)
- * queda visible por encima de los blobs (z-auto en el stacking context).
+ * contenido del (app)/layout (que tiene bg-[#0a0a14]). El BottomTabBar
+ * (z-40) queda visible por encima de los blobs (z-auto en el stacking
+ * context) flotando al pie.
  */
 export default async function OnboardingPage() {
   const user = await requireAuth('/onboarding');
@@ -43,7 +44,7 @@ export default async function OnboardingPage() {
     <>
       {/* v5 bg cover — sobrescribe el bg-[#0a0a14] del (app)/layout.
           fixed inset-0 cubre todo el viewport. Como vive dentro del z-10
-          wrapper del layout, no tapa la SidebarNav (z-30). */}
+          wrapper del layout, no tapa el BottomTabBar (z-40). */}
       <div
         aria-hidden
         className="bg-gradient-hero pointer-events-none fixed inset-0"
