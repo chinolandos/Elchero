@@ -92,6 +92,18 @@ export default async function PerfilPage() {
       | undefined,
   );
 
+  // Avatar: prioridad → profile.avatar_url (custom upload) → Google avatar
+  // (user_metadata.avatar_url o picture) → null (cae al orb default)
+  const customAvatar =
+    typeof (profile as { avatar_url?: string } | null)?.avatar_url === 'string'
+      ? (profile as { avatar_url?: string }).avatar_url ?? null
+      : null;
+  const googleAvatar =
+    (user.user_metadata?.avatar_url as string | undefined) ??
+    (user.user_metadata?.picture as string | undefined) ??
+    null;
+  const avatarUrl = customAvatar ?? googleAvatar;
+
   // Stats hero: Racha (Duolingo) / Apuntes (count) / Usos (beta remaining)
   const streak = calculateStreak(notesList);
 
@@ -153,7 +165,12 @@ export default async function PerfilPage() {
           </span>
         </header>
 
-        <ProfileHero firstName={firstName} profile={profile} stats={stats} />
+        <ProfileHero
+          firstName={firstName}
+          profile={profile}
+          stats={stats}
+          avatarUrl={avatarUrl}
+        />
 
         {/* Esta semana — WeeklyChart con minutos por día (matching Lovable).
             Goal hardcoded a 600min (10h) por ahora; configurable en el futuro. */}

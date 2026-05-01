@@ -42,6 +42,26 @@ const nextConfig: NextConfig = {
 
   // No incluir el header `X-Powered-By: Next.js` (mejor security)
   poweredByHeader: false,
+
+  // Imágenes externas permitidas
+  images: {
+    remotePatterns: [
+      // Google avatars del OAuth (Google sign-in profile pictures)
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      // Supabase Storage (para avatars custom uploaded por users)
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

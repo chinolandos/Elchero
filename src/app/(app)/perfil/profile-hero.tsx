@@ -10,6 +10,7 @@
  *     · 💎 Usos (gem, gradient fuchsia-pink) — beta remaining / max
  */
 import { Flame, BookOpen, Gem } from 'lucide-react';
+import Image from 'next/image';
 import { orbGradient, shadows } from '@/lib/design-tokens';
 import type { UserProfile, UserType } from '@/lib/types/chero';
 
@@ -22,6 +23,11 @@ interface ProfileHeroProps {
     remainingUser: number;
     maxPerUser: number;
   };
+  /**
+   * URL de avatar — preferentemente upload custom; si null, fallback a
+   * Google avatar (de user_metadata); si null, fallback al orb brand.
+   */
+  avatarUrl?: string | null;
 }
 
 const TYPE_LABEL: Record<UserType, string> = {
@@ -29,7 +35,12 @@ const TYPE_LABEL: Record<UserType, string> = {
   universitario: 'Universidad',
 };
 
-export function ProfileHero({ firstName, profile, stats }: ProfileHeroProps) {
+export function ProfileHero({
+  firstName,
+  profile,
+  stats,
+  avatarUrl,
+}: ProfileHeroProps) {
   const greeting = firstName ? `Hola, ${firstName}` : 'Hola, cherito';
 
   // Chip de contexto: "ESEN · Universidad · 2°"
@@ -53,12 +64,28 @@ export function ProfileHero({ firstName, profile, stats }: ProfileHeroProps) {
       />
 
       <div className="relative flex flex-col items-center text-center">
-        {/* Orb brand */}
-        <div
-          className="orb-pulse mb-4 h-20 w-20 rounded-full md:h-24 md:w-24"
-          style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
-          aria-hidden="true"
-        />
+        {/* Avatar — foto de Google o upload custom; fallback al orb brand */}
+        {avatarUrl ? (
+          <div
+            className="relative mb-4 h-20 w-20 overflow-hidden rounded-full ring-4 ring-white/20 md:h-24 md:w-24"
+            style={{ boxShadow: shadows.glowOrb }}
+          >
+            <Image
+              src={avatarUrl}
+              alt={firstName ?? 'Avatar'}
+              width={96}
+              height={96}
+              className="h-full w-full object-cover"
+              unoptimized
+            />
+          </div>
+        ) : (
+          <div
+            className="orb-pulse mb-4 h-20 w-20 rounded-full md:h-24 md:w-24"
+            style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
+            aria-hidden="true"
+          />
+        )}
 
         {/* Greeting Playfair */}
         <h1 className="font-display-pf text-3xl font-semibold tracking-tight text-white md:text-4xl">
