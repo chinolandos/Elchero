@@ -29,6 +29,7 @@ interface MenuItem {
   icon: React.ComponentType;
   label: string;
   description: string;
+  badge?: string;
 }
 
 const MENU: MenuItem[] = [
@@ -43,6 +44,13 @@ const MENU: MenuItem[] = [
     icon: BookIcon,
     label: 'Materias',
     description: 'Las que tomás este período',
+  },
+  {
+    href: '/perfil/suscripcion',
+    icon: CardIcon,
+    label: 'Suscripción',
+    description: 'Plan actual y cómo mejorarlo',
+    badge: 'Beta',
   },
   {
     href: '/perfil/cuenta',
@@ -104,6 +112,11 @@ export function ProfileMenu() {
                       {item.description}
                     </div>
                   </div>
+                  {item.badge && (
+                    <span className="bg-gradient-primary shadow-button-premium shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                      {item.badge}
+                    </span>
+                  )}
                   <ChevronRight />
                 </Link>
               </li>
@@ -233,6 +246,25 @@ function UserIcon() {
     >
       <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+function CardIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <rect width="20" height="14" x="2" y="5" rx="2" />
+      <line x1="2" x2="22" y1="10" y2="10" />
     </svg>
   );
 }
