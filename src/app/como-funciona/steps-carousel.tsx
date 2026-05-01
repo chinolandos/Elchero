@@ -103,12 +103,12 @@ export function StepsCarousel({ steps }: StepsCarouselProps) {
       {steps.map((step) => (
         <article
           key={step.n}
-          className="glass flex min-w-[280px] max-w-[280px] snap-start flex-col gap-2 rounded-2xl p-4"
+          className="glass flex min-w-[280px] max-w-[280px] snap-start flex-col gap-2 rounded-2xl p-4 md:min-w-[320px] md:max-w-[320px] md:p-5"
         >
           <div className="flex items-center gap-3">
             <span
               aria-hidden
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-semibold text-white"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-semibold text-white md:h-11 md:w-11 md:text-base"
               style={{
                 background:
                   'linear-gradient(135deg, hsl(295 90% 55% / 0.6), hsl(270 90% 60% / 0.6))',
@@ -116,10 +116,16 @@ export function StepsCarousel({ steps }: StepsCarouselProps) {
             >
               {step.n}
             </span>
-            <h3 className="text-sm font-semibold text-white">{step.title}</h3>
+            <h3 className="text-sm font-semibold text-white md:text-base">
+              {step.title}
+            </h3>
           </div>
-          <p className="text-xs leading-relaxed text-white/80">{step.detail}</p>
-          <p className="mt-auto text-[10px] text-white/55">⚙ {step.tech}</p>
+          <p className="text-xs leading-relaxed text-white/80 md:text-sm">
+            {step.detail}
+          </p>
+          <p className="mt-auto text-[10px] text-white/55 md:text-xs">
+            ⚙ {step.tech}
+          </p>
         </article>
       ))}
     </div>

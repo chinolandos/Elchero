@@ -106,8 +106,8 @@ export default function ComoFuncionaPage() {
         }}
       />
 
-      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-[440px] flex-col">
-        <div className="flex flex-col gap-10 px-5 pb-12 pt-10">
+      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-[440px] flex-col md:max-w-3xl lg:max-w-4xl">
+        <div className="flex flex-col gap-10 px-5 pb-12 pt-10 md:gap-14 md:px-8 md:pb-20 md:pt-16">
           {/* Volver al inicio */}
           <div>
             <Link
@@ -118,12 +118,12 @@ export default function ComoFuncionaPage() {
             </Link>
           </div>
 
-          {/* Hero */}
-          <section className="flex flex-col items-center gap-6 text-center">
+          {/* Hero — orb 128/160px, h1 escalado a 5xl/6xl en desktop */}
+          <section className="flex flex-col items-center gap-6 text-center md:gap-8">
             <div className="relative grid place-items-center">
               <span
                 aria-hidden
-                className="absolute h-56 w-56 rounded-full opacity-70 blur-3xl"
+                className="absolute h-56 w-56 rounded-full opacity-70 blur-3xl md:h-72 md:w-72"
                 style={{
                   background:
                     'radial-gradient(circle, hsl(270 90% 60% / 0.6), transparent 70%)',
@@ -131,7 +131,7 @@ export default function ComoFuncionaPage() {
               />
               <div
                 aria-hidden
-                className="animate-float-orb relative h-32 w-32 rounded-full"
+                className="animate-float-orb relative h-32 w-32 rounded-full md:h-40 md:w-40"
                 style={{
                   background:
                     'radial-gradient(circle at 35% 30%, hsl(270 90% 60%) 0%, hsl(295 90% 55%) 45%, hsl(18 100% 56%) 100%)',
@@ -140,12 +140,12 @@ export default function ComoFuncionaPage() {
                 }}
               />
             </div>
-            <div className="flex flex-col gap-3">
-              <h1 className="font-display-pf text-4xl font-semibold leading-tight tracking-tight text-white">
+            <div className="flex flex-col gap-3 md:gap-4">
+              <h1 className="font-display-pf text-4xl font-semibold leading-tight tracking-tight text-white md:text-5xl lg:text-6xl">
                 ¿Cómo funciona{' '}
                 <span className="text-gradient italic">Chero</span>?
               </h1>
-              <p className="text-sm text-white/75">
+              <p className="mx-auto max-w-md text-sm text-white/75 md:text-base lg:text-lg">
                 Transparencia total: qué pasa con tu audio, qué IAs usamos,
                 cuánto cuesta hacerlo.
               </p>
@@ -270,9 +270,9 @@ export default function ComoFuncionaPage() {
             </p>
           </Section>
 
-          {/* Features */}
+          {/* Features — 2 cols mobile, 3 cols desktop */}
           <Section title="Hecho para estudiantes salvadoreños">
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
               {[
                 {
                   title: 'Voseo salvadoreño nativo',
@@ -323,13 +323,13 @@ export default function ComoFuncionaPage() {
             </div>
           </Section>
 
-          {/* ¿Es para mí? */}
+          {/* ¿Es para mí? — stack mobile, side-by-side desktop */}
           <Section title="¿Es para mí?">
             <p>
               Hecho para bachilleres salvadoreños. Primero, segundo año, AVANZO,
               exámenes de período. Todo cubierto.
             </p>
-            <div className="mt-4 grid grid-cols-1 gap-3">
+            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
               {/* AVANZO destacado */}
               <div
                 className="glass-strong relative overflow-hidden rounded-2xl p-5"
@@ -436,8 +436,8 @@ export default function ComoFuncionaPage() {
             </div>
           </Section>
 
-          {/* Final CTA glass-strong con halo magenta (Lovable) */}
-          <section className="scroll-reveal glass-strong relative flex flex-col items-center gap-3 overflow-hidden rounded-3xl p-6 text-center">
+          {/* Final CTA glass-strong con halo magenta (Lovable). md: padding extra */}
+          <section className="scroll-reveal glass-strong relative flex flex-col items-center gap-3 overflow-hidden rounded-3xl p-6 text-center md:p-10 md:gap-4">
             <span
               aria-hidden
               className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full opacity-70 blur-3xl"
@@ -508,12 +508,13 @@ function Section({
   // scroll-reveal: la sección hace fade-in + slide-up cuando entra al
   // viewport (CSS scroll-driven animations, sin JS). Da feel de orden:
   // las secciones aparecen una a una mientras el user scrollea.
+  // En desktop: heading más grande para jerarquía visual coherente.
   return (
-    <section className="scroll-reveal flex flex-col gap-2">
-      <h2 className="font-display-pf text-2xl font-semibold tracking-tight text-white">
+    <section className="scroll-reveal flex flex-col gap-2 md:gap-3">
+      <h2 className="font-display-pf text-2xl font-semibold tracking-tight text-white md:text-3xl lg:text-4xl">
         {title}
       </h2>
-      <div className="space-y-3 text-sm leading-relaxed text-white/85">
+      <div className="space-y-3 text-sm leading-relaxed text-white/85 md:text-base">
         {children}
       </div>
     </section>

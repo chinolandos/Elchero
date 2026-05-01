@@ -59,9 +59,10 @@ export default async function HomePage() {
         }}
       />
 
-      {/* Contenido — max-w-[440px] mobile-first incluso en desktop */}
-      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-[440px] flex-col">
-        <div className="flex flex-col gap-10 px-5 pb-12 pt-10">
+      {/* Contenido — mobile 440px, desktop expande progresivamente sin perder
+          el feel intimate del Lovable. md:max-w-2xl (672px) lg:max-w-3xl (768px). */}
+      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-[440px] flex-col md:max-w-2xl lg:max-w-3xl">
+        <div className="flex flex-col gap-10 px-5 pb-12 pt-10 md:gap-14 md:px-8 md:pb-20 md:pt-16">
           <Hero user={user} />
           <LandingPricing userLoggedIn={userLoggedIn} />
         </div>
@@ -78,13 +79,13 @@ function Hero({ user }: { user: User | null }) {
       id="inicio"
       className="flex flex-col items-center gap-6 text-center"
     >
-      {/* Orb sphere 192px (Lovable) — gradient radial violet→magenta→ember
-          con 3 box-shadows (highlight blanco arriba + sombra interna abajo
-          + glow magenta exterior). Halo violet 288px blur-3xl detrás. */}
+      {/* Orb sphere 192px mobile / 224px desktop. Gradient radial violet→
+          magenta→ember con 3 box-shadows (highlight blanco arriba + sombra
+          interna abajo + glow magenta exterior). Halo violet blur-3xl detrás. */}
       <div className="relative grid place-items-center">
         <span
           aria-hidden
-          className="absolute h-72 w-72 rounded-full opacity-80 blur-3xl"
+          className="absolute h-72 w-72 rounded-full opacity-80 blur-3xl md:h-80 md:w-80"
           style={{
             background:
               'radial-gradient(circle, hsl(270 90% 60% / 0.6), transparent 70%)',
@@ -92,7 +93,7 @@ function Hero({ user }: { user: User | null }) {
         />
         <div
           aria-hidden
-          className="animate-float-orb relative h-48 w-48 rounded-full"
+          className="animate-float-orb relative h-48 w-48 rounded-full md:h-56 md:w-56"
           style={{
             background:
               'radial-gradient(circle at 35% 30%, hsl(270 90% 60%) 0%, hsl(295 90% 55%) 45%, hsl(18 100% 56%) 100%)',
@@ -108,12 +109,14 @@ function Hero({ user }: { user: User | null }) {
         Beta abierta · 10 usos gratis
       </span>
 
-      {/* Tagline — texto reordenado v5: principal corto + subtitle italic gradient */}
-      <div className="flex flex-col gap-3">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/55">
+      {/* Tagline — texto reordenado v5: principal corto + subtitle italic gradient.
+          En desktop (md+): h1 más grande (5xl), subtitle wider (md), padding visual
+          mayor, eyebrow text más grande. */}
+      <div className="flex flex-col gap-3 md:gap-4">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/55 md:text-xs">
           El Chero
         </p>
-        <h1 className="font-display-pf text-4xl font-semibold leading-tight tracking-tight text-foreground">
+        <h1 className="font-display-pf text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
           De la clase a tus
           <br />
           apuntes en minutos.
@@ -122,7 +125,7 @@ function Hero({ user }: { user: User | null }) {
             - Primera frase: italic Playfair, white/95, con SOLO la palabra
               "cherito" en text-gradient warm (matching Lovable exacto).
             - Segunda frase: weight normal, white/70 para jerarquía visual. */}
-        <p className="mx-auto max-w-[320px] text-sm text-white/95">
+        <p className="mx-auto max-w-[320px] text-sm text-white/95 md:max-w-md md:text-base">
           <em className="font-display-pf font-semibold italic">
             El{' '}
             <span className="text-gradient">cherito</span>{' '}
@@ -136,8 +139,9 @@ function Hero({ user }: { user: User | null }) {
         </p>
       </div>
 
-      {/* CTAs — auth-aware, full-width column */}
-      <div className="flex w-full flex-col gap-3">
+      {/* CTAs — auth-aware. Mobile: full-width column. Desktop: max-w-md
+          centrado para no estirarse demasiado. */}
+      <div className="flex w-full max-w-md flex-col gap-3">
         {user ? (
           <>
             <Link
