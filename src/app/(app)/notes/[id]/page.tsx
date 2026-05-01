@@ -2,13 +2,14 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { requireAuth } from '@/lib/auth/require-auth';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { buttonVariants } from '@/components/ui/button';
 import { orbGradient, shadows } from '@/lib/design-tokens';
 import type { CheroNote, CheroMode } from '@/lib/types/chero';
 import { MermaidChart } from './mermaid-chart';
 import { NoteActions } from './note-actions';
 import { FolderPicker } from './folder-picker';
 import { AudioPlayer } from '@/components/ui/audio-player';
+import { FlashcardsDeck } from './flashcards-deck';
+import { QuizQuestions } from './quiz-questions';
 
 interface NotePageProps {
   params: Promise<{ id: string }>;
@@ -71,12 +72,45 @@ export default async function NotePage({ params }: NotePageProps) {
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
+    <>
+      {/* v5 bg cover */}
+      <div
+        aria-hidden
+        className="bg-gradient-hero pointer-events-none fixed inset-0"
+      />
+      <div
+        aria-hidden
+        className="animate-blob pointer-events-none fixed -right-32 -top-40 h-[520px] w-[520px] rounded-full opacity-70 blur-3xl"
+        style={{
+          background:
+            'radial-gradient(circle, hsl(295 90% 55% / 0.7), transparent 70%)',
+        }}
+      />
+      <div
+        aria-hidden
+        className="animate-blob pointer-events-none fixed right-1/4 top-1/3 h-[420px] w-[420px] rounded-full opacity-60 blur-3xl"
+        style={{
+          animationDelay: '-6s',
+          background:
+            'radial-gradient(circle, hsl(18 100% 56% / 0.65), transparent 70%)',
+        }}
+      />
+      <div
+        aria-hidden
+        className="animate-blob pointer-events-none fixed -bottom-40 -left-20 h-[480px] w-[480px] rounded-full opacity-60 blur-3xl"
+        style={{
+          animationDelay: '-12s',
+          background:
+            'radial-gradient(circle, hsl(270 90% 60% / 0.6), transparent 70%)',
+        }}
+      />
+
+      <main className="relative mx-auto w-full max-w-[440px] px-5 py-8 md:max-w-3xl md:px-8 md:py-10 lg:max-w-4xl">
         {/* Header */}
-        <header className="mb-10 flex flex-wrap items-center justify-between gap-3">
+        <header className="mb-8 flex flex-wrap items-center justify-between gap-3 md:mb-10">
           <Link
             href="/library"
-            className="inline-flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-white"
+            className="inline-flex items-center gap-2 text-sm text-white/70 transition-colors hover:text-white"
           >
             ← Mis apuntes
           </Link>
@@ -90,24 +124,24 @@ export default async function NotePage({ params }: NotePageProps) {
         </header>
 
         {/* Title block */}
-        <div className="mb-12">
-          <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-wider text-white/50">
-            <span className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-primary">
+        <div className="mb-10 md:mb-12">
+          <div className="mb-4 flex flex-wrap items-center gap-3 text-xs uppercase tracking-wider text-white/55">
+            <span className="bg-gradient-primary shadow-button-premium rounded-full px-3 py-1 font-semibold text-white">
               {MODE_EMOJI[note.mode]} {MODE_LABEL[note.mode]}
             </span>
-            <span>·</span>
+            <span aria-hidden>·</span>
             <span>{note.subject}</span>
             {note.institution && (
               <>
-                <span>·</span>
+                <span aria-hidden>·</span>
                 <span>{note.institution}</span>
               </>
             )}
           </div>
-          <h1 className="text-4xl font-black leading-tight tracking-tight md:text-5xl">
+          <h1 className="font-display-pf text-4xl font-semibold leading-tight tracking-tight text-white md:text-5xl lg:text-6xl">
             {note.subject}
           </h1>
-          <p className="mt-3 text-sm text-white/40">
+          <p className="mt-3 text-sm text-white/55">
             Apunte · Generado el {formatDate(note.created_at)}
             {note.audio_duration_minutes
               ? ` · ${note.audio_duration_minutes.toFixed(1)} min de audio`
@@ -115,17 +149,19 @@ export default async function NotePage({ params }: NotePageProps) {
           </p>
         </div>
 
-        {/* Audio TTS — pill con waveform animado, drag-to-seek y descarga MP3 */}
+        {/* Audio TTS */}
         {note.audio_tts_url && (
           <section className="mb-10">
-            <div className="mb-3 flex items-center gap-3">
+            <div className="glass mb-3 flex items-center gap-3 rounded-2xl p-4">
               <div
-                className="orb-pulse h-6 w-6 rounded-full"
+                className="orb-pulse h-8 w-8 shrink-0 rounded-full"
                 style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
               />
               <div className="flex-1">
-                <div className="text-sm font-semibold">Escuchá el apunte</div>
-                <div className="text-xs text-white/40">
+                <div className="text-sm font-semibold text-white">
+                  Escuchá el apunte
+                </div>
+                <div className="text-xs text-white/65">
                   Resumen + conceptos + repaso · voz natural · arrastrá para
                   buscar
                 </div>
@@ -140,140 +176,98 @@ export default async function NotePage({ params }: NotePageProps) {
 
         {/* Resumen ejecutivo */}
         <Section title="🎯 Resumen ejecutivo">
-          <div className="space-y-4 text-base leading-relaxed text-white/80">
-            {splitParagraphs(note.summary).map((p, i) => (
-              <p key={i}>{p}</p>
-            ))}
-          </div>
+          <article className="glass rounded-3xl p-5 sm:p-6">
+            <div className="space-y-4 text-base leading-relaxed text-white/90">
+              {splitParagraphs(note.summary).map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
+          </article>
         </Section>
 
         {/* Conceptos */}
         <Section title="📚 Conceptos clave">
-          <div className="space-y-5">
+          <div className="space-y-4">
             {note.concepts.map((c, i) => (
-              <div
+              <article
                 key={i}
-                className="rounded-xl border border-white/10 bg-white/[0.03] p-5"
+                className="glass rounded-3xl p-5 sm:p-6"
               >
-                <h3 className="mb-2 text-lg font-bold text-white">{c.name}</h3>
-                <p className="text-sm leading-relaxed text-white/75">{c.definition}</p>
+                <h3 className="font-display-pf mb-2 text-xl font-semibold text-white">
+                  {c.name}
+                </h3>
+                <p className="text-sm leading-relaxed text-white/85">
+                  {c.definition}
+                </p>
                 {c.example && (
-                  <p className="mt-3 rounded-lg border-l-2 border-primary/40 bg-primary/5 px-4 py-2 text-sm italic text-white/70">
-                    <span className="not-italic font-semibold text-primary">Ejemplo:</span>{' '}
+                  <p className="mt-3 rounded-2xl border-l-2 border-primary-glow bg-primary/10 px-4 py-3 text-sm italic text-white/85">
+                    <span className="not-italic font-semibold text-primary-glow">
+                      Ejemplo:
+                    </span>{' '}
                     {c.example}
                   </p>
                 )}
-              </div>
+              </article>
             ))}
           </div>
         </Section>
 
-        {/* Preguntas */}
+        {/* Preguntas tipo examen — interactivo Quizlet-style */}
         <Section title="❓ Preguntas tipo examen">
-          <div className="space-y-6">
-            {note.questions.map((q, i) => (
-              <details
-                key={i}
-                className="group rounded-xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:border-white/20"
-              >
-                <summary className="cursor-pointer list-none">
-                  <div className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 text-sm font-bold text-primary">
-                      {i + 1}
-                    </span>
-                    <div className="flex-1">
-                      <p className="text-base font-medium text-white/90">{q.prompt}</p>
-                      {q.options && (
-                        <ul className="mt-3 space-y-1.5 text-sm text-white/70">
-                          {q.options.map((opt, j) => (
-                            <li key={j}>{opt}</li>
-                          ))}
-                        </ul>
-                      )}
-                      <span className="mt-3 inline-block text-xs text-primary group-open:hidden">
-                        ▼ Ver respuesta
-                      </span>
-                    </div>
-                  </div>
-                </summary>
-                <div className="mt-4 ml-10 space-y-2 border-t border-white/10 pt-4">
-                  {q.correct && (
-                    <div className="text-sm">
-                      <span className="font-semibold text-green-400">
-                        ✓ Respuesta correcta:
-                      </span>{' '}
-                      <span className="text-white">{q.correct}</span>
-                    </div>
-                  )}
-                  <div className="text-sm text-white/70">
-                    <span className="font-semibold text-white/90">Justificación:</span>{' '}
-                    {q.justification}
-                  </div>
-                </div>
-              </details>
-            ))}
-          </div>
+          <QuizQuestions questions={note.questions} />
         </Section>
 
-        {/* Flashcards */}
+        {/* Flashcards — deck Quizlet flip */}
         <Section title="🧠 Flashcards">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {note.flashcards.map((f, i) => (
-              <details
-                key={i}
-                className="group rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-all hover:border-white/20"
-              >
-                <summary className="cursor-pointer list-none">
-                  <div className="flex items-start gap-2">
-                    <span className="mt-0.5 text-xs font-bold text-primary">
-                      {i + 1}.
-                    </span>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium italic text-white/90">{f.front}</p>
-                      <span className="mt-2 inline-block text-xs text-white/40 group-open:hidden">
-                        Tap para ver respuesta →
-                      </span>
-                    </div>
-                  </div>
-                </summary>
-                <div className="mt-3 ml-5 border-t border-white/10 pt-3 text-sm text-white/80">
-                  → {f.back}
-                </div>
-              </details>
-            ))}
-          </div>
+          <FlashcardsDeck cards={note.flashcards} />
         </Section>
 
         {/* Repaso 30s */}
         <Section title="📝 Repaso de 30 segundos">
-          <div className="rounded-xl border border-primary/20 bg-primary/5 p-6">
-            <div className="space-y-3 text-base leading-relaxed text-white/85">
+          <article className="glass-strong relative overflow-hidden rounded-3xl p-6">
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -right-10 -top-16 h-40 w-40 rounded-full opacity-40 blur-3xl"
+              style={{ background: 'hsl(295 90% 55% / 0.6)' }}
+            />
+            <div className="relative space-y-3 text-base leading-relaxed text-white/90">
               {splitParagraphs(note.quick_review).map((p, i) => (
                 <p key={i}>{p}</p>
               ))}
             </div>
-          </div>
+          </article>
         </Section>
 
-        {/* Mermaid chart — render visual con mermaid.js (Client Component) */}
+        {/* Mermaid chart */}
         {note.mermaid_chart && (
           <Section title="🗺️ Mapa mental">
-            <MermaidChart source={note.mermaid_chart} />
+            <div className="glass rounded-3xl p-4 sm:p-6">
+              <MermaidChart source={note.mermaid_chart} />
+            </div>
           </Section>
         )}
 
-      {/* Footer */}
-      <footer className="mt-16 border-t border-white/10 pt-8 text-center text-xs text-white/30">
-        Generado por Chero · IA con voseo salvadoreño
-      </footer>
-    </main>
+        {/* Footer */}
+        <footer className="mt-12 border-t border-white/10 pt-6 text-center text-xs text-white/40 md:mt-16 md:pt-8">
+          Generado por Chero · IA con voseo salvadoreño
+        </footer>
+      </main>
+    </>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section className="mb-12">
-      <h2 className="mb-5 text-2xl font-bold tracking-tight">{title}</h2>
+    <section className="mb-10 md:mb-12">
+      <h2 className="font-display-pf mb-5 text-2xl font-semibold tracking-tight text-white md:text-3xl">
+        {title}
+      </h2>
       {children}
     </section>
   );
