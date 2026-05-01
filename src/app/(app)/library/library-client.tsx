@@ -130,29 +130,29 @@ function NoteCard({
   return (
     <Link
       href={`/notes/${note.id}`}
-      className="group relative flex flex-col overflow-hidden rounded-tl-3xl rounded-2xl border border-white/[0.06] bg-[#0e0e1a] transition-all hover:scale-[1.02] hover:border-primary/30 hover:shadow-[0_8px_32px_rgba(147,51,234,0.18)]"
+      className="group glass relative flex flex-col overflow-hidden rounded-3xl transition-all hover:-translate-y-1 hover:bg-white/[0.16] hover:shadow-[0_18px_40px_-14px_rgba(238,49,232,0.4)]"
     >
-      {/* Banda superior con gradient procedural */}
+      {/* Banda superior con gradient procedural — la identidad visual del subject */}
       <div
         className="relative h-24 w-full"
         style={{ background: gradient }}
         aria-hidden
       >
-        {/* Overlay grain sutil para profundidad */}
+        {/* Overlay highlight para profundidad */}
         <div
           className="absolute inset-0 opacity-30 mix-blend-overlay"
           style={{
             backgroundImage:
-              'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4), transparent 60%)',
+              'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), transparent 60%)',
           }}
         />
 
-        {/* Mode badge top-right */}
+        {/* Mode badge top-right (glass-strong para destacar sobre el gradient) */}
         <span className="absolute right-3 top-3 rounded-full bg-black/40 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
           {MODE_LABEL[note.mode]}
         </span>
 
-        {/* Audio indicator (si tiene TTS) */}
+        {/* Audio indicator */}
         {note.audio_tts_url && (
           <span
             className="absolute left-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-black/40 text-xs text-white backdrop-blur-md"
@@ -163,34 +163,34 @@ function NoteCard({
         )}
       </div>
 
-      {/* Body */}
+      {/* Body — glass translucent v5 (no más dark) */}
       <div className="flex flex-1 flex-col p-5">
-        <h3 className="mb-2 line-clamp-1 text-lg font-bold tracking-tight text-white">
+        <h3 className="font-display-pf mb-2 line-clamp-1 text-lg font-semibold tracking-tight text-white">
           {note.subject}
         </h3>
-        <p className="line-clamp-2 flex-1 text-sm leading-relaxed text-white/55 transition-colors group-hover:text-white/75">
+        <p className="line-clamp-2 flex-1 text-sm leading-relaxed text-white/75 transition-colors group-hover:text-white/90">
           {note.summary_excerpt || 'Sin resumen disponible'}
         </p>
 
         {/* Footer: número secuencial grande + counter */}
-        <div className="mt-5 flex items-end justify-between border-t border-white/[0.05] pt-4">
+        <div className="mt-5 flex items-end justify-between border-t border-white/15 pt-4">
           <div>
-            <div className="text-3xl font-black tabular-nums leading-none text-white">
+            <div className="font-display-pf text-3xl font-bold leading-none tabular-nums text-white">
               {seq}
             </div>
-            <div className="mt-1 text-[10px] uppercase tracking-wider text-white/35">
+            <div className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-white/55">
               {formatShortDate(note.created_at)}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-xs text-white/65">
-              <span className="font-semibold text-white/85">
+            <div className="text-xs text-white/75">
+              <span className="font-semibold text-white">
                 {note.questions_count}
               </span>{' '}
               preg
             </div>
-            <div className="text-xs text-white/65">
-              <span className="font-semibold text-white/85">
+            <div className="text-xs text-white/75">
+              <span className="font-semibold text-white">
                 {note.flashcards_count}
               </span>{' '}
               flash
