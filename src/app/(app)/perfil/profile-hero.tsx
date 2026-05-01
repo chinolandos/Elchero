@@ -4,16 +4,12 @@
  * Estructura tipo Lovable hue-learn-glow:
  *   - Card glass-strong con halos magenta/ember
  *   - Orb brand + greeting Playfair + chip context
- *   - Stats grid 3 cols Duolingo-style:
- *     · Racha (🔥 flame, gradient cálido) — días consecutivos estudiando
- *     · Horas (⏰ clock) — total de minutos audio acumulados / 60
- *     · Cards (📚 layers) — total de flashcards generadas
- *
- * Cada stat con icono en círculo coloreado arriba (matching Lovable).
- *
- * Server Component — no hay estado interactivo.
+ *   - Stats grid 3 cols con iconos coloreados:
+ *     · 🔥 Racha (flame, gradient amber-orange) — días consecutivos
+ *     · 📖 Apuntes (book, gradient violet-fuchsia) — total de notas
+ *     · 💎 Usos (gem, gradient fuchsia-pink) — beta remaining / max
  */
-import { Flame, Clock, Layers } from 'lucide-react';
+import { Flame, BookOpen, Gem } from 'lucide-react';
 import { orbGradient, shadows } from '@/lib/design-tokens';
 import type { UserProfile, UserType } from '@/lib/types/chero';
 
@@ -22,8 +18,7 @@ interface ProfileHeroProps {
   profile: UserProfile | null;
   stats: {
     streak: number;
-    hours: number;
-    cards: number;
+    notes: number;
     remainingUser: number;
     maxPerUser: number;
   };
@@ -45,20 +40,16 @@ export function ProfileHero({ firstName, profile, stats }: ProfileHeroProps) {
 
   return (
     <section className="glass-strong relative mb-8 overflow-hidden rounded-3xl p-6 md:p-8">
-      {/* Halo magenta sutil arriba (matching Lovable hero card) */}
+      {/* Halos magenta + ember */}
       <span
         aria-hidden
         className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full opacity-60 blur-3xl"
-        style={{
-          background: 'hsl(295 90% 55% / 0.6)',
-        }}
+        style={{ background: 'hsl(295 90% 55% / 0.6)' }}
       />
       <span
         aria-hidden
         className="pointer-events-none absolute -bottom-16 -left-10 h-48 w-48 rounded-full opacity-50 blur-3xl"
-        style={{
-          background: 'hsl(18 100% 56% / 0.5)',
-        }}
+        style={{ background: 'hsl(18 100% 56% / 0.5)' }}
       />
 
       <div className="relative flex flex-col items-center text-center">
@@ -83,31 +74,28 @@ export function ProfileHero({ firstName, profile, stats }: ProfileHeroProps) {
           </div>
         )}
 
-        {/* Stats grid 3 cols Duolingo-style: Racha / Horas / Cards */}
+        {/* Stats grid 3 cols: Racha / Apuntes / Usos */}
         <div className="mt-6 grid w-full grid-cols-3 gap-3">
           <StatCard
-            icon={
-              <Flame aria-hidden className="h-4 w-4 md:h-5 md:w-5" />
-            }
+            icon={<Flame aria-hidden className="h-4 w-4 md:h-5 md:w-5" />}
             iconTint="ember"
             value={`${stats.streak}d`}
             label="Racha"
           />
           <StatCard
             icon={
-              <Clock aria-hidden className="h-4 w-4 md:h-5 md:w-5" />
+              <BookOpen aria-hidden className="h-4 w-4 md:h-5 md:w-5" />
             }
             iconTint="violet"
-            value={`${stats.hours}h`}
-            label="Horas"
+            value={`${stats.notes}`}
+            label="Apuntes"
           />
           <StatCard
-            icon={
-              <Layers aria-hidden className="h-4 w-4 md:h-5 md:w-5" />
-            }
+            icon={<Gem aria-hidden className="h-4 w-4 md:h-5 md:w-5" />}
             iconTint="magenta"
-            value={`${stats.cards}`}
-            label="Cards"
+            value={`${stats.remainingUser}`}
+            sublabel={`de ${stats.maxPerUser}`}
+            label="Usos"
           />
         </div>
       </div>
@@ -131,11 +119,13 @@ function StatCard({
   iconTint,
   value,
   label,
+  sublabel,
 }: {
   icon: React.ReactNode;
   iconTint: IconTint;
   value: string;
   label: string;
+  sublabel?: string;
 }) {
   return (
     <div className="flex flex-col gap-2 rounded-2xl border border-white/15 bg-white/[0.06] p-3 backdrop-blur md:p-4">
@@ -151,6 +141,9 @@ function StatCard({
         <div className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-white/70">
           {label}
         </div>
+        {sublabel && (
+          <div className="text-[10px] text-white/55">{sublabel}</div>
+        )}
       </div>
     </div>
   );

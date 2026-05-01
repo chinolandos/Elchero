@@ -4,10 +4,11 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { readUsage } from '@/lib/usage/check';
 import {
   calculateStreak,
-  calculateTotalMinutes,
+  calculateThisWeek,
 } from '@/lib/perfil/stats';
 import { ProfileHero } from './profile-hero';
 import { ProfileMenu } from './profile-menu';
+import { WeeklyChart } from '../rachas/weekly-chart';
 import type { UserProfile } from '@/lib/types/chero';
 
 export const metadata = {
@@ -69,12 +70,13 @@ export default async function PerfilPage() {
       .select('*')
       .eq('id', user.id)
       .maybeSingle<UserProfile>(),
-    // Cargamos created_at, audio_duration_minutes y flashcards de TODAS
-    // las notas para calcular streak (días consecutivos), horas totales
-    // (suma de duraciones) y cards totales (suma de flashcards).
+    // Cargamos created_at + duration_minutes para:
+    //   - streak (días consecutivos con al menos 1 nota)
+    //   - WeeklyChart "Esta semana" (minutos por día Lun-Dom)
+    //   - notes count para stat "Apuntes"
     supabase
       .from('notes')
-      .select('created_at, audio_duration_minutes, flashcards')
+      .select('created_at, audio_duration_minutes')
       .eq('user_id', user.id),
     readUsage(user.id),
   ]);
@@ -90,20 +92,16 @@ export default async function PerfilPage() {
       | undefined,
   );
 
-  // Stats Duolingo-style (matching Lovable hue-learn-glow)
+  // Stats hero: Racha (Duolingo) / Apuntes (count) / Usos (beta remaining)
   const streak = calculateStreak(notesList);
-  const totalMinutes = calculateTotalMinutes(notesList);
-  const totalHours = Math.floor(totalMinutes / 60);
-  const totalCards = notesList.reduce(
-    (acc, n) =>
-      acc + (Array.isArray(n.flashcards) ? n.flashcards.length : 0),
-    0,
-  );
+
+  // WeeklyChart data: minutos por día de esta semana (Lun-Dom)
+  const thisWeek = calculateThisWeek(notesList);
+  const weekMinutes = thisWeek.reduce((acc, d) => acc + d.minutes, 0);
 
   const stats = {
     streak,
-    hours: totalHours,
-    cards: totalCards,
+    notes: notesList.length,
     remainingUser: usage.remaining_user,
     maxPerUser: MAX_USES_PER_USER,
   };
@@ -156,6 +154,16 @@ export default async function PerfilPage() {
         </header>
 
         <ProfileHero firstName={firstName} profile={profile} stats={stats} />
+
+        {/* Esta semana — WeeklyChart con minutos por día (matching Lovable).
+            Goal hardcoded a 600min (10h) por ahora; configurable en el futuro. */}
+        <div className="mb-8">
+          <WeeklyChart
+            days={thisWeek}
+            weekMinutes={weekMinutes}
+            goalMinutes={600}
+          />
+        </div>
 
         <ProfileMenu />
       </main>
