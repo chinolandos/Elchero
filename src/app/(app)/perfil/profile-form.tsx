@@ -208,54 +208,59 @@ export function ProfileForm({ email, profile }: ProfileFormProps) {
         </Section>
       )}
 
-      {/* Save button — premium gradient v5 */}
-      <div className="flex items-center justify-end gap-3">
-        <Button
-          variant="premium"
-          size="xl"
-          onClick={handleSave}
-          disabled={isSaving}
-        >
-          {isSaving ? <Spinner size="sm" /> : 'Guardar cambios'}
-        </Button>
-      </div>
+      {/* Save button — premium full-width al final del editable */}
+      <Button
+        variant="premium"
+        size="xl"
+        onClick={handleSave}
+        disabled={isSaving}
+        className="w-full"
+      >
+        {isSaving ? <Spinner size="sm" /> : 'Guardar cambios'}
+      </Button>
 
-      {/* Datos read-only — abajo porque el user ya los conoce */}
-      <Section title="Cuenta" subtitle="Datos verificados al ingresar">
-        <Field label="Email">
-          <div className="glass rounded-xl px-4 py-2.5 text-sm text-white/85">
-            {email}
-          </div>
-        </Field>
-        {profile?.user_type && (
-          <Field label="Tipo de estudiante">
-            <div className="glass rounded-xl px-4 py-2.5 text-sm text-white/85">
-              {profile.user_type === 'bachiller'
-                ? 'Bachillerato'
-                : 'Universidad'}
-            </div>
-          </Field>
-        )}
-        {profile?.institution && (
-          <Field label="Institución">
-            <div className="glass rounded-xl px-4 py-2.5 text-sm text-white/85">
-              {profile.institution}
-            </div>
-          </Field>
-        )}
-        {typeof profile?.age === 'number' && (
-          <Field label="Edad">
-            <div className="glass rounded-xl px-4 py-2.5 text-sm text-white/85">
-              {profile.age} años
-              {profile.is_minor && (
-                <span className="ml-2 rounded-full bg-amber-500/20 px-2 py-0.5 text-xs text-amber-200">
-                  Menor de edad
+      {/* Datos read-only — menu list rows estilo Lovable */}
+      <section className="glass overflow-hidden rounded-3xl">
+        <div className="border-b border-white/10 px-5 py-4 sm:px-6">
+          <h2 className="font-display-pf text-xl font-semibold text-white sm:text-2xl">
+            Cuenta
+          </h2>
+          <p className="mt-1 text-xs text-white/65">
+            Datos verificados al ingresar
+          </p>
+        </div>
+        <ul className="divide-y divide-white/10">
+          <InfoRow label="Email" value={email} />
+          {profile?.user_type && (
+            <InfoRow
+              label="Tipo de estudiante"
+              value={
+                profile.user_type === 'bachiller'
+                  ? 'Bachillerato'
+                  : 'Universidad'
+              }
+            />
+          )}
+          {profile?.institution && (
+            <InfoRow label="Institución" value={profile.institution} />
+          )}
+          {typeof profile?.age === 'number' && (
+            <InfoRow
+              label="Edad"
+              value={
+                <span className="inline-flex items-center gap-2">
+                  <span>{profile.age} años</span>
+                  {profile.is_minor && (
+                    <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] text-amber-200">
+                      Menor
+                    </span>
+                  )}
                 </span>
-              )}
-            </div>
-          </Field>
-        )}
-      </Section>
+              }
+            />
+          )}
+        </ul>
+      </section>
 
       {/* Zona peligrosa */}
       <Section
@@ -276,7 +281,7 @@ export function ProfileForm({ email, profile }: ProfileFormProps) {
             onClick={handleDeleteAccount}
             disabled={isDeleting}
             className={cn(
-              'transition-colors',
+              'w-full transition-colors',
               confirmingDelete
                 ? 'bg-red-500/20 text-red-200 hover:bg-red-500/30'
                 : 'border border-red-500/30 text-red-300 hover:bg-red-500/10',
@@ -293,16 +298,57 @@ export function ProfileForm({ email, profile }: ProfileFormProps) {
         </div>
       </Section>
 
-      {/* Cerrar sesión — link discreto al final, fuera de cualquier card */}
-      <div className="pt-4 text-center">
-        <button
-          onClick={signOut}
-          className="text-sm text-white/50 transition-colors hover:text-white/80"
-        >
-          Cerrar sesión
-        </button>
-      </div>
+      {/* Cerrar sesión — full-width glass pill (Lovable style) */}
+      <button
+        type="button"
+        onClick={signOut}
+        className="glass flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-sm font-semibold text-white transition-all hover:bg-white/[0.18]"
+      >
+        <LogOutIcon />
+        <span>Cerrar sesión</span>
+      </button>
     </div>
+  );
+}
+
+/**
+ * InfoRow — fila tipo menu list de Lovable (label izq, value der).
+ * Sin chevron porque son read-only (no clickables).
+ */
+function InfoRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <li className="flex items-center justify-between gap-4 px-5 py-3.5 sm:px-6">
+      <span className="text-sm text-white/70">{label}</span>
+      <span className="text-right text-sm font-medium text-white">
+        {value}
+      </span>
+    </li>
+  );
+}
+
+function LogOutIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" x2="9" y1="12" y2="12" />
+    </svg>
   );
 }
 

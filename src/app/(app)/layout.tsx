@@ -31,7 +31,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
        *   - relative + overflow-hidden = container del ambient glow
        *   - text-white = base color heredada por todas las pages
        */}
-      <div className="relative min-h-screen overflow-hidden bg-[#0a0a14] pb-28 text-white">
+      <div className="relative min-h-screen overflow-hidden bg-[#0a0a14] pb-32 text-white">
         {/* Ambient glow background — radial gradients sutiles violeta/magenta */}
         <div
           className="pointer-events-none absolute inset-0"
