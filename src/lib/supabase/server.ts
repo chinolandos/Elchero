@@ -8,6 +8,12 @@ const log = createLogger('supabase/server');
 /**
  * Supabase client para Server Components y API Routes.
  * Lee la sesión del usuario desde cookies httpOnly.
+ *
+ * NOTA: src/lib/types/database.ts existe (generado vía `npm run db:types`)
+ * con los tipos derivados del schema. Para activar type safety estricta,
+ * pasar generic <Database> al createServerClient. Hoy NO está activo porque
+ * destapa varios mismatches existentes (created_at nullable, RLS columns
+ * en inserts, RPC return casts) que requieren un sweep separado.
  */
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
