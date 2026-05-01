@@ -7,7 +7,11 @@
  */
 
 interface NoteRow {
-  created_at: string;
+  // created_at puede ser null en el schema (col nullable). En la práctica
+  // siempre está poblado porque la tabla tiene DEFAULT NOW(), pero el tipo
+  // generado de Supabase lo declara como nullable. Filtramos nulls al inicio
+  // de cada cálculo para que TS y runtime estén alineados.
+  created_at: string | null;
   audio_duration_minutes?: number | null;
 }
 
@@ -27,9 +31,11 @@ function dayKey(d: Date): string {
 export function calculateStreak(notes: NoteRow[]): number {
   if (notes.length === 0) return 0;
 
-  // Set de días con actividad
+  // Set de días con actividad. Skipeamos notes sin created_at (no debería
+  // pasar pero el tipo es nullable y no queremos crashear con new Date(null)).
   const activeDays = new Set<string>();
   for (const note of notes) {
+    if (!note.created_at) continue;
     activeDays.add(dayKey(new Date(note.created_at)));
   }
 
@@ -66,6 +72,7 @@ export function calculateLongestStreak(notes: NoteRow[]): number {
 
   const activeDays = new Set<string>();
   for (const note of notes) {
+    if (!note.created_at) continue;
     activeDays.add(dayKey(new Date(note.created_at)));
   }
 
@@ -132,6 +139,7 @@ export function calculateThisWeek(notes: NoteRow[]): DayBucket[] {
   });
 
   for (const note of notes) {
+    if (!note.created_at) continue;
     const noteDate = new Date(note.created_at);
     const k = dayKey(noteDate);
     const bucket = buckets.find((b) => dayKey(b.date) === k);
@@ -166,6 +174,7 @@ export function calculateLastNDays(
   // Map de día → cantidad de notas
   const daysMap = new Map<string, number>();
   for (const note of notes) {
+    if (!note.created_at) continue;
     const k = dayKey(new Date(note.created_at));
     daysMap.set(k, (daysMap.get(k) ?? 0) + 1);
   }

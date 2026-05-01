@@ -9,6 +9,9 @@ import { verifyProcessToken } from '@/lib/auth/process-token';
 import { refundUsage } from '@/lib/usage/check';
 import { createLogger } from '@/lib/logger';
 import type { UserProfile } from '@/lib/types/chero';
+import type { Database, Json } from '@/lib/types/database';
+
+type NoteInsert = Database['public']['Tables']['notes']['Insert'];
 
 export const maxDuration = 300;
 export const runtime = 'nodejs';
@@ -208,23 +211,30 @@ export async function POST(req: NextRequest) {
 
     // 6. Guardar el apunte en Supabase. Si falla → liberamos token + refund.
     const { note } = result;
+    // Tipado explícito: @supabase/ssr no siempre propaga el Database generic
+    // al .insert(), así que declaramos la shape con NoteInsert para que TS
+    // valide cada campo contra el schema generado.
+    const newNote: NoteInsert = {
+      user_id: user.id,
+      mode: detected.mode,
+      subject: detected.subject,
+      institution: detected.institution,
+      detected_confidence: detected.confidence,
+      audio_duration_minutes: audio_duration_minutes ?? null,
+      transcript,
+      summary: note.summary,
+      // Cast a Json: NoteConcept/Question/Flashcard son shapes específicas
+      // pero Supabase los persiste como jsonb (Json union loose). El cast
+      // unknown→Json es el patrón estándar para shapes conocidas.
+      concepts: note.concepts as unknown as Json,
+      questions: note.questions as unknown as Json,
+      flashcards: note.flashcards as unknown as Json,
+      quick_review: note.quick_review,
+      mermaid_chart: note.mermaid_chart,
+    };
     const { data: insertedNote, error: insertError } = await supabase
       .from('notes')
-      .insert({
-        user_id: user.id,
-        mode: detected.mode,
-        subject: detected.subject,
-        institution: detected.institution,
-        detected_confidence: detected.confidence,
-        audio_duration_minutes: audio_duration_minutes ?? null,
-        transcript,
-        summary: note.summary,
-        concepts: note.concepts,
-        questions: note.questions,
-        flashcards: note.flashcards,
-        quick_review: note.quick_review,
-        mermaid_chart: note.mermaid_chart,
-      })
+      .insert(newNote)
       .select('id')
       .single();
 

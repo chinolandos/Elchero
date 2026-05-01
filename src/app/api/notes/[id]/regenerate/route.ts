@@ -8,6 +8,9 @@ import { generateNotes } from '@/lib/anthropic/generate';
 import { detectContext } from '@/lib/anthropic/detect';
 import { createLogger } from '@/lib/logger';
 import type { UserProfile, CheroMode } from '@/lib/types/chero';
+import type { Database, Json } from '@/lib/types/database';
+
+type NoteUpdate = Database['public']['Tables']['notes']['Update'];
 
 export const maxDuration = 300;
 export const runtime = 'nodejs';
@@ -179,7 +182,9 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
         err: err instanceof Error ? err.message : String(err),
       });
       detected = {
-        mode: note.mode,
+        // note.mode es string en el schema generado, pero solo guardamos los
+        // 4 valores de CheroMode (avanzo/periodo/parciales/repaso) — cast safe.
+        mode: note.mode as CheroMode,
         subject: note.subject ?? 'No detectado',
         institution: note.institution,
         year: (profile as { year?: number })?.year ?? null,
@@ -189,7 +194,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     }
   } else {
     detected = {
-      mode: note.mode,
+      mode: note.mode as CheroMode,
       subject: note.subject ?? 'No detectado',
       institution: note.institution,
       year: (profile as { year?: number })?.year ?? null,
@@ -222,11 +227,14 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 
   // Update — reemplazamos contenido pero mantenemos id, user_id, created_at
   const newNote = result.note;
-  const updates: Record<string, unknown> = {
+  // Tipado explícito con NoteUpdate para que TS valide cada campo contra
+  // el schema generado (en lugar de Record<string, unknown> que es too loose).
+  const updates: NoteUpdate = {
     summary: newNote.summary,
-    concepts: newNote.concepts,
-    questions: newNote.questions,
-    flashcards: newNote.flashcards,
+    // Cast a Json para shapes específicas que Supabase persiste como jsonb
+    concepts: newNote.concepts as unknown as Json,
+    questions: newNote.questions as unknown as Json,
+    flashcards: newNote.flashcards as unknown as Json,
     quick_review: newNote.quick_review,
     mermaid_chart: newNote.mermaid_chart,
     // Si re-detectamos, persistimos los nuevos campos detectados

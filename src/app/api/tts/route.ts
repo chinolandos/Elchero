@@ -97,6 +97,23 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Validación: summary + quick_review son los core del apunte. Si están
+    // null, el apunte está corrupto y no podemos generar TTS de la nada.
+    if (!note.summary || !note.quick_review) {
+      log.error('Note missing core fields for TTS', {
+        noteId: note_id,
+        has_summary: !!note.summary,
+        has_quick_review: !!note.quick_review,
+      });
+      return NextResponse.json(
+        {
+          error: 'note_incomplete',
+          message: 'El apunte no tiene resumen o repaso. Regeneralo primero.',
+        },
+        { status: 422 },
+      );
+    }
+
     // Construir texto a sintetizar
     const text = buildTtsText({
       summary: note.summary,

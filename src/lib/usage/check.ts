@@ -81,7 +81,10 @@ export async function tryIncrementUsage(userId: string): Promise<TryIncrementRes
   }
 
   // El RPC devuelve JSONB con la forma { success, total_uses, user_uses, reason? }
-  return data as TryIncrementResult;
+  // Double-cast `as unknown as X` porque el type generado de Supabase declara
+  // el return como Json union genérico — la shape específica solo la sabemos
+  // por contrato con la function SQL.
+  return data as unknown as TryIncrementResult;
 }
 
 /**

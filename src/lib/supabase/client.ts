@@ -1,14 +1,15 @@
 import { createBrowserClient } from '@supabase/ssr';
+import type { Database } from '@/lib/types/database';
 
 /**
  * Supabase client para Client Components.
  * Para auth flows desde el navegador.
  *
- * NOTA: src/lib/types/database.ts disponible para activar generic <Database>
- * cuando hagamos el sweep de schema mismatches (ver supabase/server.ts).
+ * Generic <Database> activo: tipos auto-derivados del schema. Da
+ * autocompletion en .from('X').select() y atrapa typos en columnas.
  */
 export function createSupabaseBrowserClient() {
-  return createBrowserClient(
+  return createBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
