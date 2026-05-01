@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookOpenText, Mic, UserCircle } from 'lucide-react';
+import { BookOpenText, Mic, Flame, UserCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
@@ -40,6 +40,7 @@ const TABS: NavItem[] = [
     matchPrefixes: ['/notes'],
   },
   { href: '/capture', label: 'Grabar', icon: Mic },
+  { href: '/rachas', label: 'Rachas', icon: Flame },
   { href: '/perfil', label: 'Perfil', icon: UserCircle },
 ];
 
