@@ -359,7 +359,9 @@ function Step2({
           {isUniversitario ? 'Año de carrera' : 'Año de bachillerato'}
         </Label>
         <div className="mt-3 flex gap-2" role="radiogroup" aria-label="Año de estudios">
-          {(isUniversitario ? [1, 2, 3, 4, 5] : [1, 2]).map((y) => (
+          {/* Bachillerato general SV: 2 años. Bachillerato técnico (INTI,
+              INFRAMEN, etc.): 3 años. Damos las 3 opciones para cubrir ambos. */}
+          {(isUniversitario ? [1, 2, 3, 4, 5] : [1, 2, 3]).map((y) => (
             <button
               key={y}
               type="button"
