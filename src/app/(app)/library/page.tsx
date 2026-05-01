@@ -54,35 +54,77 @@ export default async function LibraryPage() {
   }));
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
-      <header className="mb-10 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className="orb-pulse h-9 w-9 rounded-full"
-            style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
-          />
-          <div>
-            <div className="text-base font-bold">El Chero</div>
-            <div className="text-xs text-white/40">
-              {list.length} apunte{list.length === 1 ? '' : 's'}
+    <>
+      {/* v5 bg cover — sobrescribe el bg-[#0a0a14] del (app)/layout.
+          fixed inset-0 cubre el área de contenido. El BottomTabBar (z-40)
+          queda visible por encima de los blobs. */}
+      <div
+        aria-hidden
+        className="bg-gradient-hero pointer-events-none fixed inset-0"
+      />
+      <div
+        aria-hidden
+        className="animate-blob pointer-events-none fixed -right-32 -top-40 h-[520px] w-[520px] rounded-full opacity-70 blur-3xl"
+        style={{
+          background:
+            'radial-gradient(circle, hsl(295 90% 55% / 0.7), transparent 70%)',
+        }}
+      />
+      <div
+        aria-hidden
+        className="animate-blob pointer-events-none fixed right-1/4 top-1/3 h-[420px] w-[420px] rounded-full opacity-60 blur-3xl"
+        style={{
+          animationDelay: '-6s',
+          background:
+            'radial-gradient(circle, hsl(18 100% 56% / 0.65), transparent 70%)',
+        }}
+      />
+      <div
+        aria-hidden
+        className="animate-blob pointer-events-none fixed -bottom-40 -left-20 h-[480px] w-[480px] rounded-full opacity-60 blur-3xl"
+        style={{
+          animationDelay: '-12s',
+          background:
+            'radial-gradient(circle, hsl(270 90% 60% / 0.6), transparent 70%)',
+        }}
+      />
+
+      <main className="relative mx-auto max-w-[440px] px-5 py-10 md:max-w-3xl md:px-8 md:py-14 lg:max-w-4xl">
+        <header className="mb-8 flex items-center justify-between md:mb-10">
+          <div className="flex items-center gap-3">
+            <div
+              className="orb-pulse h-9 w-9 rounded-full"
+              style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
+            />
+            <div>
+              <div className="text-base font-bold text-white">El Chero</div>
+              <div className="text-xs text-white/55">
+                {list.length} apunte{list.length === 1 ? '' : 's'}
+              </div>
             </div>
           </div>
-        </div>
-        <Link href="/capture" className={buttonVariants({ size: 'sm' })}>
-          + Nuevo apunte
-        </Link>
-      </header>
+          <Link
+            href="/capture"
+            className={buttonVariants({
+              variant: 'premium',
+              size: 'sm',
+            })}
+          >
+            + Nuevo apunte
+          </Link>
+        </header>
 
-      <h1 className="mb-2 text-4xl font-black tracking-tight md:text-5xl">
-        Tus apuntes
-      </h1>
-      <p className="mb-10 text-white/60">
-        Organizados por carpetas. Tap largo en una carpeta para editarla o
-        borrarla.
-      </p>
+        <h1 className="font-display-pf mb-2 text-4xl font-semibold tracking-tight text-white md:text-5xl lg:text-6xl">
+          Tus apuntes
+        </h1>
+        <p className="mb-8 text-sm text-white/75 md:mb-10 md:text-base">
+          Organizados por carpetas. Tap largo en una carpeta para editarla o
+          borrarla.
+        </p>
 
-      <LibraryClient initialNotes={list} />
-    </main>
+        <LibraryClient initialNotes={list} />
+      </main>
+    </>
   );
 }
 

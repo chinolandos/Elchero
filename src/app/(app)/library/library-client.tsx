@@ -204,25 +204,39 @@ function NoteCard({
 
 function EmptyState({ isInbox }: { isInbox: boolean }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">
-      <div
-        className="orb-pulse mx-auto mb-6 h-16 w-16 rounded-full opacity-60"
-        style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
+    <div className="glass relative overflow-hidden rounded-3xl p-8 text-center md:p-12">
+      {/* Halo orb sutil arriba para profundidad (matching ¿Listo para probarlo? card) */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -right-10 -top-16 h-40 w-40 rounded-full opacity-50 blur-3xl"
+        style={{
+          background: 'hsl(295 90% 55% / 0.6)',
+        }}
       />
-      <h2 className="mb-2 text-xl font-bold">
-        {isInbox ? 'Tu inbox está vacío' : 'Esta carpeta está vacía'}
-      </h2>
-      <p className="mb-6 text-sm text-white/60">
-        {isInbox
-          ? 'Subí o grabá el audio de tu clase y Chero te genera el apunte completo.'
-          : 'Todavía no tenés apuntes en esta carpeta. Generá uno o moveuno desde otra carpeta.'}
-      </p>
-      <Link
-        href="/capture"
-        className={buttonVariants({ size: 'lg', className: 'px-8' })}
-      >
-        Crear apunte
-      </Link>
+      <div className="relative">
+        <div
+          className="orb-pulse mx-auto mb-5 h-16 w-16 rounded-full opacity-80"
+          style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
+        />
+        <h2 className="font-display-pf mb-2 text-2xl font-semibold text-white md:text-3xl">
+          {isInbox ? 'Tu inbox está vacío' : 'Esta carpeta está vacía'}
+        </h2>
+        <p className="mb-6 text-sm text-white/75">
+          {isInbox
+            ? 'Subí o grabá el audio de tu clase y Chero te genera el apunte completo.'
+            : 'Todavía no tenés apuntes en esta carpeta. Generá uno o movelo desde otra carpeta.'}
+        </p>
+        <Link
+          href="/capture"
+          className={buttonVariants({
+            variant: 'premium',
+            size: 'pill',
+            className: 'px-8',
+          })}
+        >
+          Crear apunte
+        </Link>
+      </div>
     </div>
   );
 }
