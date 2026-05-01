@@ -43,9 +43,11 @@ export function StreakHero({ streak, longestStreak }: Props) {
           🔥
         </div>
 
-        {/* Número días — Playfair gigante en gradient warm */}
+        {/* Número días — Playfair gigante en blanco. El emoji 🔥 ya da el
+            warm tone visual; el número en gradient no contrastaba bien
+            (especialmente con streak=0 chico). */}
         <div className="flex items-baseline gap-2">
-          <span className="font-display-pf text-gradient text-7xl font-bold leading-none tabular-nums md:text-8xl">
+          <span className="font-display-pf text-7xl font-bold leading-none tabular-nums text-white md:text-8xl">
             {streak}
           </span>
           <span className="text-base font-semibold text-white/85 md:text-lg">
