@@ -29,23 +29,25 @@ const MODE_LABEL: Record<CheroMode, string> = {
 };
 
 /**
- * 5 gradients procedural de la paleta Aura. Cada subject hashea a uno
- * consistente — "Matemática" siempre tendrá el mismo gradient.
+ * 5 gradients procedural sobrios — todos dentro de la paleta v5
+ * (plum, violet, magenta) para coherencia y feel serio. Eliminados los
+ * tonos cyan / orange / amber que rompían el mood.
  *
- * Cada gradient combina 2-3 colores del brand (violeta, magenta, cyan,
- * indigo, pink) para mantener cohesión visual.
+ * Cada subject hashea a uno consistente — "Matemática" siempre tendrá
+ * el mismo gradient. Los 5 son variaciones del mismo cromatismo violeta-
+ * magenta-plum: distinguibles entre sí pero familiares.
  */
 const SUBJECT_GRADIENTS: string[] = [
-  // 0 — violeta profundo + magenta (default Aura)
-  'linear-gradient(135deg, #6b21a8 0%, #9333ea 45%, #ec4899 100%)',
-  // 1 — cyan + violeta (ciencias / tech)
-  'linear-gradient(135deg, #1e1b4b 0%, #4f46e5 50%, #22d3ee 100%)',
-  // 2 — pink + orange (literatura / arts)
-  'linear-gradient(135deg, #831843 0%, #ec4899 50%, #f59e0b 100%)',
-  // 3 — indigo profundo + violeta vibrante
-  'linear-gradient(135deg, #312e81 0%, #6366f1 50%, #c084fc 100%)',
-  // 4 — magenta + violeta + cyan (orbe-like)
-  'linear-gradient(135deg, #ec4899 0%, #9333ea 50%, #22d3ee 100%)',
+  // 0 — plum profundo → violet brand (default sobrio)
+  'linear-gradient(135deg, hsl(285 55% 18%) 0%, hsl(270 70% 38%) 50%, hsl(270 90% 60%) 100%)',
+  // 1 — indigo deep → violet (técnico, ciencias)
+  'linear-gradient(135deg, hsl(250 60% 18%) 0%, hsl(258 70% 38%) 50%, hsl(270 80% 55%) 100%)',
+  // 2 — plum → magenta sobrio (humanidades)
+  'linear-gradient(135deg, hsl(290 50% 16%) 0%, hsl(295 70% 35%) 50%, hsl(295 80% 52%) 100%)',
+  // 3 — violet deep → violet brand (matemáticas, exactas)
+  'linear-gradient(135deg, hsl(265 60% 16%) 0%, hsl(268 70% 32%) 50%, hsl(272 85% 55%) 100%)',
+  // 4 — magenta deep → violet (artes, lengua)
+  'linear-gradient(135deg, hsl(310 50% 18%) 0%, hsl(300 65% 38%) 50%, hsl(280 80% 55%) 100%)',
 ];
 
 /**
