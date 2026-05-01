@@ -179,8 +179,8 @@ export default function ComoFuncionaPage() {
                 <strong className="text-white">
                   Cuidar el budget de la beta.
                 </strong>{' '}
-                Es lo que sale de un presupuesto auto-financiado de estudiante
-                para validar la idea.
+                50 usos × $0.16 = $8 USD en IA. Es lo que sale de un presupuesto
+                auto-financiado de estudiante para validar la idea.
               </li>
               <li>
                 <strong className="text-white">
