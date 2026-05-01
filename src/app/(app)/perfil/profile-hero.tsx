@@ -1,13 +1,19 @@
 /**
  * ProfileHero — bloque server-rendered del header del perfil (v5).
  *
- * Estructura tipo Lovable: card glass-strong con halo magenta arriba,
- * orb brand + greeting + chip context + stats grid 3 cols (mini-cards
- * glass adentro).
+ * Estructura tipo Lovable hue-learn-glow:
+ *   - Card glass-strong con halos magenta/ember
+ *   - Orb brand + greeting Playfair + chip context
+ *   - Stats grid 3 cols Duolingo-style:
+ *     · Racha (🔥 flame, gradient cálido) — días consecutivos estudiando
+ *     · Horas (⏰ clock) — total de minutos audio acumulados / 60
+ *     · Cards (📚 layers) — total de flashcards generadas
  *
- * Es Server Component porque solo lee datos derivados de Supabase y no
- * tiene estado interactivo.
+ * Cada stat con icono en círculo coloreado arriba (matching Lovable).
+ *
+ * Server Component — no hay estado interactivo.
  */
+import { Flame, Clock, Layers } from 'lucide-react';
 import { orbGradient, shadows } from '@/lib/design-tokens';
 import type { UserProfile, UserType } from '@/lib/types/chero';
 
@@ -15,8 +21,9 @@ interface ProfileHeroProps {
   firstName: string | null;
   profile: UserProfile | null;
   stats: {
-    notes: number;
-    folders: number;
+    streak: number;
+    hours: number;
+    cards: number;
     remainingUser: number;
     maxPerUser: number;
   };
@@ -76,23 +83,31 @@ export function ProfileHero({ firstName, profile, stats }: ProfileHeroProps) {
           </div>
         )}
 
-        {/* Stats grid 3 cols — mini glass cards */}
+        {/* Stats grid 3 cols Duolingo-style: Racha / Horas / Cards */}
         <div className="mt-6 grid w-full grid-cols-3 gap-3">
           <StatCard
-            value={stats.notes}
-            label="Apuntes"
-            sublabel="creados"
-            accent
+            icon={
+              <Flame aria-hidden className="h-4 w-4 md:h-5 md:w-5" />
+            }
+            iconTint="ember"
+            value={`${stats.streak}d`}
+            label="Racha"
           />
           <StatCard
-            value={stats.remainingUser}
-            label="Usos"
-            sublabel={`de ${stats.maxPerUser}`}
+            icon={
+              <Clock aria-hidden className="h-4 w-4 md:h-5 md:w-5" />
+            }
+            iconTint="violet"
+            value={`${stats.hours}h`}
+            label="Horas"
           />
           <StatCard
-            value={stats.folders}
-            label="Carpetas"
-            sublabel={stats.folders === 1 ? 'creada' : 'creadas'}
+            icon={
+              <Layers aria-hidden className="h-4 w-4 md:h-5 md:w-5" />
+            }
+            iconTint="magenta"
+            value={`${stats.cards}`}
+            label="Cards"
           />
         </div>
       </div>
@@ -100,34 +115,43 @@ export function ProfileHero({ firstName, profile, stats }: ProfileHeroProps) {
   );
 }
 
+type IconTint = 'ember' | 'violet' | 'magenta';
+
+const TINT_BG: Record<IconTint, string> = {
+  ember:
+    'bg-gradient-to-br from-amber-400/40 to-orange-500/40 text-amber-100',
+  violet:
+    'bg-gradient-to-br from-violet-400/40 to-fuchsia-500/40 text-violet-100',
+  magenta:
+    'bg-gradient-to-br from-fuchsia-400/40 to-pink-500/40 text-fuchsia-100',
+};
+
 function StatCard({
+  icon,
+  iconTint,
   value,
   label,
-  sublabel,
-  accent = false,
 }: {
-  value: number;
+  icon: React.ReactNode;
+  iconTint: IconTint;
+  value: string;
   label: string;
-  sublabel?: string;
-  accent?: boolean;
 }) {
   return (
-    <div
-      className={
-        accent
-          ? 'rounded-2xl border border-white/30 bg-white/15 p-3 backdrop-blur md:p-4'
-          : 'rounded-2xl border border-white/15 bg-white/5 p-3 backdrop-blur md:p-4'
-      }
-    >
-      <div className="text-2xl font-black leading-none tabular-nums text-white md:text-3xl">
-        {value}
+    <div className="flex flex-col gap-2 rounded-2xl border border-white/15 bg-white/[0.06] p-3 backdrop-blur md:p-4">
+      <div
+        className={`grid h-8 w-8 place-items-center rounded-xl backdrop-blur md:h-10 md:w-10 ${TINT_BG[iconTint]}`}
+      >
+        {icon}
       </div>
-      <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/85">
-        {label}
+      <div>
+        <div className="text-2xl font-black leading-none tabular-nums text-white md:text-3xl">
+          {value}
+        </div>
+        <div className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-white/70">
+          {label}
+        </div>
       </div>
-      {sublabel && (
-        <div className="text-[10px] text-white/65">{sublabel}</div>
-      )}
     </div>
   );
 }

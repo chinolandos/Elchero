@@ -2,6 +2,10 @@ import Link from 'next/link';
 import { requireAuth } from '@/lib/auth/require-auth';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { readUsage } from '@/lib/usage/check';
+import {
+  calculateStreak,
+  calculateTotalMinutes,
+} from '@/lib/perfil/stats';
 import { ProfileHero } from './profile-hero';
 import { ProfileMenu } from './profile-menu';
 import type { UserProfile } from '@/lib/types/chero';
@@ -59,24 +63,24 @@ export default async function PerfilPage() {
   const user = await requireAuth('/perfil');
   const supabase = await createSupabaseServerClient();
 
-  const [profileRes, notesCountRes, foldersCountRes, usage] = await Promise.all([
+  const [profileRes, notesRes, usage] = await Promise.all([
     supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .maybeSingle<UserProfile>(),
+    // Cargamos created_at, audio_duration_minutes y flashcards de TODAS
+    // las notas para calcular streak (días consecutivos), horas totales
+    // (suma de duraciones) y cards totales (suma de flashcards).
     supabase
       .from('notes')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id),
-    supabase
-      .from('folders')
-      .select('id', { count: 'exact', head: true })
+      .select('created_at, audio_duration_minutes, flashcards')
       .eq('user_id', user.id),
     readUsage(user.id),
   ]);
 
   const profile = profileRes.data ?? null;
+  const notesList = notesRes.data ?? [];
 
   const firstName = deriveFirstName(
     user.email,
@@ -86,9 +90,20 @@ export default async function PerfilPage() {
       | undefined,
   );
 
+  // Stats Duolingo-style (matching Lovable hue-learn-glow)
+  const streak = calculateStreak(notesList);
+  const totalMinutes = calculateTotalMinutes(notesList);
+  const totalHours = Math.floor(totalMinutes / 60);
+  const totalCards = notesList.reduce(
+    (acc, n) =>
+      acc + (Array.isArray(n.flashcards) ? n.flashcards.length : 0),
+    0,
+  );
+
   const stats = {
-    notes: notesCountRes.count ?? 0,
-    folders: foldersCountRes.count ?? 0,
+    streak,
+    hours: totalHours,
+    cards: totalCards,
     remainingUser: usage.remaining_user,
     maxPerUser: MAX_USES_PER_USER,
   };
