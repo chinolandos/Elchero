@@ -403,35 +403,27 @@ function Header({
   usesLeft: number;
   totalLimit: number;
 }) {
+  // v5: header simplificado — el BottomTabBar ya maneja la navegación
+  // (Inicio/Grabar/Perfil) así que no duplicamos esos links acá.
   return (
-    <header className="mb-8 flex items-center justify-between gap-4">
-      <Link href="/library" className="flex items-center gap-3 group">
+    <header className="mb-6 flex items-center justify-between gap-4">
+      <Link href="/library" className="group flex items-center gap-3">
         <div
           className="orb-pulse h-9 w-9 rounded-full"
           style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
         />
-        <div>
-          <div className="text-base font-bold transition-colors group-hover:text-primary">El Chero</div>
-          <div className="text-xs text-white/40 truncate max-w-[200px]">{userEmail}</div>
+        <div className="min-w-0">
+          <div className="text-sm font-bold text-white">El Chero</div>
+          <div className="max-w-[180px] truncate text-xs text-white/55">
+            {userEmail}
+          </div>
         </div>
       </Link>
-      <div className="flex items-center gap-3">
-        <Link
-          href="/library"
-          className="text-xs text-white/60 transition-colors hover:text-white"
-        >
-          Mis apuntes
-        </Link>
-        <Link
-          href="/perfil"
-          className="text-xs text-white/60 transition-colors hover:text-white"
-        >
-          Perfil
-        </Link>
-        <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs">
-          <span className="text-white/60">Usos:</span>{' '}
-          <span className="font-bold text-primary">{usesLeft}/{totalLimit}</span>
-        </div>
+      <div className="glass rounded-full px-3 py-1.5 text-xs">
+        <span className="text-white/70">Usos:</span>{' '}
+        <span className="font-bold text-primary-glow">
+          {usesLeft}/{totalLimit}
+        </span>
       </div>
     </header>
   );
@@ -465,74 +457,81 @@ function IdleScreen({
   onRecord: () => void;
   onPickFile: () => void;
 }) {
+  // v5: matching el Lovable "ready to record" state.
+  // Eyebrow + h1 Playfair con "clase" en gradient + mic button gigante con
+  // gradient violet→magenta→ember + glass info card + "Subir audio" abajo.
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
-      <div>
-        <h1 className="mb-3 text-4xl font-black tracking-tight md:text-5xl">
-          ¿Empezamos?
+    <div className="flex flex-1 flex-col items-center justify-center gap-8 py-6 text-center">
+      <div className="flex flex-col gap-2">
+        <p className="text-xs uppercase tracking-[0.3em] text-white/55">
+          El Chero está listo
+        </p>
+        <h1 className="font-display-pf text-4xl font-semibold leading-tight tracking-tight text-white md:text-5xl">
+          Grabar <span className="text-gradient italic">clase</span>
         </h1>
-        <p className="text-lg text-white/60">
-          Grabá tu clase ahora o subí un audio que ya tengas.
+      </div>
+
+      {/* Big mic button — gradient violet→magenta→ember matching el orb del hero */}
+      <button
+        type="button"
+        onClick={onRecord}
+        aria-label="Grabar clase ahora"
+        className="group relative grid h-44 w-44 place-items-center rounded-full transition-transform active:scale-[0.97]"
+      >
+        {/* Halo violet difuso detrás (animate-pulse-glow) */}
+        <span
+          aria-hidden
+          className="animate-pulse-glow absolute h-56 w-56 rounded-full opacity-70 blur-2xl"
+          style={{
+            background:
+              'radial-gradient(circle, hsl(270 90% 60% / 0.6), transparent 70%)',
+          }}
+        />
+        {/* Sphere sólido con gradient + box-shadows premium */}
+        <span
+          aria-hidden
+          className="relative grid h-40 w-40 place-items-center rounded-full transition-transform group-hover:scale-105"
+          style={{
+            background:
+              'radial-gradient(circle at 35% 30%, hsl(270 90% 60%) 0%, hsl(295 90% 55%) 45%, hsl(18 100% 56%) 100%)',
+            boxShadow:
+              'inset 0 6px 20px hsl(0 0% 100% / 0.25), inset 0 -10px 30px hsl(0 0% 0% / 0.4), 0 30px 80px -20px hsl(295 90% 55% / 0.6)',
+          }}
+        >
+          <MicIcon size={56} />
+        </span>
+      </button>
+
+      {/* Glass info card con sparkle */}
+      <div className="glass flex w-full max-w-md items-start gap-3 rounded-2xl p-4 text-left">
+        <span aria-hidden className="mt-0.5 shrink-0 text-lg text-primary-glow">
+          ✨
+        </span>
+        <p className="text-xs leading-relaxed text-white/85">
+          Al detener, El Chero generará la transcripción y flashcards. Vas a
+          poder editarlas y regenerarlas antes de guardarlas en una carpeta.
         </p>
       </div>
 
-      <div className="grid w-full max-w-md grid-cols-1 gap-4 sm:grid-cols-2">
-        <ActionCard
-          icon={<MicIcon />}
-          title="Grabar ahora"
-          subtitle="Hasta 9 min, voz HD"
-          onClick={onRecord}
-          primary
-        />
-        <ActionCard
-          icon={<UploadIcon />}
-          title="Subir audio"
-          subtitle="MP3 / M4A / WAV"
+      {/* Subir audio — opción secundaria, glass pill */}
+      <div className="flex flex-col items-center gap-2">
+        <button
+          type="button"
           onClick={onPickFile}
-        />
+          className={cn(
+            buttonVariants({ variant: 'glass', size: 'pill' }),
+            'gap-2',
+          )}
+        >
+          <UploadIcon />
+          <span>Subir audio</span>
+          <span className="text-[10px] text-white/55">MP3 / M4A / WAV</span>
+        </button>
+        <p className="max-w-xs text-[11px] text-white/55">
+          Para grabaciones &gt;9 min usá MP3 comprimido (≤4.5 MB).
+        </p>
       </div>
-
-      <p className="max-w-md text-xs text-white/40">
-        Idiomas soportados: español. Para grabaciones más largas (&gt;9 min) usá
-        la opción de subir archivo MP3 ya comprimido (≤4.5 MB).
-      </p>
     </div>
-  );
-}
-
-function ActionCard({
-  icon,
-  title,
-  subtitle,
-  onClick,
-  primary,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  subtitle: string;
-  onClick: () => void;
-  primary?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={`${title}. ${subtitle}`}
-      className={cn(
-        'group relative flex flex-col items-center justify-center gap-3 rounded-2xl border p-8 transition-all min-h-[140px]',
-        primary
-          ? 'border-primary/40 bg-primary/10 hover:border-primary hover:bg-primary/20'
-          : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10',
-      )}
-    >
-      <div className={cn('text-4xl', primary && 'text-primary')} aria-hidden="true">
-        {icon}
-      </div>
-      <div>
-        <div className="font-semibold">{title}</div>
-        <div className="mt-1 text-xs text-white/50">{subtitle}</div>
-      </div>
-    </button>
   );
 }
 

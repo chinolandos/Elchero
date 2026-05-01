@@ -51,13 +51,47 @@ export default async function CapturePage() {
   const remainingUser = Math.max(0, PER_USER_BETA_LIMIT - userUses);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-6 py-10">
-      <CaptureClient
-        userEmail={user.email ?? ''}
-        remainingUser={remainingUser}
-        totalUserLimit={PER_USER_BETA_LIMIT}
-        preferredVoice={profile?.preferred_voice ?? 'nova'}
+    <>
+      {/* v5 bg cover — sobrescribe el bg-[#0a0a14] del (app)/layout. */}
+      <div
+        aria-hidden
+        className="bg-gradient-hero pointer-events-none fixed inset-0"
       />
-    </main>
+      <div
+        aria-hidden
+        className="animate-blob pointer-events-none fixed -right-32 -top-40 h-[520px] w-[520px] rounded-full opacity-70 blur-3xl"
+        style={{
+          background:
+            'radial-gradient(circle, hsl(295 90% 55% / 0.7), transparent 70%)',
+        }}
+      />
+      <div
+        aria-hidden
+        className="animate-blob pointer-events-none fixed right-1/4 top-1/3 h-[420px] w-[420px] rounded-full opacity-60 blur-3xl"
+        style={{
+          animationDelay: '-6s',
+          background:
+            'radial-gradient(circle, hsl(18 100% 56% / 0.65), transparent 70%)',
+        }}
+      />
+      <div
+        aria-hidden
+        className="animate-blob pointer-events-none fixed -bottom-40 -left-20 h-[480px] w-[480px] rounded-full opacity-60 blur-3xl"
+        style={{
+          animationDelay: '-12s',
+          background:
+            'radial-gradient(circle, hsl(270 90% 60% / 0.6), transparent 70%)',
+        }}
+      />
+
+      <main className="relative mx-auto flex min-h-screen w-full max-w-[440px] flex-col px-5 py-8 md:max-w-2xl md:px-8 md:py-10">
+        <CaptureClient
+          userEmail={user.email ?? ''}
+          remainingUser={remainingUser}
+          totalUserLimit={PER_USER_BETA_LIMIT}
+          preferredVoice={profile?.preferred_voice ?? 'nova'}
+        />
+      </main>
+    </>
   );
 }
