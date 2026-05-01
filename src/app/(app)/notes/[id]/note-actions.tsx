@@ -208,19 +208,21 @@ export function NoteActions({ noteId, transcript }: NoteActionsProps) {
 
 function RegeneratingOverlay() {
   return (
-    <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-6 bg-[#0a0a14]/95 px-6 backdrop-blur">
+    <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-6 bg-[#0a0a14]/95 px-6 backdrop-blur-md">
       <div
         className="orb-pulse h-32 w-32 rounded-full"
         style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
+        aria-hidden
       />
       <div className="text-center">
-        <h2 className="mb-2 text-2xl font-bold text-white">Regenerando tu apunte</h2>
-        <p className="text-sm text-white/60">
-          Claude Sonnet está reescribiendo el contenido. Esto tarda 30-60 segundos.
+        <h2 className="font-display-pf mb-2 text-3xl font-semibold tracking-tight text-white">
+          Regenerando tu apunte
+        </h2>
+        <p className="text-sm text-white/85">
+          Claude Sonnet está reescribiendo el contenido. Esto tarda 30-60
+          segundos.
         </p>
-        <p className="mt-2 text-xs text-white/40">
-          No cierres la pestaña.
-        </p>
+        <p className="mt-2 text-xs text-white/55">No cierres la pestaña.</p>
       </div>
       <Spinner size="md" />
     </div>
@@ -244,54 +246,67 @@ function TranscriptEditor({
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md"
       onClick={onCancel}
     >
       <div
-        className="w-full max-w-2xl rounded-2xl border border-white/10 bg-[#14141f] p-6 shadow-2xl"
+        className="glass-strong shadow-card-premium relative w-full max-w-2xl overflow-hidden rounded-3xl p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="mb-2 text-xl font-bold">Editar transcripción</h3>
-        <p className="mb-4 text-sm text-white/60">
-          Corregí errores de Whisper (nombres propios, fórmulas, fechas). Cuando
-          guardes, regeneramos el apunte con el texto corregido.{' '}
-          <span className="text-white/40">No se gasta un nuevo uso.</span>
-        </p>
-
-        <textarea
-          value={transcript}
-          onChange={(e) => onChange(e.target.value)}
-          className="min-h-[300px] w-full resize-y rounded-lg border border-white/10 bg-black/30 p-4 text-sm leading-relaxed text-white/90 placeholder:text-white/30 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30"
-          placeholder="Tu transcripción..."
-          disabled={isSaving}
+        {/* Halo magenta sutil arriba (matching folder-modal v5) */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -right-10 -top-16 h-40 w-40 rounded-full opacity-50 blur-3xl"
+          style={{ background: 'hsl(295 90% 55% / 0.6)' }}
         />
 
-        <div className="mt-2 text-right text-xs text-white/40">
-          {transcript.length.toLocaleString()} chars
-        </div>
+        <div className="relative">
+          <h3 className="font-display-pf mb-2 text-2xl font-semibold tracking-tight text-white">
+            Editar transcripción
+          </h3>
+          <p className="mb-4 text-sm text-white/85">
+            Corregí errores de Whisper (nombres propios, fórmulas, fechas).
+            Cuando guardes, regeneramos el apunte con el texto corregido.{' '}
+            <span className="text-white/55">No se gasta un nuevo uso.</span>
+          </p>
 
-        <div className="mt-5 flex justify-end gap-3">
-          <Button
-            variant="ghost"
-            onClick={onCancel}
+          <textarea
+            value={transcript}
+            onChange={(e) => onChange(e.target.value)}
+            className="min-h-[300px] w-full resize-y rounded-2xl border border-white/15 bg-black/40 p-4 text-sm leading-relaxed text-white placeholder:text-white/40 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+            placeholder="Tu transcripción..."
             disabled={isSaving}
-            className="text-white/60 hover:bg-white/5 hover:text-white"
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={onSave}
-            disabled={isSaving || unchanged || transcript.length < 20}
-            className="px-6"
-          >
-            {isSaving ? (
-              <Spinner size="sm" />
-            ) : unchanged ? (
-              'Sin cambios'
-            ) : (
-              'Guardar y regenerar'
-            )}
-          </Button>
+          />
+
+          <div className="mt-2 text-right text-xs text-white/55">
+            {transcript.length.toLocaleString()} chars
+          </div>
+
+          <div className="mt-5 flex justify-end gap-3">
+            <Button
+              variant="ghost"
+              onClick={onCancel}
+              disabled={isSaving}
+              className="text-white/70 hover:bg-white/10 hover:text-white"
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="premium"
+              size="lg"
+              onClick={onSave}
+              disabled={isSaving || unchanged || transcript.length < 20}
+              className="px-6"
+            >
+              {isSaving ? (
+                <Spinner size="sm" />
+              ) : unchanged ? (
+                'Sin cambios'
+              ) : (
+                'Guardar y regenerar'
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
