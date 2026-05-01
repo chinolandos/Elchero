@@ -17,12 +17,20 @@
     "src/app/api/cron/cleanup-audios/route.ts": {
       "maxDuration": 60,
       "memory": 512
+    },
+    "src/app/api/cron/streak-reminder/route.ts": {
+      "maxDuration": 60,
+      "memory": 512
     }
   },
   "crons": [
     {
       "path": "/api/cron/cleanup-audios",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/streak-reminder",
+      "schedule": "0 2 * * *"
     }
   ]
 }

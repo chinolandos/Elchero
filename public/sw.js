@@ -161,3 +161,68 @@ self.addEventListener('message', (event) => {
     );
   }
 });
+
+// ─── Push notifications ───
+
+/**
+ * Recibe push del server (via VAPID + web-push library).
+ * El payload viene en event.data como JSON con { title, body, url, tag, icon }.
+ */
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+
+  let data;
+  try {
+    data = event.data.json();
+  } catch {
+    // Si el payload no es JSON, tratar como string plain
+    data = { title: 'Chero', body: event.data.text() };
+  }
+
+  const title = data.title ?? 'Chero';
+  const options = {
+    body: data.body ?? '',
+    icon: data.icon ?? '/icon.png',
+    badge: '/icon.png',
+    // tag: si dos pushes con el mismo tag llegan, el nuevo reemplaza al viejo
+    // (no se acumulan notificaciones duplicadas)
+    tag: data.tag ?? 'chero-push',
+    data: { url: data.url ?? '/' },
+    // Vibration pattern (Android only): 200ms vibrate, 100ms pause, 200ms vibrate
+    vibrate: [200, 100, 200],
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+/**
+ * Cuando el user toca la notificación, abrir o focus la app en la URL
+ * que vino en data.url.
+ */
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url ?? '/';
+
+  event.waitUntil(
+    (async () => {
+      const allClients = await self.clients.matchAll({
+        type: 'window',
+        includeUncontrolled: true,
+      });
+
+      // Si ya hay una pestaña abierta de Chero, focusearla y navegar
+      for (const client of allClients) {
+        if (client.url.includes(self.location.origin)) {
+          await client.focus();
+          if ('navigate' in client) {
+            await client.navigate(targetUrl);
+          }
+          return;
+        }
+      }
+
+      // Si no hay pestaña abierta, abrir una nueva
+      await self.clients.openWindow(targetUrl);
+    })(),
+  );
+});

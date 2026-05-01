@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
 import type { UserProfile } from '@/lib/types/chero';
+import { PushNotificationToggle } from './push-toggle';
 
 type VoiceOption =
   | 'nova'
@@ -240,6 +241,13 @@ export function PersonalizacionForm({ profile }: Props) {
       >
         {isSaving ? <Spinner size="sm" /> : 'Guardar cambios'}
       </Button>
+
+      {/* Push notifications — sub-section separada porque NO se persiste vía
+          /api/profile (vive en push_subscriptions table propia). */}
+      <section className="space-y-3">
+        <Label className="text-white/85">Notificaciones</Label>
+        <PushNotificationToggle />
+      </section>
     </div>
   );
 }
