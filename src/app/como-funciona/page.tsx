@@ -268,32 +268,32 @@ export default function ComoFuncionaPage() {
               {[
                 {
                   title: 'Voseo salvadoreño nativo',
-                  body: 'No es español neutro. "Tenés", "podés", "ojo con esto". Como te explica un cherito de confianza.',
+                  body: 'No es español neutro genérico. "Tenés", "podés", "ojo con esto". Los apuntes se sienten como te explica un cherito de confianza.',
                   icon: '🇸🇻',
                 },
                 {
                   title: 'Detecta tu modo',
-                  body: 'Si decís "para AVANZO", arma apunte estilo AVANZO. Si decís "examen de período", lo adapta.',
+                  body: 'Si decís "para AVANZO", arma apunte estilo AVANZO. Si decís "examen de período", lo adapta al período. Sin que configures nada.',
                   icon: '🎯',
                 },
                 {
                   title: 'Audio HD para repasar',
-                  body: 'Cada apunte viene con audio TTS natural. Escuchalo yendo a clase, antes del examen, en el bus.',
+                  body: 'Cada apunte viene con audio TTS natural. Escuchalo yendo a clase, antes del examen, en el bus. Repaso sin pantalla.',
                   icon: '🎧',
                 },
                 {
                   title: 'Mapa mental visual',
-                  body: 'Diagrama auto-generado con los conceptos relacionados. De un vistazo lo que tardás 1 hora leyendo.',
+                  body: 'Diagrama auto-generado con los conceptos relacionados. Se entiende de un vistazo lo que tardás 1 hora leyendo.',
                   icon: '🗺️',
                 },
                 {
                   title: 'Detector de calidad',
-                  body: 'Si tu audio tiene mucho ruido, te avisamos antes de gastar tu uso. Te devolvemos el cupo si decidís regrabar.',
+                  body: 'Si tu audio tiene mucho ruido (risas, muletillas), te avisamos antes de gastar tu uso. Te devolvemos el cupo si decidís regrabar.',
                   icon: '👂',
                 },
                 {
                   title: 'Privacy-first',
-                  body: 'Tu audio se borra apenas se transcribe. Podés eliminar tu cuenta cuando quieras.',
+                  body: 'Tu audio se borra apenas se transcribe. Podés eliminar tu cuenta y todos tus apuntes desde tu perfil cuando quieras.',
                   icon: '🔒',
                 },
               ].map((feat) => (
