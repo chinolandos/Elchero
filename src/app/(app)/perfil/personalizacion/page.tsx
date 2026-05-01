@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/auth/require-auth';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import type { UserProfile } from '@/lib/types/chero';
 import { PersonalizacionForm } from './personalizacion-form';
+import { AvatarUpload } from './avatar-upload';
 
 export const metadata = {
   title: 'Personalización · Chero',
@@ -18,6 +19,18 @@ export default async function PersonalizacionPage() {
     .select('*')
     .eq('id', user.id)
     .maybeSingle<UserProfile>();
+
+  // Avatar resolution: custom upload > Google OAuth picture > null
+  const customAvatar =
+    typeof (profile as { avatar_url?: string } | null)?.avatar_url === 'string'
+      ? (profile as { avatar_url?: string }).avatar_url ?? null
+      : null;
+  const googleAvatar =
+    (user.user_metadata?.avatar_url as string | undefined) ??
+    (user.user_metadata?.picture as string | undefined) ??
+    null;
+  const currentAvatarUrl = customAvatar ?? googleAvatar;
+  const hasCustomAvatar = !!customAvatar;
 
   return (
     <>
@@ -74,6 +87,15 @@ export default async function PersonalizacionPage() {
             Cómo querés que Chero genere tus apuntes.
           </p>
         </div>
+
+        {/* Avatar — sub-section arriba del form porque es lo más visual y
+            personal. Server pasa el avatar resuelto + flag custom para UI. */}
+        <section className="glass mb-6 rounded-3xl p-5 sm:p-6">
+          <AvatarUpload
+            currentAvatarUrl={currentAvatarUrl}
+            hasCustomAvatar={hasCustomAvatar}
+          />
+        </section>
 
         <PersonalizacionForm profile={profile} />
       </main>
