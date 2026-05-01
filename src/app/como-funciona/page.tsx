@@ -1,6 +1,61 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
+import { StepsCarousel } from './steps-carousel';
+
+// Datos del flujo completo (extraídos para pasarlos al carousel client).
+// Mantengo los textos exactos del original — solo cambia el contenedor visual.
+const FLOW_STEPS = [
+  {
+    n: '1',
+    title: 'Tu audio entra al servidor',
+    detail:
+      'El archivo viaja cifrado (HTTPS) a Vercel, donde corre el endpoint /api/process. Vercel está en Estados Unidos, costa este. NO guardamos el audio en disco — solo vive en memoria del servidor durante el request.',
+    tech: 'Vercel Functions + HTTPS/TLS',
+  },
+  {
+    n: '2',
+    title: 'Validamos tu uso',
+    detail:
+      'El servidor verifica que tu cuenta esté autenticada y que tengas usos disponibles (5 max por persona en la beta). El contador es atómico — no se puede hacer doble-click para gastar 2 usos.',
+    tech: 'Supabase RLS + RPC con FOR UPDATE',
+  },
+  {
+    n: '3',
+    title: 'Whisper transcribe a texto',
+    detail:
+      'El audio se manda a OpenAI Whisper (modelo gpt-4o-mini-transcribe). En 10-30 segundos te devuelve la transcripción en español. Después de esto, descartamos el audio inmediatamente.',
+    tech: 'OpenAI gpt-4o-mini-transcribe',
+  },
+  {
+    n: '4',
+    title: 'Haiku detecta el contexto',
+    detail:
+      'Claude Haiku 4.5 lee los primeros 4000 chars de la transcripción + tu perfil (institución, año, materias) y decide: ¿es modo AVANZO? ¿parcial? ¿período? ¿qué materia?',
+    tech: 'Anthropic Claude Haiku 4.5',
+  },
+  {
+    n: '5',
+    title: 'Sonnet genera el apunte',
+    detail:
+      'Claude Sonnet 4.6 con un Knowledge Base de 10K tokens cacheado (90% off por prompt caching) genera: resumen, conceptos con ejemplos, preguntas tipo examen, flashcards, repaso 30s, mapa mental Mermaid.',
+    tech: 'Anthropic Claude Sonnet 4.6 + prompt caching',
+  },
+  {
+    n: '6',
+    title: 'TTS convierte a audio',
+    detail:
+      'OpenAI gpt-4o-mini-tts toma el texto del apunte y lo convierte en audio HD natural (voz Nova por default, configurable).',
+    tech: 'OpenAI gpt-4o-mini-tts',
+  },
+  {
+    n: '7',
+    title: 'Te entregamos todo',
+    detail:
+      'El apunte queda guardado en tu cuenta. Audio TTS en bucket público (URL no listable). Mapa mental Mermaid renderizado client-side. Listo para estudiar.',
+    tech: 'Supabase Postgres + Storage',
+  },
+];
 
 export const metadata = {
   title: 'Cómo funciona · El Chero',
@@ -97,61 +152,14 @@ export default function ComoFuncionaPage() {
             </div>
           </section>
 
-          {/* Pipeline */}
+          {/* Pipeline — carrusel horizontal swipeable (mobile + drag mouse) */}
           <Section title="El flujo completo">
             <p>
               Cuando le das al botón &quot;Generar apunte&quot;, esto es lo que
-              pasa literalmente:
+              pasa literalmente. <span className="text-white/55">Deslizá →</span>
             </p>
-            <ol className="mt-4 flex flex-col gap-3">
-              <Step
-                n="1"
-                title="Tu audio entra al servidor"
-                detail="El archivo viaja cifrado (HTTPS) a Vercel, donde corre el endpoint /api/process. Vercel está en Estados Unidos, costa este. NO guardamos el audio en disco — solo vive en memoria del servidor durante el request."
-                tech="Vercel Functions + HTTPS/TLS"
-              />
-              <Step
-                n="2"
-                title="Validamos tu uso"
-                detail="El servidor verifica que tu cuenta esté autenticada y que tengas usos disponibles (5 max por persona en la beta). El contador es atómico — no se puede hacer doble-click para gastar 2 usos."
-                tech="Supabase RLS + RPC con FOR UPDATE"
-              />
-              <Step
-                n="3"
-                title="Whisper transcribe a texto"
-                detail="El audio se manda a OpenAI Whisper (modelo gpt-4o-mini-transcribe, $0.003/min). En 10-30 segundos te devuelve la transcripción en español. Después de esto, descartamos el audio inmediatamente."
-                tech="OpenAI gpt-4o-mini-transcribe"
-              />
-              <Step
-                n="4"
-                title="Haiku detecta el contexto"
-                detail="Claude Haiku 4.5 lee los primeros 4000 chars de la transcripción + tu perfil (institución, año, materias) y decide: ¿es modo AVANZO? ¿parcial? ¿período? ¿qué materia? Cuesta $0.0005."
-                tech="Anthropic Claude Haiku 4.5"
-              />
-              <Step
-                n="5"
-                title="Sonnet genera el apunte"
-                detail="Claude Sonnet 4.6 con un Knowledge Base de 10K tokens cacheado (90% off por prompt caching) genera: resumen, conceptos con ejemplos, preguntas tipo examen, flashcards, repaso 30s, mapa mental Mermaid. Cuesta ~$0.10."
-                tech="Anthropic Claude Sonnet 4.6 + prompt caching"
-              />
-              <Step
-                n="6"
-                title="TTS convierte a audio"
-                detail="OpenAI gpt-4o-mini-tts toma el texto del apunte y lo convierte en audio HD natural (voz Nova por default, configurable). Cuesta $0.06 por apunte."
-                tech="OpenAI gpt-4o-mini-tts"
-              />
-              <Step
-                n="7"
-                title="Te entregamos todo"
-                detail="El apunte queda guardado en tu cuenta. Audio TTS en bucket público (URL no listable). Mapa mental Mermaid renderizado client-side. Listo para estudiar."
-                tech="Supabase Postgres + Storage"
-              />
-            </ol>
-            <div className="glass mt-4 rounded-2xl p-4 text-sm">
-              <strong className="text-white">Tiempo total:</strong> 1-3 minutos
-              según largo del audio.{' '}
-              <strong className="text-white">Costo total para nosotros:</strong>{' '}
-              $0.16 por apunte.
+            <div className="mt-4">
+              <StepsCarousel steps={FLOW_STEPS} />
             </div>
           </Section>
 
@@ -171,8 +179,8 @@ export default function ComoFuncionaPage() {
                 <strong className="text-white">
                   Cuidar el budget de la beta.
                 </strong>{' '}
-                50 usos × $0.16 = $8 USD en IA. Es lo que sale de un presupuesto
-                auto-financiado de estudiante para validar la idea.
+                Es lo que sale de un presupuesto auto-financiado de estudiante
+                para validar la idea.
               </li>
               <li>
                 <strong className="text-white">
@@ -429,7 +437,7 @@ export default function ComoFuncionaPage() {
           </Section>
 
           {/* Final CTA glass-strong con halo magenta (Lovable) */}
-          <section className="glass-strong relative flex flex-col items-center gap-3 overflow-hidden rounded-3xl p-6 text-center">
+          <section className="scroll-reveal glass-strong relative flex flex-col items-center gap-3 overflow-hidden rounded-3xl p-6 text-center">
             <span
               aria-hidden
               className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full opacity-70 blur-3xl"
@@ -497,8 +505,11 @@ function Section({
   title: string;
   children: React.ReactNode;
 }) {
+  // scroll-reveal: la sección hace fade-in + slide-up cuando entra al
+  // viewport (CSS scroll-driven animations, sin JS). Da feel de orden:
+  // las secciones aparecen una a una mientras el user scrollea.
   return (
-    <section className="flex flex-col gap-2">
+    <section className="scroll-reveal flex flex-col gap-2">
       <h2 className="font-display-pf text-2xl font-semibold tracking-tight text-white">
         {title}
       </h2>
@@ -506,42 +517,6 @@ function Section({
         {children}
       </div>
     </section>
-  );
-}
-
-/**
- * Step — card glass con número en pill gradient magenta-violet (matching
- * el "EN 3 PASOS" del Lovable hue-learn-glow).
- */
-function Step({
-  n,
-  title,
-  detail,
-  tech,
-}: {
-  n: string;
-  title: string;
-  detail: string;
-  tech: string;
-}) {
-  return (
-    <li className="glass flex items-start gap-4 rounded-2xl p-4">
-      <span
-        aria-hidden
-        className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-semibold text-white"
-        style={{
-          background:
-            'linear-gradient(135deg, hsl(295 90% 55% / 0.6), hsl(270 90% 60% / 0.6))',
-        }}
-      >
-        {n}
-      </span>
-      <div className="min-w-0 flex-1">
-        <h3 className="text-sm font-semibold text-white">{title}</h3>
-        <p className="mt-1 text-xs leading-relaxed text-white/75">{detail}</p>
-        <p className="mt-2 text-[10px] text-white/50">⚙ {tech}</p>
-      </div>
-    </li>
   );
 }
 

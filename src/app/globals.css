@@ -285,10 +285,46 @@ body {
   33% { transform: translate(30px, -20px) scale(1.05); }
   66% { transform: translate(-20px, 25px) scale(0.97); }
 }
+
+/* Reveal-on-scroll: fade-in + slide-up sutil cuando el elemento entra en
+   viewport. Usa scroll-driven animations (CSS nativo, sin JS). */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-float-orb { animation: float-orb 6s ease-in-out infinite; }
 .animate-pulse-glow { animation: pulse-glow 5s ease-in-out infinite; }
 .animate-fade-up { animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .animate-blob { animation: blob 18s ease-in-out infinite; }
+
+/* .scroll-reveal — aplica reveal-up cuando el elemento entra al viewport.
+   Animation-timeline: view() es la API nativa de scroll-driven (Chrome 115+,
+   Safari 17.4+, Firefox 17+). Si el browser no la soporta, el contenido
+   queda visible desde el inicio (graceful fallback). */
+@supports (animation-timeline: view()) {
+  .scroll-reveal {
+    animation: reveal-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 50%;
+  }
+}
+
+/* Hide scrollbar but keep scrollable — para el carousel horizontal de steps.
+   Funciona en Chrome/Safari/Edge y Firefox. */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE/Edge legacy */
+  scrollbar-width: none;     /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;             /* Chrome/Safari */
+}
 
 /* ─── Glassmorphism (Lovable v5) ─── */
 /* .glass: blanco translúcido, blur 28px saturate 180%. Ideal sobre fondo
