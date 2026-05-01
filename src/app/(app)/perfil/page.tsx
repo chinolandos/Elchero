@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { requireAuth } from '@/lib/auth/require-auth';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { readUsage } from '@/lib/usage/check';
-import { ProfileForm } from './profile-form';
 import { ProfileHero } from './profile-hero';
+import { ProfileMenu } from './profile-menu';
 import type { UserProfile } from '@/lib/types/chero';
 
 export const metadata = {
@@ -24,25 +24,41 @@ function deriveFirstName(
 ): string | null {
   if (fullName) {
     const first = fullName.trim().split(/\s+/)[0];
-    if (first) return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
+    if (first)
+      return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
   }
   if (email) {
     const localPart = email.split('@')[0];
     const firstSegment = localPart.split(/[._-]/)[0];
     if (firstSegment) {
       return (
-        firstSegment.charAt(0).toUpperCase() + firstSegment.slice(1).toLowerCase()
+        firstSegment.charAt(0).toUpperCase() +
+        firstSegment.slice(1).toLowerCase()
       );
     }
   }
   return null;
 }
 
+/**
+ * Página /perfil — vista resumida tipo Lovable (rediseño v5).
+ *
+ * Estructura:
+ *   1. Hero card glass-strong con orb + greeting + chip context + stats grid
+ *   2. Menu list (3 botones que navegan a sub-pages):
+ *      - Personalización → /perfil/personalizacion
+ *      - Materias → /perfil/materias
+ *      - Cuenta → /perfil/cuenta
+ *   3. Zona peligrosa (eliminar cuenta) — inline con confirmación
+ *   4. Cerrar sesión — full-width glass pill
+ *
+ * El form completo (carrera/año/voz/materias/read-only) se distribuyó en
+ * las 3 sub-pages para que esta vista sea ligera y escaneable.
+ */
 export default async function PerfilPage() {
   const user = await requireAuth('/perfil');
   const supabase = await createSupabaseServerClient();
 
-  // Cargamos en paralelo: profile + counts + usage
   const [profileRes, notesCountRes, foldersCountRes, usage] = await Promise.all([
     supabase
       .from('profiles')
@@ -79,7 +95,7 @@ export default async function PerfilPage() {
 
   return (
     <>
-      {/* v5 bg cover — sobrescribe el bg-[#0a0a14] del (app)/layout. */}
+      {/* v5 bg cover */}
       <div
         aria-hidden
         className="bg-gradient-hero pointer-events-none fixed inset-0"
@@ -126,7 +142,7 @@ export default async function PerfilPage() {
 
         <ProfileHero firstName={firstName} profile={profile} stats={stats} />
 
-        <ProfileForm email={user.email ?? ''} profile={profile} />
+        <ProfileMenu />
       </main>
     </>
   );
