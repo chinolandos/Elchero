@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { clearOfflineCache } from '@/components/ui/service-worker-register';
 
 export interface UseAuthResult {
   user: User | null;
@@ -60,6 +61,14 @@ export function useAuth(): UseAuthResult {
 
   const signOut = async () => {
     const supabase = createSupabaseBrowserClient();
+    // Limpiar cache offline antes del logout — previene que el próximo
+    // user que entre en este device vea pages cacheadas del user anterior.
+    // No bloqueante: si falla (ej. no hay SW activo), seguimos con el logout.
+    try {
+      await clearOfflineCache();
+    } catch {
+      // ignore
+    }
     await supabase.auth.signOut();
     window.location.href = '/';
   };
