@@ -64,7 +64,7 @@ export function ProfileHero({ firstName, profile, stats }: ProfileHeroProps) {
         <h1 className="font-display-pf text-3xl font-semibold tracking-tight text-white md:text-4xl">
           {greeting}
         </h1>
-        <p className="mt-1 text-sm italic text-white/65">tu cuate de estudio</p>
+        <p className="mt-1 text-sm italic text-white/65">tu cherito de apuntes</p>
 
         {/* Chip context */}
         {chipParts.length > 0 && (
