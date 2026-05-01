@@ -34,13 +34,68 @@
   --orb-cyan: #22d3ee;
   --orb-indigo: #4f46e5;
 
-  /* ─── Lovable redesign tokens (landing v4) ─── */
-  /* primary-glow: lavanda casi blanco para halos y íconos premium */
+  /* ─── Lovable hue-learn-glow tokens (landing v5 — 2026-05-01) ─── */
+  /* Stops HSL extraídos del CSS oficial del Lovable. Estos son los 6 colores
+     que componen tanto el hero gradient como el text gradient warm. */
+  --grad-night: 270 40% 6%;     /* deep purple-black */
+  --grad-plum: 285 55% 18%;     /* medium plum */
+  --grad-magenta: 295 90% 55%;  /* vibrant pink-magenta */
+  --grad-violet: 270 90% 60%;   /* brand violet */
+  --grad-ember: 18 100% 56%;    /* bright orange */
+  --grad-amber: 35 100% 60%;    /* golden amber */
+
+  /* Halo lavanda para íconos premium y badges (heredado del v4) */
   --primary-glow: #d97aff;
-  /* magenta accent puro para el segundo stop de gradients premium */
   --accent-magenta: #ec4899;
-  /* Premium gradients */
-  --gradient-primary: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+
+  /* Premium button gradient — ahora warm magenta→ember (v5).
+     Lovable usa: linear-gradient(135deg, magenta, ember) */
+  --gradient-primary: linear-gradient(
+    135deg,
+    hsl(var(--grad-magenta)),
+    hsl(var(--grad-ember))
+  );
+
+  /* Hero background — 4 capas radial + linear, idéntico al Lovable.
+     1. Radial magenta arriba-derecha (mancha rosa dominante)
+     2. Radial ember abajo-derecha (calor naranja)
+     3. Radial plum izquierda-abajo (anclaje púrpura)
+     4. Linear night→plum como base */
+  --gradient-hero: radial-gradient(
+      130% 90% at 78% 28%,
+      hsl(var(--grad-magenta) / 0.95) 0%,
+      hsl(var(--grad-violet) / 0.7) 22%,
+      transparent 55%
+    ),
+    radial-gradient(
+      100% 80% at 88% 75%,
+      hsl(var(--grad-ember) / 0.85) 0%,
+      hsl(var(--grad-amber) / 0.55) 25%,
+      transparent 60%
+    ),
+    radial-gradient(
+      140% 100% at 12% 90%,
+      hsl(var(--grad-plum) / 0.9) 0%,
+      transparent 55%
+    ),
+    linear-gradient(
+      135deg,
+      hsl(var(--grad-night)) 0%,
+      hsl(var(--grad-plum)) 100%
+    );
+
+  /* Text gradient warm 4-stop (para "cherito" en Hero, "gratis" en Pricing)
+     amber → ember → magenta → violet */
+  --gradient-text-warm: linear-gradient(
+    100deg,
+    hsl(var(--grad-amber)) 0%,
+    hsl(var(--grad-ember)) 35%,
+    hsl(var(--grad-magenta)) 70%,
+    hsl(var(--grad-violet)) 100%
+  );
+
+  /* Heredado v4 (lo mantengo por compatibilidad con CtaSection si algún día
+     vuelve, pero ya no se usa en la landing v5) */
   --gradient-orb-aura: radial-gradient(
     circle at 30% 30%,
     rgba(217, 122, 255, 0.9) 0%,
@@ -59,12 +114,12 @@
     rgba(20, 12, 39, 0.7) 100%
   );
 
-  /* Sombras premium del rediseño */
-  --shadow-glow-premium: 0 10px 40px -10px rgba(217, 122, 255, 0.55),
-    0 0 60px rgba(236, 72, 153, 0.25);
-  --shadow-button-premium: 0 8px 24px -6px rgba(217, 122, 255, 0.6),
+  /* Sombras premium del rediseño v5 — sombra magenta-naranja para el botón
+     premium, matching el Lovable. */
+  --shadow-glow-premium: 0 18px 40px -14px hsl(var(--grad-magenta) / 0.7);
+  --shadow-button-premium: 0 18px 40px -14px hsl(var(--grad-magenta) / 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  --shadow-card-premium: 0 20px 50px -20px rgba(20, 5, 50, 0.8);
+  --shadow-card-premium: 0 30px 70px -20px hsl(var(--grad-night) / 0.7);
 
   --transition-smooth: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -210,7 +265,7 @@ body {
   animation: orb-pulse 4s ease-in-out infinite;
 }
 
-/* ─── Lovable landing animations ─── */
+/* ─── Landing animations ─── */
 @keyframes float-orb {
   0%, 100% { transform: translateY(0) scale(1); }
   50% { transform: translateY(-12px) scale(1.03); }
@@ -223,16 +278,50 @@ body {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* Blob animation (Lovable hue-learn-glow). 18s loop con scale + translate
+   sutil. 3 instancias con animation-delay distintos generan parallax. */
+@keyframes blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 25px) scale(0.97); }
+}
 .animate-float-orb { animation: float-orb 6s ease-in-out infinite; }
 .animate-pulse-glow { animation: pulse-glow 5s ease-in-out infinite; }
 .animate-fade-up { animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-blob { animation: blob 18s ease-in-out infinite; }
 
-/* ─── Lovable utilities ─── */
+/* ─── Glassmorphism (Lovable v5) ─── */
+/* .glass: blanco translúcido, blur 28px saturate 180%. Ideal sobre fondo
+   morado vibrante. Reemplazó al glass oscuro v4 que era para fondo navy. */
 .glass {
-  background: rgba(26, 15, 46, 0.55);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid rgba(96, 64, 191, 0.18);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.14),
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.10)
+  );
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 20px 50px -20px rgba(10, 6, 14, 0.6);
+}
+
+/* .glass-strong: blur 40px saturate 200% — para CTAs grandes destacados */
+.glass-strong {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.18),
+    rgba(255, 255, 255, 0.08)
+  );
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 30px 70px -20px rgba(8, 3, 12, 0.7);
 }
 
 .bg-gradient-primary {
@@ -251,8 +340,23 @@ body {
   background-image: var(--gradient-bg-radial);
 }
 
+/* Background hero gradient — 4 capas radial+linear (Lovable). */
+.bg-gradient-hero {
+  background-image: var(--gradient-hero);
+}
+
+/* Text gradient: ahora WARM (amber→ember→magenta→violet).
+   Por compatibilidad con el resto de la app, mantengo el clase
+   `.text-gradient` apuntando al nuevo warm. */
 .text-gradient {
-  background-image: var(--gradient-primary);
+  background-image: var(--gradient-text-warm);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-warm {
+  background-image: var(--gradient-text-warm);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -268,6 +372,13 @@ body {
 .font-display {
   font-family: var(--font-fraunces), Georgia, serif;
   font-optical-sizing: auto;
+  letter-spacing: -0.02em;
+}
+
+/* font-display-pf: Playfair Display (landing v5). Lovable usa Playfair
+   para el "El cherito" italic gradient. Más teatral que Fraunces. */
+.font-display-pf {
+  font-family: var(--font-playfair), Georgia, serif;
   letter-spacing: -0.02em;
 }
 

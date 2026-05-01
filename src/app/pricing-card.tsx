@@ -202,17 +202,6 @@ export function LandingPricing({ userLoggedIn }: { userLoggedIn: boolean }) {
           Cancelá cuando quieras · Sin compromiso
         </p>
       </div>
-
-      {/* Beta banner */}
-      <div className="glass mx-auto mt-5 flex max-w-sm items-start gap-3 rounded-2xl px-4 py-3.5">
-        <span aria-hidden className="text-xl">
-          🚀
-        </span>
-        <p className="text-xs leading-relaxed text-white/65">
-          <span className="font-semibold text-white">Beta abierta:</span> 10
-          usos gratis al iniciarte. Lanzamiento Premium Q3 2026.
-        </p>
-      </div>
     </section>
   );
 }
