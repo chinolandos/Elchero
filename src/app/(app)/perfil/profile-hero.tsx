@@ -9,8 +9,9 @@
  *     · 📖 Apuntes (book, gradient violet-fuchsia) — total de notas
  *     · 💎 Usos (gem, gradient fuchsia-pink) — beta remaining / max
  */
-import { Flame, BookOpen, Gem } from 'lucide-react';
+import { Flame, BookOpen, Gem, Camera } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { orbGradient, shadows } from '@/lib/design-tokens';
 import type { UserProfile, UserType } from '@/lib/types/chero';
 
@@ -64,28 +65,51 @@ export function ProfileHero({
       />
 
       <div className="relative flex flex-col items-center text-center">
-        {/* Avatar — foto de Google o upload custom; fallback al orb brand */}
-        {avatarUrl ? (
-          <div
-            className="relative mb-4 h-20 w-20 overflow-hidden rounded-full ring-4 ring-white/20 md:h-24 md:w-24"
-            style={{ boxShadow: shadows.glowOrb }}
-          >
-            <Image
-              src={avatarUrl}
-              alt={firstName ?? 'Avatar'}
-              width={96}
-              height={96}
-              className="h-full w-full object-cover"
-              unoptimized
+        {/* Avatar clickeable → /perfil/personalizacion para subir/cambiar foto.
+            Hover muestra overlay con icono camara para indicar que es accion. */}
+        <Link
+          href="/perfil/personalizacion"
+          aria-label="Cambiar foto de perfil"
+          className="group relative mb-4 h-20 w-20 shrink-0 md:h-24 md:w-24"
+        >
+          {avatarUrl ? (
+            <div
+              className="relative h-full w-full overflow-hidden rounded-full ring-4 ring-white/20 transition-all group-hover:ring-white/40"
+              style={{ boxShadow: shadows.glowOrb }}
+            >
+              <Image
+                src={avatarUrl}
+                alt={firstName ?? 'Avatar'}
+                width={96}
+                height={96}
+                className="h-full w-full object-cover"
+                unoptimized
+              />
+            </div>
+          ) : (
+            <div
+              className="orb-pulse h-full w-full rounded-full ring-4 ring-white/0 transition-all group-hover:ring-white/30"
+              style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
+              aria-hidden="true"
             />
-          </div>
-        ) : (
-          <div
-            className="orb-pulse mb-4 h-20 w-20 rounded-full md:h-24 md:w-24"
-            style={{ background: orbGradient, boxShadow: shadows.glowOrb }}
+          )}
+
+          {/* Overlay hover con icono camara */}
+          <span
             aria-hidden="true"
-          />
-        )}
+            className="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 opacity-0 transition-all group-hover:bg-black/45 group-hover:opacity-100"
+          >
+            <Camera className="h-6 w-6 text-white" />
+          </span>
+
+          {/* Badge camara permanente abajo-derecha (visible siempre, indica que es clickeable en mobile donde no hay hover) */}
+          <span
+            aria-hidden="true"
+            className="absolute bottom-0 right-0 grid h-7 w-7 place-items-center rounded-full bg-white text-black shadow-lg ring-2 ring-white/30"
+          >
+            <Camera className="h-3.5 w-3.5" />
+          </span>
+        </Link>
 
         {/* Greeting Playfair */}
         <h1 className="font-display-pf text-3xl font-semibold tracking-tight text-white md:text-4xl">
