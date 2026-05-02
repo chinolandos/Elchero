@@ -111,7 +111,7 @@ export function StepsCarousel({ steps }: StepsCarouselProps) {
               className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-semibold text-white md:h-11 md:w-11 md:text-base"
               style={{
                 background:
-                  'linear-gradient(135deg, hsl(295 90% 55% / 0.6), hsl(270 90% 60% / 0.6))',
+                  'linear-gradient(135deg, hsl(295 90% 55% / 0.6), hsl(270 90% 60% / 0.3))',
               }}
             >
               {step.n}

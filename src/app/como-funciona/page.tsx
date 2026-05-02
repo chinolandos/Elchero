@@ -84,7 +84,7 @@ export default function ComoFuncionaPage() {
         className="animate-blob pointer-events-none absolute -right-32 -top-40 h-[520px] w-[520px] rounded-full opacity-70 blur-3xl"
         style={{
           background:
-            'radial-gradient(circle, hsl(295 90% 55% / 0.7), transparent 70%)',
+            'radial-gradient(circle, hsl(295 90% 55% / 0.35), transparent 70%)',
         }}
       />
       <div
@@ -93,7 +93,7 @@ export default function ComoFuncionaPage() {
         style={{
           animationDelay: '-6s',
           background:
-            'radial-gradient(circle, hsl(18 100% 56% / 0.65), transparent 70%)',
+            'radial-gradient(circle, hsl(18 100% 56% / 0.35), transparent 70%)',
         }}
       />
       <div
@@ -102,7 +102,7 @@ export default function ComoFuncionaPage() {
         style={{
           animationDelay: '-12s',
           background:
-            'radial-gradient(circle, hsl(270 90% 60% / 0.6), transparent 70%)',
+            'radial-gradient(circle, hsl(270 90% 60% / 0.3), transparent 70%)',
         }}
       />
 
@@ -126,7 +126,7 @@ export default function ComoFuncionaPage() {
                 className="absolute h-56 w-56 rounded-full opacity-70 blur-3xl md:h-72 md:w-72"
                 style={{
                   background:
-                    'radial-gradient(circle, hsl(270 90% 60% / 0.6), transparent 70%)',
+                    'radial-gradient(circle, hsl(270 90% 60% / 0.3), transparent 70%)',
                 }}
               />
               <div
@@ -340,7 +340,7 @@ export default function ComoFuncionaPage() {
                   className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-50 blur-3xl"
                   style={{
                     background:
-                      'radial-gradient(circle, hsl(295 90% 55% / 0.7), transparent 70%)',
+                      'radial-gradient(circle, hsl(295 90% 55% / 0.35), transparent 70%)',
                   }}
                 />
                 <div className="relative">
@@ -447,7 +447,7 @@ export default function ComoFuncionaPage() {
               aria-hidden
               className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full opacity-70 blur-3xl"
               style={{
-                background: 'hsl(295 90% 55% / 0.7)',
+                background: 'hsl(295 90% 55% / 0.35)',
               }}
             />
             <div className="relative flex flex-col items-center gap-3">

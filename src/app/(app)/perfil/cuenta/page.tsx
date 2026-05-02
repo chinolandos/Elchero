@@ -30,7 +30,7 @@ export default async function CuentaPage() {
         className="animate-blob pointer-events-none fixed -right-32 -top-40 h-[520px] w-[520px] rounded-full opacity-70 blur-3xl"
         style={{
           background:
-            'radial-gradient(circle, hsl(295 90% 55% / 0.7), transparent 70%)',
+            'radial-gradient(circle, hsl(295 90% 55% / 0.35), transparent 70%)',
         }}
       />
       <div
@@ -39,7 +39,7 @@ export default async function CuentaPage() {
         style={{
           animationDelay: '-6s',
           background:
-            'radial-gradient(circle, hsl(18 100% 56% / 0.65), transparent 70%)',
+            'radial-gradient(circle, hsl(18 100% 56% / 0.35), transparent 70%)',
         }}
       />
       <div
@@ -48,7 +48,7 @@ export default async function CuentaPage() {
         style={{
           animationDelay: '-12s',
           background:
-            'radial-gradient(circle, hsl(270 90% 60% / 0.6), transparent 70%)',
+            'radial-gradient(circle, hsl(270 90% 60% / 0.3), transparent 70%)',
         }}
       />
 

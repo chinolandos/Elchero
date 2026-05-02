@@ -484,7 +484,7 @@ function IdleScreen({
           className="animate-pulse-glow absolute h-56 w-56 rounded-full opacity-70 blur-2xl"
           style={{
             background:
-              'radial-gradient(circle, hsl(270 90% 60% / 0.6), transparent 70%)',
+              'radial-gradient(circle, hsl(270 90% 60% / 0.3), transparent 70%)',
           }}
         />
         {/* Sphere sólido con gradient + box-shadows premium */}
