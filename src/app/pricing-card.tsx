@@ -75,12 +75,12 @@ const PLANS: Record<PlanId, Plan> = {
   premium: {
     id: 'premium',
     name: 'Sprint AVANZO',
-    price: '$9.99',
+    price: '$14.99',
     period: '/ 2 meses',
     desc: 'Para los 2 meses antes del AVANZO. Pasalo.',
     features: [
       'Hasta 30 apuntes (2 meses)',
-      'Audio hasta 50 min',
+      'Audio hasta 60 min',
       'Simulacros AVANZO (próximamente)',
       'Flashcards modo examen',
       'Prioridad de procesamiento',

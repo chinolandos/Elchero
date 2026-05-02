@@ -138,7 +138,7 @@ export default function TerminosPage() {
             </ul>
             <p>
               El lanzamiento de los planes pagos (Chero+ $4.99/mes y Sprint
-              AVANZO $9.99 por 2 meses pre-examen) está planificado para Q3
+              AVANZO $14.99 por 2 meses pre-examen) está planificado para Q3
               2026. Los usuarios de beta no quedan obligados a suscribirse.
             </p>
           </Section>
