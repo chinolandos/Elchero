@@ -78,8 +78,8 @@ const PLANS: Record<PlanId, Plan> = {
     period: '/ 2 meses',
     desc: 'Para los 2 meses antes del AVANZO. Pasalo.',
     features: [
-      'Hasta 40 apuntes (2 meses)',
-      'Audio hasta 60 min',
+      'Hasta 30 apuntes (2 meses)',
+      'Audio hasta 50 min',
       'Simulacros AVANZO (próximamente)',
       'Flashcards modo examen',
       'Prioridad de procesamiento',
