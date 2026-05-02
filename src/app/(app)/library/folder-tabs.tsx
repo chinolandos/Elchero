@@ -22,6 +22,35 @@ interface FolderTabsProps {
   onSelect: (folderId: string | null) => void;
 }
 
+// Gradients per color para las cards (matching Lovable hue-learn-glow).
+// Cada uno empieza con su hue base y termina cruzando a otro hue cálido
+// para dar el efecto "glow" del rediseño.
+const COLOR_GRADIENTS: Record<string, string> = {
+  violet:
+    'linear-gradient(135deg, hsl(270 90% 55%) 0%, hsl(295 90% 55%) 55%, hsl(18 100% 56%) 100%)',
+  pink: 'linear-gradient(135deg, hsl(320 90% 62%) 0%, hsl(295 95% 60%) 100%)',
+  cyan: 'linear-gradient(135deg, hsl(190 90% 55%) 0%, hsl(220 90% 58%) 100%)',
+  amber: 'linear-gradient(135deg, hsl(45 95% 58%) 0%, hsl(18 100% 56%) 100%)',
+  green: 'linear-gradient(135deg, hsl(150 75% 50%) 0%, hsl(180 80% 45%) 100%)',
+  rose: 'linear-gradient(135deg, hsl(340 90% 58%) 0%, hsl(15 95% 58%) 100%)',
+  indigo: 'linear-gradient(135deg, hsl(250 85% 58%) 0%, hsl(280 85% 58%) 100%)',
+  sky: 'linear-gradient(135deg, hsl(200 95% 58%) 0%, hsl(230 90% 58%) 100%)',
+};
+
+// Color sólido (más oscuro) para el chip del icono dentro de cada card.
+const ICON_BG: Record<string, string> = {
+  violet: 'hsl(270 80% 35%)',
+  pink: 'hsl(320 80% 40%)',
+  cyan: 'hsl(190 80% 35%)',
+  amber: 'hsl(28 90% 45%)',
+  green: 'hsl(150 75% 30%)',
+  rose: 'hsl(340 80% 40%)',
+  indigo: 'hsl(250 75% 38%)',
+  sky: 'hsl(210 80% 40%)',
+};
+
+// Clases para los color-pickers del modal Crear/Editar carpeta (no afectan
+// las cards del grid, que usan COLOR_GRADIENTS).
 const COLOR_CLASSES: Record<string, string> = {
   violet: 'bg-violet-500/15 border-violet-500/30 text-violet-200',
   pink: 'bg-pink-500/15 border-pink-500/30 text-pink-200',
@@ -120,7 +149,7 @@ export function FolderTabs({ selectedFolderId, onSelect }: FolderTabsProps) {
 
   if (loading) {
     return (
-      <div className="mb-6 flex items-center gap-2 overflow-x-auto pb-2">
+      <div className="mb-6 flex items-center gap-2 pb-2">
         <Spinner size="sm" />
         <span className="text-xs text-white/40">Cargando carpetas…</span>
       </div>
@@ -129,10 +158,25 @@ export function FolderTabs({ selectedFolderId, onSelect }: FolderTabsProps) {
 
   return (
     <>
-      <div className="mb-6 -mx-6 overflow-x-auto px-6 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="flex items-center gap-2">
-          {/* Inbox */}
-          <FolderPill
+      <div className="mb-6">
+        {/* Header de sección — etiqueta + atajo "+ Nueva" */}
+        <div className="mb-3 flex items-center justify-between">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/55">
+            Carpetas
+          </span>
+          <button
+            type="button"
+            onClick={() => setShowCreate(true)}
+            className="text-xs font-medium text-white/70 transition-colors hover:text-white"
+          >
+            + Nueva
+          </button>
+        </div>
+
+        {/* Grid 2-col de carpetas tipo Lovable hue-learn-glow */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          {/* Inbox = primera card del grid (notas sin carpeta) */}
+          <FolderCard
             label="Inbox"
             emoji="📥"
             count={inboxCount}
@@ -143,7 +187,7 @@ export function FolderTabs({ selectedFolderId, onSelect }: FolderTabsProps) {
 
           {/* Carpetas del user */}
           {folders?.map((folder) => (
-            <FolderPill
+            <FolderCard
               key={folder.id}
               label={folder.name}
               emoji={folder.emoji}
@@ -155,15 +199,22 @@ export function FolderTabs({ selectedFolderId, onSelect }: FolderTabsProps) {
             />
           ))}
 
-          {/* Botón crear */}
+          {/* Card "+ Nueva carpeta" estilo dashed/ghost */}
           <button
             type="button"
             onClick={() => setShowCreate(true)}
             aria-label="Crear nueva carpeta"
-            className="flex h-9 shrink-0 items-center gap-1 rounded-full border border-dashed border-white/20 bg-white/[0.02] px-3.5 text-xs text-white/65 transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-white"
+            className="group relative flex aspect-square flex-col items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-white/15 bg-white/[0.02] transition-all hover:border-white/30 hover:bg-white/5"
           >
-            <span aria-hidden="true">+</span>
-            <span>Nueva carpeta</span>
+            <span
+              aria-hidden="true"
+              className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-2xl text-white/70 transition-all group-hover:bg-white/15 group-hover:text-white"
+            >
+              +
+            </span>
+            <span className="text-xs font-medium text-white/70 transition-colors group-hover:text-white">
+              Nueva carpeta
+            </span>
           </button>
         </div>
       </div>
@@ -193,7 +244,7 @@ export function FolderTabs({ selectedFolderId, onSelect }: FolderTabsProps) {
   );
 }
 
-function FolderPill({
+function FolderCard({
   label,
   emoji,
   count,
@@ -221,6 +272,9 @@ function FolderPill({
     window.addEventListener('touchmove', cancel, { once: true });
   };
 
+  const gradient = COLOR_GRADIENTS[color] ?? COLOR_GRADIENTS.violet;
+  const iconBg = ICON_BG[color] ?? ICON_BG.violet;
+
   return (
     <button
       type="button"
@@ -234,23 +288,36 @@ function FolderPill({
       }}
       aria-pressed={selected}
       className={cn(
-        'flex h-9 shrink-0 items-center gap-1 rounded-full border px-3.5 text-xs font-medium transition-all',
-        selected
-          ? COLOR_SOLID_CLASSES[color] ?? COLOR_SOLID_CLASSES.violet
-          : COLOR_CLASSES[color] ?? COLOR_CLASSES.violet,
-        !selected && 'hover:border-white/30',
+        'group relative flex aspect-square flex-col items-start justify-between overflow-hidden rounded-3xl p-4 text-left transition-all',
+        'shadow-card-premium',
+        selected ? 'ring-4 ring-white/50' : 'hover:scale-[1.02]',
       )}
+      style={{ background: gradient }}
     >
-      {emoji && <span aria-hidden="true">{emoji}</span>}
-      <span>{label}</span>
+      {/* Highlight glassy interno (matching v5) */}
       <span
-        className={cn(
-          'rounded-full px-1.5 py-0 text-[9px] font-bold',
-          selected ? 'bg-white/20' : 'bg-white/10',
-        )}
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/15"
+      />
+
+      {/* Icono top-left (cuadrado redondeado con emoji o inicial) */}
+      <span
+        aria-hidden="true"
+        className="relative grid h-10 w-10 place-items-center rounded-2xl text-xl shadow-md sm:h-12 sm:w-12 sm:text-2xl"
+        style={{ background: iconBg }}
       >
-        {count}
+        {emoji || label.charAt(0).toUpperCase()}
       </span>
+
+      {/* Nombre + count abajo */}
+      <div className="relative w-full">
+        <div className="line-clamp-2 text-sm font-semibold leading-tight text-white sm:text-base">
+          {label}
+        </div>
+        <div className="mt-0.5 text-[11px] text-white/80">
+          {count} {count === 1 ? 'grabación' : 'grabaciones'}
+        </div>
+      </div>
     </button>
   );
 }
