@@ -4,6 +4,7 @@ import {
   createSupabaseAdminClient,
 } from '@/lib/supabase/server';
 import { createLogger } from '@/lib/logger';
+import { moderateImage, moderationErrorMessage } from '@/lib/openai/moderate';
 
 const log = createLogger('api/profile/avatar');
 
@@ -73,6 +74,24 @@ export async function POST(req: NextRequest) {
   // client; RLS de Storage exige path con user_id que ya validamos arriba).
   const admin = createSupabaseAdminClient();
   const buffer = await file.arrayBuffer();
+
+  // Content moderation — bloquear NSFW/violencia/etc antes de uploadear.
+  // El bucket avatars es público, así que cualquier URL podría leakearse.
+  const moderation = await moderateImage(buffer, file.type);
+  if (moderation.flagged) {
+    log.warn('Avatar rejected by moderation', {
+      userId: user.id,
+      categories: moderation.flaggedCategories,
+      maxScore: moderation.maxScore,
+    });
+    return NextResponse.json(
+      {
+        error: 'content_rejected',
+        message: moderationErrorMessage(moderation.flaggedCategories),
+      },
+      { status: 422 },
+    );
+  }
 
   // Borrar TODAS las extensiones previas del user (porque puede haber subido
   // antes un .png y ahora un .webp — sino quedan archivos huérfanos).
