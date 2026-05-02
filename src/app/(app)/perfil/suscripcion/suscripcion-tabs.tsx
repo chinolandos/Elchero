@@ -47,12 +47,12 @@ const PLANS: Record<PlanId, Plan> = {
   monthly: {
     id: 'monthly',
     name: 'Chero+',
-    price: '$2.99',
+    price: '$4.99',
     period: '/ mes',
     desc: 'Para estudiar todos los días sin frenos.',
     features: [
-      '25 apuntes por mes',
-      'Audio hasta 45 min',
+      '15 apuntes por mes',
+      'Audio hasta 40 min',
       'Voz TTS premium',
       'Notificaciones de racha',
       'Flashcards ilimitadas',
