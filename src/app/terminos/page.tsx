@@ -137,9 +137,9 @@ export default function TerminosPage() {
               </li>
             </ul>
             <p>
-              El lanzamiento de la versión Premium está planificado para Q3
-              2026 con planes pagos. Los usuarios de beta no quedan obligados a
-              suscribirse.
+              El lanzamiento de los planes pagos (Chero+ $4.99/mes y Sprint
+              AVANZO $9.99 por 2 meses pre-examen) está planificado para Q3
+              2026. Los usuarios de beta no quedan obligados a suscribirse.
             </p>
           </Section>
 
@@ -256,7 +256,7 @@ export default function TerminosPage() {
           <Section title="8. Cambios al servicio">
             <p>Como beta, Chero puede:</p>
             <ul className="ml-5 list-disc space-y-2">
-              <li>Cambiar precios cuando lance Premium en Q3 2026.</li>
+              <li>Cambiar precios cuando lancen Chero+ y Sprint AVANZO en Q3 2026.</li>
               <li>
                 Modificar funcionalidades (mejorar, deprecar, agregar
                 features).
@@ -268,8 +268,8 @@ export default function TerminosPage() {
               <li>Discontinuar el servicio si no es viable comercialmente.</li>
             </ul>
             <p>
-              Si la beta cierra antes del lanzamiento de Premium, no hay
-              obligación de reembolso (porque la beta es gratis).
+              Si la beta cierra antes del lanzamiento de los planes pagos, no
+              hay obligación de reembolso (porque la beta es gratis).
             </p>
           </Section>
 

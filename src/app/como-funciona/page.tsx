@@ -194,7 +194,8 @@ export default function ComoFuncionaPage() {
             </ul>
             <p className="mt-3">
               Los 50 usos se reparten en orden de llegada hasta que se agotan.
-              Después abrimos Premium en Q3 2026.
+              Después abrimos Chero+ ($4.99/mes) y el Sprint AVANZO ($9.99 por
+              los 2 meses pre-examen) en Q3 2026.
             </p>
           </Section>
 
@@ -393,7 +394,7 @@ export default function ComoFuncionaPage() {
               {[
                 {
                   q: '¿Cuánto cuesta cada apunte hoy?',
-                  a: 'En la beta es gratis: 50 usos compartidos entre todos los users de prueba. Cuando lancemos Premium en Q3 2026, son 3 apuntes/mes free, $0.99 por extra, o $4.99/mes ilimitado.',
+                  a: 'En la beta es gratis: 50 usos compartidos entre todos los users de prueba. Cuando lancemos Q3 2026: Free 3 apuntes/mes, Chero+ $4.99/mes con 15 apuntes hasta 40 min, y Sprint AVANZO $9.99 por los 2 meses pre-examen con 30 apuntes hasta 50 min.',
                 },
                 {
                   q: '¿Qué tan privado es mi audio?',

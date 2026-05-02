@@ -127,7 +127,7 @@ export default async function SuscripcionPage() {
 
         {/* Info beta */}
         <p className="mt-6 text-center text-xs text-white/55">
-          ⓘ Lanzamiento Premium previsto para Q3 2026. Como user de la beta no
+          ⓘ Lanzamiento de Chero+ y Sprint AVANZO previsto para Q3 2026. Como user de la beta no
           quedás obligado a suscribirte cuando salga.
         </p>
       </main>
