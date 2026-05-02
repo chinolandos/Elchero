@@ -45,15 +45,16 @@ const COLOR_SOLID_CLASSES: Record<string, string> = {
 };
 
 // Dot indicator color (HSL puro brillante) — reemplaza al emoji visible.
+// Hues separados para que se distingan a primera vista entre carpetas.
 const COLOR_DOT: Record<string, string> = {
-  violet: 'hsl(270 90% 62%)',
-  pink: 'hsl(320 90% 62%)',
-  cyan: 'hsl(190 90% 58%)',
-  amber: 'hsl(35 100% 60%)',
-  green: 'hsl(150 75% 52%)',
-  rose: 'hsl(340 90% 60%)',
-  indigo: 'hsl(250 85% 60%)',
-  sky: 'hsl(200 95% 60%)',
+  violet: 'hsl(265 95% 68%)',  // purpura
+  pink: 'hsl(310 100% 68%)',   // fuchsia brillante
+  cyan: 'hsl(185 100% 55%)',   // cyan turquesa
+  amber: 'hsl(40 100% 60%)',   // amarillo dorado
+  green: 'hsl(145 80% 52%)',   // verde esmeralda
+  rose: 'hsl(355 100% 65%)',   // coral / rojo brillante
+  indigo: 'hsl(230 100% 68%)', // azul indigo
+  sky: 'hsl(200 100% 60%)',    // celeste
 };
 
 const COLOR_OPTIONS = [
@@ -260,8 +261,11 @@ function FolderPill({
     >
       <span
         aria-hidden="true"
-        className="h-1.5 w-1.5 shrink-0 rounded-full"
-        style={{ background: dotColor }}
+        className="h-2.5 w-2.5 shrink-0 rounded-full"
+        style={{
+          background: dotColor,
+          boxShadow: `0 0 8px ${dotColor}`,
+        }}
       />
       <span>{label}</span>
       <span
