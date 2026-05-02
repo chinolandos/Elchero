@@ -127,11 +127,7 @@ export async function POST(req: NextRequest) {
   // Cache-bust: agregar query param con timestamp para forzar reload
   const finalUrl = `${publicUrl}?t=${Date.now()}`;
 
-  // Update profile.avatar_url. Cast as any porque database.ts no incluye
-  // avatar_url todavía (regenerar types con `npm run db:types` después
-  // de correr la migration 09).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error: updateError } = await (supabase as any)
+  const { error: updateError } = await supabase
     .from('profiles')
     .update({ avatar_url: finalUrl })
     .eq('id', user.id);
@@ -179,9 +175,7 @@ export async function DELETE() {
     // ignore
   });
 
-  // Set avatar_url a null
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error: updateError } = await (supabase as any)
+  const { error: updateError } = await supabase
     .from('profiles')
     .update({ avatar_url: null })
     .eq('id', user.id);

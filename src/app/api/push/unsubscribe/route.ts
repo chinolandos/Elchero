@@ -38,9 +38,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
   }
 
-  // Cast a `any`: ver nota en /api/push/subscribe sobre regenerar types post-migration.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('push_subscriptions')
     .delete()
     .eq('endpoint', body.endpoint)

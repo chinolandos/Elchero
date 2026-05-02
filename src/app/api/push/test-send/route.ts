@@ -29,21 +29,14 @@ export async function POST() {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
-  // Cargar subs del user (con admin client para bypass RLS no es necesario,
-  // RLS ya filtra por user_id; uso admin solo para consistencia con cron).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: subsRaw } = await (supabase as any)
+  // Cargar subs del user (RLS ya filtra por user_id).
+  const { data: subsRaw } = await supabase
     .from('push_subscriptions')
     .select('endpoint, p256dh, auth')
     .eq('user_id', user.id)
     .is('failed_at', null);
 
-  interface PushSub {
-    endpoint: string;
-    p256dh: string;
-    auth: string;
-  }
-  const subs = (subsRaw ?? []) as PushSub[];
+  const subs = subsRaw ?? [];
 
   if (subs.length === 0) {
     return NextResponse.json({
@@ -64,8 +57,7 @@ export async function POST() {
   if (result.expired.length > 0) {
     const admin = createSupabaseAdminClient();
     const expiredEndpoints = result.expired.map((s) => s.endpoint);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (admin as any)
+    await admin
       .from('push_subscriptions')
       .delete()
       .in('endpoint', expiredEndpoints);

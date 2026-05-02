@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -139,6 +139,7 @@ export type Database = {
       profiles: {
         Row: {
           age: number | null
+          avatar_url: string | null
           career: string | null
           created_at: string | null
           email: string | null
@@ -154,6 +155,7 @@ export type Database = {
         }
         Insert: {
           age?: number | null
+          avatar_url?: string | null
           career?: string | null
           created_at?: string | null
           email?: string | null
@@ -169,6 +171,7 @@ export type Database = {
         }
         Update: {
           age?: number | null
+          avatar_url?: string | null
           career?: string | null
           created_at?: string | null
           email?: string | null
@@ -181,6 +184,42 @@ export type Database = {
           updated_at?: string | null
           user_type?: string | null
           year?: number | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string | null
+          endpoint: string
+          failed_at: string | null
+          id: string
+          last_used_at: string | null
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string | null
+          endpoint: string
+          failed_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string | null
+          endpoint?: string
+          failed_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -372,4 +411,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

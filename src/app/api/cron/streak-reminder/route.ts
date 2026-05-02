@@ -48,9 +48,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Cargar todas las subscriptions activas con user_id.
-  // Cast a `any`: ver nota en /api/push/subscribe.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: subsRaw, error: subsError } = await (admin as any)
+  const { data: subsRaw, error: subsError } = await admin
     .from('push_subscriptions')
     .select('id, user_id, endpoint, p256dh, auth')
     .is('failed_at', null);
@@ -132,12 +130,10 @@ export async function GET(req: NextRequest) {
     totalSent += result.sent;
     totalExpired += result.expired.length;
 
-    // Borrar subscriptions expiradas (410 Gone). Cast a any por mismo
-    // motivo (database.ts no incluye push_subscriptions todavía).
+    // Borrar subscriptions expiradas (410 Gone)
     if (result.expired.length > 0) {
       const expiredEndpoints = result.expired.map((s) => s.endpoint);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (admin as any)
+      await admin
         .from('push_subscriptions')
         .delete()
         .in('endpoint', expiredEndpoints);

@@ -52,11 +52,7 @@ export async function POST(req: NextRequest) {
   const userAgent = req.headers.get('user-agent') ?? null;
 
   // Upsert por endpoint (UNIQUE constraint en DB).
-  // NOTA: cast a `any` porque database.ts (types generados) aún no incluye
-  // push_subscriptions. Después de correr la migration 08 + regenerar
-  // types con `npm run db:types`, este cast se puede quitar.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('push_subscriptions')
     .upsert(
       {
