@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Pencil, RefreshCw, Download, Trash2 } from 'lucide-react';
@@ -281,7 +282,11 @@ function TranscriptEditor({
   onSave: () => void;
   unchanged: boolean;
 }) {
-  return (
+  // Portal a body — escapa el stacking context del layout (app) que tiene
+  // `relative z-10` y dejaba la BottomTabBar sobre el modal en mobile.
+  if (typeof window === 'undefined') return null;
+
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md"
       onClick={onCancel}
@@ -348,6 +353,7 @@ function TranscriptEditor({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

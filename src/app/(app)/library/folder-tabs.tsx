@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -358,7 +359,13 @@ function FolderModal({
     }
   };
 
-  return (
+  // Portal a document.body para escapar el stacking context del layout
+  // (`<div className="relative z-10">{children}</div>` de (app)/layout.tsx
+  // estaba haciendo que la BottomTabBar z-40 quedara visualmente sobre el
+  // modal en mobile, tapando los botones Cancelar/Guardar).
+  if (typeof window === 'undefined') return null;
+
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
       onClick={onClose}
@@ -494,6 +501,7 @@ function FolderModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
