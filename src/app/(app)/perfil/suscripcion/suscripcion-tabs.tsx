@@ -52,7 +52,7 @@ const PLANS: Record<PlanId, Plan> = {
     desc: 'Para estudiar todos los días sin frenos.',
     features: [
       '25 apuntes por mes',
-      'Audio hasta 90 min',
+      'Audio hasta 45 min',
       'Voz TTS premium',
       'Notificaciones de racha',
       'Flashcards ilimitadas',
