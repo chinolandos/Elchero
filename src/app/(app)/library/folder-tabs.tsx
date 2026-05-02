@@ -44,6 +44,18 @@ const COLOR_SOLID_CLASSES: Record<string, string> = {
   sky: 'bg-sky-500/30 border-sky-400 text-white ring-2 ring-sky-400/40',
 };
 
+// Dot indicator color (HSL puro brillante) — reemplaza al emoji visible.
+const COLOR_DOT: Record<string, string> = {
+  violet: 'hsl(270 90% 62%)',
+  pink: 'hsl(320 90% 62%)',
+  cyan: 'hsl(190 90% 58%)',
+  amber: 'hsl(35 100% 60%)',
+  green: 'hsl(150 75% 52%)',
+  rose: 'hsl(340 90% 60%)',
+  indigo: 'hsl(250 85% 60%)',
+  sky: 'hsl(200 95% 60%)',
+};
+
 const COLOR_OPTIONS = [
   { value: 'violet', label: 'Violeta' },
   { value: 'pink', label: 'Rosa' },
@@ -160,7 +172,7 @@ export function FolderTabs({ selectedFolderId, onSelect }: FolderTabsProps) {
             type="button"
             onClick={() => setShowCreate(true)}
             aria-label="Crear nueva carpeta"
-            className="flex h-9 shrink-0 items-center gap-1 rounded-full border border-dashed border-white/20 bg-white/[0.02] px-3.5 text-xs text-white/65 transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-white"
+            className="flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-dashed border-white/25 bg-white/[0.02] px-4 text-sm font-medium text-white/85 transition-all hover:border-white/40 hover:bg-white/5 hover:text-white"
           >
             <span aria-hidden="true">+</span>
             <span>Nueva carpeta</span>
@@ -221,6 +233,12 @@ function FolderPill({
     window.addEventListener('touchmove', cancel, { once: true });
   };
 
+  // Diseño minimal: dot indicator (color de la carpeta) + label + count chip.
+  // El emoji custom de la carpeta queda accesible al editar (long-press), no
+  // se muestra en la pill para coherencia visual del row.
+  void emoji;
+  const dotColor = COLOR_DOT[color] ?? COLOR_DOT.violet;
+
   return (
     <button
       type="button"
@@ -234,19 +252,22 @@ function FolderPill({
       }}
       aria-pressed={selected}
       className={cn(
-        'flex h-9 shrink-0 items-center gap-1 rounded-full border px-3.5 text-xs font-medium transition-all',
+        'flex h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-all',
         selected
-          ? COLOR_SOLID_CLASSES[color] ?? COLOR_SOLID_CLASSES.violet
-          : COLOR_CLASSES[color] ?? COLOR_CLASSES.violet,
-        !selected && 'hover:border-white/30',
+          ? 'border-white/25 bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]'
+          : 'border-white/10 bg-white/[0.03] text-white/70 hover:border-white/20 hover:bg-white/[0.06] hover:text-white',
       )}
     >
-      {emoji && <span aria-hidden="true">{emoji}</span>}
+      <span
+        aria-hidden="true"
+        className="h-1.5 w-1.5 shrink-0 rounded-full"
+        style={{ background: dotColor }}
+      />
       <span>{label}</span>
       <span
         className={cn(
-          'rounded-full px-1.5 py-0 text-[9px] font-bold',
-          selected ? 'bg-white/20' : 'bg-white/10',
+          'rounded-full px-2 py-0.5 text-[10px] font-semibold tabular-nums',
+          selected ? 'bg-white/20 text-white' : 'bg-white/10 text-white/65',
         )}
       >
         {count}
