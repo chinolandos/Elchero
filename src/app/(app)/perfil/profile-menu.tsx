@@ -47,8 +47,8 @@ const MENU: MenuItem[] = [
   {
     href: '/perfil/suscripcion',
     icon: CardIcon,
-    label: 'Suscripción',
-    description: 'Plan actual y cómo mejorarlo',
+    label: 'Mejorá tu plan',
+    description: 'Pasá a Chero+ o al Sprint AVANZO',
     badge: 'Beta',
   },
   {
