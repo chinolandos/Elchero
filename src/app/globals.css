@@ -63,19 +63,19 @@
      4. Linear night→plum como base */
   --gradient-hero: radial-gradient(
       130% 90% at 78% 28%,
-      hsl(var(--grad-magenta) / 0.95) 0%,
-      hsl(var(--grad-violet) / 0.7) 22%,
+      hsl(var(--grad-magenta) / 0.55) 0%,
+      hsl(var(--grad-violet) / 0.4) 22%,
       transparent 55%
     ),
     radial-gradient(
       100% 80% at 88% 75%,
-      hsl(var(--grad-ember) / 0.85) 0%,
-      hsl(var(--grad-amber) / 0.55) 25%,
+      hsl(var(--grad-ember) / 0.5) 0%,
+      hsl(var(--grad-amber) / 0.3) 25%,
       transparent 60%
     ),
     radial-gradient(
       140% 100% at 12% 90%,
-      hsl(var(--grad-plum) / 0.9) 0%,
+      hsl(var(--grad-plum) / 0.55) 0%,
       transparent 55%
     ),
     linear-gradient(
