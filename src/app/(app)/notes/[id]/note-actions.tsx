@@ -287,7 +287,7 @@ function TranscriptEditor({
       onClick={onCancel}
     >
       <div
-        className="glass-strong shadow-card-premium relative w-full max-w-2xl overflow-hidden rounded-3xl p-6"
+        className="glass-strong shadow-card-premium relative max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-hidden rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Halo magenta sutil arriba (matching folder-modal v5) */}
@@ -297,7 +297,9 @@ function TranscriptEditor({
           style={{ background: 'hsl(295 90% 55% / 0.6)' }}
         />
 
-        <div className="relative">
+        {/* Scrolleable: respeta viewport para que botones siempre sean
+            accesibles en mobile (bottom-tab-bar tapaba el footer). */}
+        <div className="relative max-h-[calc(100dvh-2rem)] overflow-y-auto p-6">
           <h3 className="font-display-pf mb-2 text-2xl font-semibold tracking-tight text-white">
             Editar transcripción
           </h3>

@@ -339,7 +339,7 @@ function FolderModal({
       onClick={onClose}
     >
       <div
-        className="glass-strong shadow-card-premium relative w-full max-w-md overflow-hidden rounded-3xl p-6"
+        className="glass-strong shadow-card-premium relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-hidden rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Halo magenta sutil arriba para coherencia v5 */}
@@ -349,7 +349,10 @@ function FolderModal({
           style={{ background: 'hsl(295 90% 55% / 0.6)' }}
         />
 
-        <div className="relative">
+        {/* Contenedor scrolleable: respeta altura del viewport. Sin esto, en
+            mobile con bottom-tab-bar el contenido excede el viewport y los
+            botones Cancelar/Guardar quedan fuera y no se puede scrollear. */}
+        <div className="relative max-h-[calc(100dvh-2rem)] overflow-y-auto p-6">
           <h3 className="font-display-pf mb-4 text-2xl font-semibold tracking-tight text-white">
             {mode === 'create' ? 'Nueva carpeta' : 'Editar carpeta'}
           </h3>
