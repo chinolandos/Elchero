@@ -44,10 +44,10 @@ const PLANS: Record<PlanId, Plan> = {
     period: 'para siempre',
     desc: 'Probá las funciones básicas sin tarjeta.',
     features: [
-      '10 apuntes por mes',
+      '3 apuntes por mes',
+      'Audio hasta 20 min',
       'Resúmenes con IA',
-      'Exportar a PDF',
-      'Soporte por mail',
+      'Exportar a PDF (con marca de agua)',
     ],
     cta: 'Empezar gratis',
     ctaHref: '/login',
@@ -56,33 +56,35 @@ const PLANS: Record<PlanId, Plan> = {
   },
   monthly: {
     id: 'monthly',
-    name: 'Por mes',
-    price: '$1.99',
+    name: 'Chero+',
+    price: '$2.99',
     period: '/ mes',
-    desc: 'Acceso flexible cuando lo necesites.',
+    desc: 'Para estudiar todos los días sin frenos.',
     features: [
-      'Apuntes ilimitados',
-      'Audio → texto',
-      'Edit avanzado',
-      'Soporte prioritario',
+      '25 apuntes por mes',
+      'Audio hasta 90 min',
+      'Voz TTS premium',
+      'Notificaciones de racha',
+      'Flashcards ilimitadas',
+      'PDF sin marca de agua',
     ],
     cta: 'Próximamente',
     ctaHref: null,
   },
   premium: {
     id: 'premium',
-    name: 'Premium',
-    price: '$4.99',
-    period: '/ 3 meses',
-    desc: 'Lo mejor de El Chero. Pensado para bachillerato.',
+    name: 'Sprint AVANZO',
+    price: '$9.99',
+    period: '/ 2 meses',
+    desc: 'Para los 2 meses antes del AVANZO. Pasalo.',
     features: [
       'Apuntes ilimitados',
-      'Audio TTS HD (770 MB)',
-      'Edit avanzado + reescritura',
-      'Soporte prioritario',
-      'Plan Familia $9.99 — hasta 5 usuarios',
+      'Simulacros AVANZO (próximamente)',
+      'Flashcards modo examen',
+      'Prioridad de procesamiento',
+      'Voz TTS premium',
     ],
-    cta: 'Quiero Premium',
+    cta: 'Quiero el Sprint',
     ctaHref: null, // post-launch lo activamos
   },
 };
@@ -121,7 +123,7 @@ export function LandingPricing({ userLoggedIn }: { userLoggedIn: boolean }) {
               onClick={() => setActive(k)}
               aria-pressed={isActive}
               className={cn(
-                'h-10 rounded-full text-xs font-semibold capitalize transition-smooth',
+                'h-10 rounded-full text-[11px] font-semibold transition-smooth',
                 isActive
                   ? 'bg-gradient-primary text-primary-foreground shadow-button-premium'
                   : 'text-white/55 hover:text-white',
