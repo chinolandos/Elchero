@@ -1,47 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces, Playfair_Display, Inter } from "next/font/google";
+import { Geist_Mono, Poppins } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-// Inter — sans-serif principal del sitio (matching Lovable hue-learn-glow).
-// Variable font: sin `weight` explícito, carga el axis completo 100-900.
-// Esto permite font-medium / font-semibold / font-bold / font-black sin
-// fallback a system font.
-const inter = Inter({
-  variable: "--font-inter",
+// Poppins — única tipografía del sitio.
+// 300 (Light) para texto chico/cuerpo, 400 (Regular) para titulares y bold.
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
+  weight: ["300", "400"],
+  style: ["normal", "italic"],
   display: "swap",
-});
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-// Fraunces — display serif heredado v4 (lo dejamos por si otras pages
-// lo siguen usando). Pesos 400/600/700 + italic.
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-  style: ["normal", "italic"],
-  display: "swap",
-});
-
-// Playfair Display — display serif del rediseño v5 (Lovable hue-learn-glow).
-// Es la fuente que da el carácter teatral al "cherito" italic gradient.
-// Pesos 600/700 (h1) + italic 600 ("cherito"). Display swap para no FOIT.
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-  weight: ["600", "700"],
-  style: ["normal", "italic"],
-  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -80,7 +54,7 @@ export default function RootLayout({
   return (
     <html
       lang="es-SV"
-      className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${playfair.variable} h-full antialiased`}
+      className={`${poppins.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {children}
