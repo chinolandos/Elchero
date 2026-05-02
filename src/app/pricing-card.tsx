@@ -67,6 +67,7 @@ const PLANS: Record<PlanId, Plan> = {
       'Notificaciones de racha',
       'Flashcards ilimitadas',
       'PDF sin marca de agua',
+      'Comprar extras desde $0.99/apunte',
     ],
     cta: 'Próximamente',
     ctaHref: null,

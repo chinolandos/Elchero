@@ -397,6 +397,10 @@ export default function ComoFuncionaPage() {
                   a: 'En la beta es gratis: 50 usos compartidos entre todos los users de prueba. Cuando lancemos Q3 2026: Free 3 apuntes/mes, Chero+ $4.99/mes con 15 apuntes hasta 40 min, y Sprint AVANZO $9.99 por los 2 meses pre-examen con 30 apuntes hasta 50 min.',
                 },
                 {
+                  q: '¿Y si me quedo sin apuntes antes de fin de mes?',
+                  a: 'Si estás en Free, te recomendamos pasar a Chero+ para tener 5x más apuntes. Si ya estás en Chero+, vas a poder comprar packs extra desde $0.99 por apunte (próximamente, junto al lanzamiento Q3 2026). Si estás en Sprint AVANZO, ya tenés 30 apuntes para 2 meses — esperá el próximo Sprint o pasate a un plan con más cupo.',
+                },
+                {
                   q: '¿Qué tan privado es mi audio?',
                   a: 'Tu audio NUNCA toca disco — solo vive en memoria mientras se transcribe (~30 segundos). Después se descarta. El texto transcrito se guarda con tu apunte para que puedas regenerarlo, pero podés borrarlo cuando quieras desde tu perfil. Cumplimos la Ley de Protección de Datos Personales SV.',
                 },
