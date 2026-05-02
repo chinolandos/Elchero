@@ -227,7 +227,7 @@ function NoteCard({
     >
       {/* Banda superior con gradient procedural — la identidad visual del subject */}
       <div
-        className="relative h-24 w-full"
+        className="relative h-20 w-full"
         style={{ background: gradient }}
         aria-hidden
       >
@@ -256,33 +256,33 @@ function NoteCard({
         )}
       </div>
 
-      {/* Body — glass translucent v5 (no más dark) */}
-      <div className="flex flex-1 flex-col p-5">
-        <h3 className="font-display-pf mb-2 line-clamp-1 text-lg font-semibold tracking-tight text-white">
+      {/* Body — glass translucent v5 más compacto */}
+      <div className="flex flex-1 flex-col p-4">
+        <h3 className="font-display-pf mb-1.5 line-clamp-1 text-base font-semibold tracking-tight text-white">
           {note.subject}
         </h3>
-        <p className="line-clamp-2 flex-1 text-sm leading-relaxed text-white/75 transition-colors group-hover:text-white/90">
+        <p className="line-clamp-2 flex-1 text-xs leading-relaxed text-white/75 transition-colors group-hover:text-white/90">
           {note.summary_excerpt || 'Sin resumen disponible'}
         </p>
 
-        {/* Footer: número secuencial grande + counter */}
-        <div className="mt-5 flex items-end justify-between border-t border-white/15 pt-4">
+        {/* Footer: número secuencial + counter */}
+        <div className="mt-3 flex items-end justify-between border-t border-white/15 pt-3">
           <div>
-            <div className="font-display-pf text-3xl font-bold leading-none tabular-nums text-white">
+            <div className="font-display-pf text-2xl font-bold leading-none tabular-nums text-white">
               {seq}
             </div>
-            <div className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-white/55">
+            <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/55">
               {formatShortDate(note.created_at)}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-xs text-white/75">
+            <div className="text-[11px] text-white/75">
               <span className="font-semibold text-white">
                 {note.questions_count}
               </span>{' '}
               preg
             </div>
-            <div className="text-xs text-white/75">
+            <div className="text-[11px] text-white/75">
               <span className="font-semibold text-white">
                 {note.flashcards_count}
               </span>{' '}
